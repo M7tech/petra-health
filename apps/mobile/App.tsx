@@ -7,19 +7,23 @@ import SignupScreen from './src/screens/SignupScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import MedicationScreen from './src/screens/MedicationScreen';
+import WeightScreen from './src/screens/WeightScreen';
 import { colors } from './src/ui';
 
 // Lightweight bottom-tab navigation (no nav library needed for the slice).
 function MainTabs() {
-  const [tab, setTab] = useState<'home' | 'meds'>('home');
+  const [tab, setTab] = useState<'home' | 'meds' | 'weight'>('home');
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>{tab === 'home' ? <HomeScreen /> : <MedicationScreen />}</View>
+      <View style={{ flex: 1 }}>
+        {tab === 'home' ? <HomeScreen /> : tab === 'meds' ? <MedicationScreen /> : <WeightScreen />}
+      </View>
       <View style={styles.tabBar}>
         {(
           [
             { key: 'home', label: 'Home', icon: '🏠' },
             { key: 'meds', label: 'Semetra', icon: '💊' },
+            { key: 'weight', label: 'Weight', icon: '⚖️' },
           ] as const
         ).map((t) => (
           <TouchableOpacity key={t.key} style={styles.tab} onPress={() => setTab(t.key)}>

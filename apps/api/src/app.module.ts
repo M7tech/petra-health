@@ -6,6 +6,7 @@ import { DirectoryModule } from './directory/directory.module';
 import { ProfileModule } from './profile/profile.module';
 import { AdminModule } from './admin/admin.module';
 import { MedicationsModule } from './medications/medications.module';
+import { WeightsModule } from './weights/weights.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MedicationsModule } from './medications/medications.module';
     ProfileModule,
     AdminModule,
     MedicationsModule,
+    WeightsModule,
   ],
 })
 export class AppModule {}

@@ -42,7 +42,11 @@ export default function OverviewPage() {
         <StatTile label="Total doctors" value={stats.totalDoctors} />
         <StatTile label="Doses logged" value={stats.totalDosesLogged} />
         <StatTile label="Medications enrolled" value={stats.totalMedicationsEnrolled} />
-        <StatTile label="Cities" value={stats.totalCities} hint={`${stats.totalCountries} countries`} />
+        <StatTile
+          label="Cities"
+          value={stats.totalCities}
+          hint={`${stats.totalCountries} ${stats.totalCountries === 1 ? 'country' : 'countries'}`}
+        />
         <StatTile label="Weight entries" value={stats.totalWeightEntries} />
       </div>
 

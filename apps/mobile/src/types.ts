@@ -65,3 +65,9 @@ export interface DoseLog {
   takenAt: string;
   doseMg: number | null;
 }
+export interface WeightEntry {
+  id: string;
+  weightKg: number;
+  recordedAt: string;
+  note: string | null;
+}

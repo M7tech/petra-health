@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import type { PatientDetail } from '@petra/shared';
 import { api } from '@/lib/api';
 import { Card, PageHeader, StatTile } from '@/components/ui';
+import { WeightChart } from '@/components/WeightChart';
 
 export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
@@ -37,6 +38,13 @@ export default function PatientDetailPage() {
         <StatTile label="Medications" value={p.medicationCount} />
         <StatTile label="Doses logged" value={p.doseCount} />
         <StatTile label="Weight entries" value={p.weightEntries.length} />
+      </div>
+
+      <div className="mb-6">
+        <Card>
+          <h2 className="mb-3 font-semibold text-slate-700">Weight trend</h2>
+          <WeightChart data={p.weightEntries} />
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
