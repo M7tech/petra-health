@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: petra_health_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: petra
+      POSTGRES_PASSWORD: petra_dev_pw
+      POSTGRES_DB: petra_health
+    ports:
+      - "5432:5432"
+    volumes:
+      - petra_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petra -d petra_health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  petra_pgdata:

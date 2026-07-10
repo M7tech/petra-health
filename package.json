@@ -1,0 +1,24 @@
+{
+  "name": "petra-health",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Petra Pharma cross-platform health tracking system (Semetra titration adherence + weight tracking)",
+  "workspaces": [
+    "packages/*",
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "npm --workspace apps/api run prisma:migrate",
+    "db:seed": "npm --workspace apps/api run prisma:seed",
+    "dev:api": "npm --workspace apps/api run start:dev",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:mobile": "cd apps/mobile && npx expo start",
+    "build:shared": "npm --workspace @petra/shared run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

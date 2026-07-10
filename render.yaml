@@ -1,0 +1,44 @@
+# Render Blueprint — provisions PostgreSQL + the NestJS API in one deploy.
+# Dashboard → New → Blueprint → connect this repo. Free plan.
+#
+# The build runs devDeps (needed for nest/prisma/ts-node), builds the shared
+# package + API, syncs the schema with `prisma db push`, and runs the seed.
+# The seed is idempotent (upserts), so re-deploys are safe.
+
+databases:
+  - name: petra-health-db
+    databaseName: petra_health
+    user: petra
+    plan: free
+
+services:
+  - type: web
+    name: petra-health-api
+    runtime: node
+    plan: free
+    rootDir: .
+    autoDeploy: true
+    buildCommand: >-
+      npm ci --include=dev &&
+      npm run build:shared &&
+      npm --workspace apps/api run prisma:generate &&
+      npm --workspace apps/api run build &&
+      npm --workspace apps/api run prisma:push &&
+      npm --workspace apps/api run prisma:seed
+    startCommand: node apps/api/dist/src/main.js
+    healthCheckPath: /api/directory/countries
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: petra-health-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: NODE_VERSION
+        value: "20"
+      # Set to your Vercel URL after the web app is deployed, e.g.
+      # https://petra-health.vercel.app  (comma-separated for multiple).
+      - key: CORS_ORIGINS
+        sync: false

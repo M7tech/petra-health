@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Petra Health",
+    "slug": "petra-health",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "petrahealth",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#a4225f"
+    },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.petrapharma.health" },
+    "android": {
+      "package": "com.petrapharma.health"
+    }
+  }
+}

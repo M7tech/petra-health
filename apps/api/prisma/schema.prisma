@@ -1,0 +1,205 @@
+// Petra Health — data model
+// Location hierarchy (Country -> City -> Doctor) uses enforced FKs.
+// Semetra titration is modeled as Medication -> Pen -> TitrationWeek so the
+// weekly checklist in the patient guide maps directly onto DoseLog rows.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Location hierarchy + provider directory
+// ---------------------------------------------------------------------------
+
+model Country {
+  id        String   @id @default(uuid())
+  name      String
+  isoCode   String   @unique // e.g. "IQ"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cities  City[]
+  doctors Doctor[]
+
+  @@map("countries")
+}
+
+model City {
+  id        String   @id @default(uuid())
+  name      String
+  countryId String
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctors Doctor[]
+  users   User[]
+
+  @@unique([countryId, name])
+  @@index([countryId])
+  @@map("cities")
+}
+
+model Doctor {
+  id        String   @id @default(uuid())
+  fullName  String
+  specialty String?
+  phone     String?
+  // Doctor -> City -> Country, both FKs enforced for relational integrity.
+  cityId    String
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  countryId String
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patients User[]
+
+  @@index([cityId])
+  @@index([countryId])
+  @@map("doctors")
+}
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  // Chosen during hierarchical onboarding.
+  countryId    String?
+  cityId       String?
+  city         City?    @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  doctorId     String?
+  doctor       Doctor?  @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  medications   UserMedication[]
+  doseLogs      DoseLog[]
+  weightEntries WeightEntry[]
+
+  @@map("users")
+}
+
+model Admin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  role         AdminRole @default(EDITOR)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+enum AdminRole {
+  SUPERADMIN
+  EDITOR
+}
+
+// ---------------------------------------------------------------------------
+// Medication catalog + titration (Semetra-first)
+// ---------------------------------------------------------------------------
+
+model Medication {
+  id           String  @id @default(uuid())
+  name         String  // e.g. "Semetra"
+  genericName  String? // e.g. "Semaglutide"
+  manufacturer String? // e.g. "Petra Pharma"
+  isTitrated   Boolean @default(false)
+
+  pens Pen[]
+
+  @@unique([name])
+  @@map("medications")
+}
+
+// A physical pen in a titration course (e.g. "First Pen (1.5 ml)").
+model Pen {
+  id           String @id @default(uuid())
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  label        String  // "First Pen (1.5 ml)"
+  sequence     Int     // 1, 2, ...
+  volumeMl     Float?
+
+  weeks TitrationWeek[]
+
+  @@unique([medicationId, sequence])
+  @@map("pens")
+}
+
+// One row per week of the titration schedule (dose escalates across weeks).
+model TitrationWeek {
+  id         String @id @default(uuid())
+  penId      String
+  pen        Pen    @relation(fields: [penId], references: [id], onDelete: Cascade)
+  weekNumber Int    // 1..N within the pen
+  doseMg     Float  // 0.25, 0.50, ...
+
+  @@unique([penId, weekNumber])
+  @@map("titration_weeks")
+}
+
+// A user enrolling in a medication (their personal course start date).
+model UserMedication {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicationId String
+  // Free-text fields also support non-titrated meds per the generic spec.
+  name         String
+  dosage       String?
+  frequency    String?  // e.g. "weekly"
+  timeOfDay    String?  // "HH:mm" for the local reminder
+  startDate    DateTime @default(now())
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  doseLogs DoseLog[]
+
+  @@index([userId])
+  @@map("user_medications")
+}
+
+// A single administration event — the checkbox on the titration grid.
+model DoseLog {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userMedicationId String
+  userMedication   UserMedication @relation(fields: [userMedicationId], references: [id], onDelete: Cascade)
+  scheduledFor     DateTime // the week/day this dose belongs to
+  takenAt          DateTime @default(now())
+  doseMg           Float?
+  note             String?
+
+  @@index([userId, scheduledFor])
+  @@map("dose_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Weight tracking
+// ---------------------------------------------------------------------------
+
+model WeightEntry {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weightKg   Float
+  recordedAt DateTime @default(now())
+  note       String?
+
+  @@index([userId, recordedAt])
+  @@map("weight_entries")
+}
