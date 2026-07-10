@@ -10,9 +10,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#a4225f"
     },
-    "ios": { "supportsTablet": true, "bundleIdentifier": "com.petrapharma.health" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petrapharma.health",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Petra Health uses Face ID to unlock the app."
+      }
+    },
     "android": {
       "package": "com.petrapharma.health"
-    }
+    },
+    "plugins": [
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Petra Health uses Face ID to unlock the app." }
+      ]
+    ]
   }
 }

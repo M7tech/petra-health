@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { api } from '../api';
 import { PrimaryButton, colors } from '../ui';
+import RemindersCard from '../components/RemindersCard';
 import type { DoseLog, Medication, UserMedication } from '../types';
 
 const dayKey = (iso: string) => iso.slice(0, 10);
@@ -149,6 +150,7 @@ export default function MedicationScreen() {
         </View>
       ) : (
         <>
+          <RemindersCard />
           <Text style={styles.hint}>
             Tap a week after your weekly injection to log it. {takenKeys.size} logged.
           </Text>

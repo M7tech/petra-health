@@ -8,6 +8,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import MedicationScreen from './src/screens/MedicationScreen';
 import WeightScreen from './src/screens/WeightScreen';
+import BiometricGate from './src/BiometricGate';
 import { colors } from './src/ui';
 
 // Lightweight bottom-tab navigation (no nav library needed for the slice).
@@ -64,7 +65,11 @@ function Router() {
     return <OnboardingScreen />;
   }
 
-  return <MainTabs />;
+  return (
+    <BiometricGate>
+      <MainTabs />
+    </BiometricGate>
+  );
 }
 
 export default function App() {
