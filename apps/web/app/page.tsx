@@ -10,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     if (loading) return;
-    router.replace(admin ? '/dashboard/countries' : '/login');
+    router.replace(admin ? '/dashboard/overview' : '/login');
   }, [admin, loading, router]);
 
   return (

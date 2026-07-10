@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login({ email, password });
-      router.replace('/dashboard/countries');
+      router.replace('/dashboard/overview');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

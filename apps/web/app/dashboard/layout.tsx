@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
 const NAV = [
+  { href: '/dashboard/overview', label: 'Overview' },
+  { href: '/dashboard/patients', label: 'Patients' },
   { href: '/dashboard/countries', label: 'Countries' },
   { href: '/dashboard/cities', label: 'Cities' },
   { href: '/dashboard/doctors', label: 'Doctors' },

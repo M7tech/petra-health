@@ -31,3 +31,37 @@ export interface Doctor {
   cityId: string;
   countryId: string;
 }
+
+export interface TitrationWeek {
+  id: string;
+  weekNumber: number;
+  doseMg: number;
+}
+export interface Pen {
+  id: string;
+  label: string;
+  sequence: number;
+  volumeMl: number | null;
+  weeks: TitrationWeek[];
+}
+export interface Medication {
+  id: string;
+  name: string;
+  genericName: string | null;
+  manufacturer: string | null;
+  isTitrated: boolean;
+  pens: Pen[];
+}
+export interface UserMedication {
+  id: string;
+  name: string;
+  startDate: string;
+  active: boolean;
+}
+export interface DoseLog {
+  id: string;
+  userMedicationId: string;
+  scheduledFor: string;
+  takenAt: string;
+  doseMg: number | null;
+}

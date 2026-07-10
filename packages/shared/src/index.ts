@@ -144,3 +144,48 @@ export interface CreateWeightEntryDto {
   recordedAt?: string; // ISO
   note?: string;
 }
+
+// ---- Admin analytics ----
+export interface RegionCount {
+  label: string; // e.g. "Erbil, Iraq"
+  count: number;
+}
+
+export interface AdminStats {
+  totalPatients: number;
+  totalDoctors: number;
+  totalCountries: number;
+  totalCities: number;
+  totalMedicationsEnrolled: number;
+  totalDosesLogged: number;
+  totalWeightEntries: number;
+  patientsByCity: RegionCount[];
+  doctorsByCity: RegionCount[];
+  recentPatients: { id: string; fullName: string; email: string; createdAt: string }[];
+}
+
+export interface PatientSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  countryName: string | null;
+  cityName: string | null;
+  doctorName: string | null;
+  medicationCount: number;
+  doseCount: number;
+  createdAt: string;
+}
+
+export interface PatientDetail extends PatientSummary {
+  medications: {
+    id: string;
+    name: string;
+    dosage: string | null;
+    frequency: string | null;
+    startDate: string;
+    active: boolean;
+    doseCount: number;
+  }[];
+  recentDoses: { id: string; medicationName: string; scheduledFor: string; takenAt: string; doseMg: number | null }[];
+  weightEntries: WeightEntry[];
+}
