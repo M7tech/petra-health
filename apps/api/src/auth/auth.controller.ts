@@ -22,4 +22,10 @@ export class AuthController {
   adminLogin(@Body() dto: LoginRequest) {
     return this.auth.loginAdmin(dto);
   }
+
+  @Post('doctor/login')
+  @HttpCode(HttpStatus.OK)
+  doctorLogin(@Body() dto: LoginRequest) {
+    return this.auth.loginDoctor(dto);
+  }
 }

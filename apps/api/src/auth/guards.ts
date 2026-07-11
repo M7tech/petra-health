@@ -25,6 +25,19 @@ export class AdminGuard implements CanActivate {
   }
 }
 
+// Requires the principal to be a doctor.
+@Injectable()
+export class DoctorGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest();
+    const principal = req.user as Principal | undefined;
+    if (!principal || principal.type !== 'doctor') {
+      throw new ForbiddenException('Doctor access required');
+    }
+    return true;
+  }
+}
+
 // Extracts the authenticated principal from the request.
 export const CurrentPrincipal = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): Principal => {

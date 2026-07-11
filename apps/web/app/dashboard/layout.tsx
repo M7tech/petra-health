@@ -14,15 +14,15 @@ const NAV = [
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { admin, loading, logout } = useAuth();
+  const { session, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !admin) router.replace('/login');
-  }, [admin, loading, router]);
+    if (!loading && (!session || session.role !== 'admin')) router.replace('/login');
+  }, [session, loading, router]);
 
-  if (loading || !admin) {
+  if (loading || !session || session.role !== 'admin') {
     return <main className="flex min-h-screen items-center justify-center text-slate-400">Loading…</main>;
   }
 
@@ -56,8 +56,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
         <div className="border-t pt-4 text-sm">
-          <p className="font-medium text-slate-700">{admin.fullName}</p>
-          <p className="mb-2 text-xs text-slate-400">{admin.role}</p>
+          <p className="font-medium text-slate-700">{session.fullName}</p>
+          <p className="mb-2 text-xs text-slate-400">{session.subtitle}</p>
           <button onClick={logout} className="text-petra-600 hover:underline">
             Sign out
           </button>

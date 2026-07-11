@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
 export default function Home() {
-  const { admin, loading } = useAuth();
+  const { session, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
-    router.replace(admin ? '/dashboard/overview' : '/login');
-  }, [admin, loading, router]);
+    if (!session) router.replace('/login');
+    else router.replace(session.role === 'admin' ? '/dashboard/overview' : '/doctor/patients');
+  }, [session, loading, router]);
 
   return (
     <main className="flex min-h-screen items-center justify-center text-slate-400">

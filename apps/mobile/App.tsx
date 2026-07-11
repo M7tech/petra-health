@@ -10,10 +10,11 @@ import HomeScreen from './src/screens/HomeScreen';
 import MedicationScreen from './src/screens/MedicationScreen';
 import WeightScreen from './src/screens/WeightScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import CareScreen from './src/screens/CareScreen';
 import BiometricGate from './src/BiometricGate';
 import { colors } from './src/ui';
 
-type TabKey = 'home' | 'meds' | 'weight' | 'profile';
+type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'profile';
 
 // Lightweight bottom-tab navigation (no nav library needed for the slice).
 function MainTabs() {
@@ -24,6 +25,7 @@ function MainTabs() {
     { key: 'home', label: t('tabs.home'), icon: '🏠' },
     { key: 'meds', label: t('tabs.semetra'), icon: '💊' },
     { key: 'weight', label: t('tabs.weight'), icon: '⚖️' },
+    { key: 'care', label: t('tabs.care'), icon: '🩺' },
     { key: 'profile', label: t('tabs.profile'), icon: '👤' },
   ];
 
@@ -36,6 +38,8 @@ function MainTabs() {
           <MedicationScreen />
         ) : tab === 'weight' ? (
           <WeightScreen />
+        ) : tab === 'care' ? (
+          <CareScreen />
         ) : (
           <ProfileScreen />
         )}

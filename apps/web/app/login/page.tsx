@@ -2,23 +2,30 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
+import { useAuth, Role } from '@/lib/auth';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const [role, setRole] = useState<Role>('admin');
   const [email, setEmail] = useState('admin@petrapharma.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function pickRole(r: Role) {
+    setRole(r);
+    setEmail(r === 'admin' ? 'admin@petrapharma.com' : 'sara@petrapharma.com');
+    setError(null);
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      await login({ email, password });
-      router.replace('/dashboard/overview');
+      const s = await login({ email, password }, role);
+      router.replace(s.role === 'admin' ? '/dashboard/overview' : '/doctor/patients');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -36,8 +43,23 @@ export default function LoginPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-petra-500 text-lg font-bold text-white">
             8
           </div>
-          <h1 className="text-xl font-semibold text-slate-800">Petra Health Admin</h1>
-          <p className="text-sm text-slate-500">Sign in to manage the directory</p>
+          <h1 className="text-xl font-semibold text-slate-800">Petra Health Portal</h1>
+          <p className="text-sm text-slate-500">Sign in to continue</p>
+        </div>
+
+        <div className="flex rounded-lg bg-slate-100 p-1">
+          {(['admin', 'doctor'] as Role[]).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => pickRole(r)}
+              className={`flex-1 rounded-md py-1.5 text-sm font-medium capitalize transition ${
+                role === r ? 'bg-white text-petra-600 shadow' : 'text-slate-500'
+              }`}
+            >
+              {r}
+            </button>
+          ))}
         </div>
 
         {error && (
@@ -75,7 +97,11 @@ export default function LoginPage() {
         >
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="text-center text-xs text-slate-400">Seed admin: admin@petrapharma.com / Admin123!</p>
+        <p className="text-center text-xs text-slate-400">
+          {role === 'admin'
+            ? 'Seed admin: admin@petrapharma.com / Admin123!'
+            : 'Seed doctor: sara@petrapharma.com / Doctor123!'}
+        </p>
       </form>
     </main>
   );

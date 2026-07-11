@@ -50,6 +50,9 @@ model Doctor {
   fullName  String
   specialty String?
   phone     String?
+  // Optional login credentials so a doctor can access the portal.
+  email        String? @unique
+  passwordHash String?
   // Doctor -> City -> Country, both FKs enforced for relational integrity.
   cityId    String
   city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
@@ -58,7 +61,9 @@ model Doctor {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patients User[]
+  patients    User[]
+  assessments ClinicalAssessment[]
+  comments    PatientComment[]
 
   @@index([cityId])
   @@index([countryId])
@@ -93,6 +98,9 @@ model User {
   medications   UserMedication[]
   doseLogs      DoseLog[]
   weightEntries WeightEntry[]
+  adverseEvents AdverseEvent[]
+  comments      PatientComment[]
+  assessment    ClinicalAssessment?
 
   @@map("users")
 }
@@ -101,6 +109,67 @@ enum Gender {
   MALE
   FEMALE
   UNSPECIFIED
+}
+
+enum TreatmentStatus {
+  ONGOING
+  COMPLETED
+  DISCONTINUED
+}
+
+enum AdverseSeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+// One clinical follow-up record per patient, maintained by the doctor.
+model ClinicalAssessment {
+  id                    String          @id @default(uuid())
+  userId                String          @unique
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorId              String?
+  doctor                Doctor?         @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  assessmentDate        DateTime        @default(now())
+  diabetesDuration      String? // e.g. "5 years"
+  baselineHba1c         Float? // %
+  startingDose          String? // e.g. "0.25 mg"
+  concomitantMeds       String?
+  treatmentStatus       TreatmentStatus @default(ONGOING)
+  discontinuationReason String?
+  physicianComments     String?
+  updatedAt             DateTime        @updatedAt
+
+  @@map("clinical_assessments")
+}
+
+// Patient-logged adverse events (time series alongside weight).
+model AdverseEvent {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description String
+  severity    AdverseSeverity @default(MILD)
+  onsetDate   DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+
+  @@index([userId, onsetDate])
+  @@map("adverse_events")
+}
+
+// Doctor comments on a patient (general, or tied to a weight entry).
+model PatientComment {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorId      String?
+  doctor        Doctor?  @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  body          String
+  weightEntryId String? // optional link to a specific weight entry
+  createdAt     DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("patient_comments")
 }
 
 model Admin {

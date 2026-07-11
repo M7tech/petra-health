@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { serializeAssessment } from '../doctor/doctor.service';
 import type { AdminStats, PatientDetail, PatientSummary, RegionCount } from '@petra/shared';
 
 @Injectable()
@@ -111,6 +112,9 @@ export class AdminService {
           include: { userMedication: true },
         },
         weightEntries: { orderBy: { recordedAt: 'desc' }, take: 50 },
+        assessment: true,
+        adverseEvents: { orderBy: { onsetDate: 'desc' } },
+        comments: { orderBy: { createdAt: 'desc' }, include: { doctor: true } },
         _count: { select: { medications: true, doseLogs: true } },
       },
     });
@@ -147,6 +151,22 @@ export class AdminService {
         weightKg: w.weightKg,
         recordedAt: w.recordedAt.toISOString(),
         note: w.note,
+      })),
+      assessment: u.assessment ? serializeAssessment(u.assessment) : null,
+      adverseEvents: u.adverseEvents.map((e) => ({
+        id: e.id,
+        description: e.description,
+        severity: e.severity,
+        onsetDate: e.onsetDate.toISOString(),
+        createdAt: e.createdAt.toISOString(),
+      })),
+      comments: u.comments.map((c) => ({
+        id: c.id,
+        body: c.body,
+        doctorId: c.doctorId,
+        doctorName: c.doctor?.fullName ?? null,
+        weightEntryId: c.weightEntryId,
+        createdAt: c.createdAt.toISOString(),
       })),
     };
   }

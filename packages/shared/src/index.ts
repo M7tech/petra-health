@@ -78,6 +78,105 @@ export interface AdminLoginResponse extends AuthTokens {
   admin: AuthAdmin;
 }
 
+export interface AuthDoctor {
+  id: string;
+  email: string;
+  fullName: string;
+  specialty: string | null;
+}
+
+export interface DoctorLoginResponse extends AuthTokens {
+  doctor: AuthDoctor;
+}
+
+// ---- Clinical follow-up ----
+export type TreatmentStatus = 'ONGOING' | 'COMPLETED' | 'DISCONTINUED';
+export type AdverseSeverity = 'MILD' | 'MODERATE' | 'SEVERE';
+
+export interface ClinicalAssessment {
+  id: string;
+  userId: string;
+  doctorId: string | null;
+  assessmentDate: string;
+  diabetesDuration: string | null;
+  baselineHba1c: number | null;
+  startingDose: string | null;
+  concomitantMeds: string | null;
+  treatmentStatus: TreatmentStatus;
+  discontinuationReason: string | null;
+  physicianComments: string | null;
+  updatedAt: string;
+}
+
+export interface UpsertAssessmentDto {
+  diabetesDuration?: string;
+  baselineHba1c?: number;
+  startingDose?: string;
+  concomitantMeds?: string;
+  treatmentStatus?: TreatmentStatus;
+  discontinuationReason?: string;
+  physicianComments?: string;
+}
+
+export interface AdverseEvent {
+  id: string;
+  description: string;
+  severity: AdverseSeverity;
+  onsetDate: string;
+  createdAt: string;
+}
+
+export interface CreateAdverseEventDto {
+  description: string;
+  severity?: AdverseSeverity;
+  onsetDate?: string;
+}
+
+export interface PatientComment {
+  id: string;
+  body: string;
+  doctorId: string | null;
+  doctorName: string | null;
+  weightEntryId: string | null;
+  createdAt: string;
+}
+
+export interface CreateCommentDto {
+  body: string;
+  weightEntryId?: string;
+}
+
+// Patient's own view of their treatment (mobile can set a discontinuation reason).
+export interface PatientTreatmentDto {
+  treatmentStatus?: TreatmentStatus;
+  discontinuationReason?: string;
+}
+
+export interface DoctorPatientSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  age: number | null;
+  gender: Gender | null;
+  latestWeightKg: number | null;
+  bmi: number | null;
+  treatmentStatus: TreatmentStatus | null;
+  adverseEventCount: number;
+  createdAt: string;
+}
+
+export interface DoctorPatientDetail extends DoctorPatientSummary {
+  phone: string | null;
+  heightCm: number | null;
+  chronicConditions: string[];
+  otherConditions: string | null;
+  bmiCategory: BmiCategory | null;
+  assessment: ClinicalAssessment | null;
+  weightEntries: WeightEntry[];
+  adverseEvents: AdverseEvent[];
+  comments: PatientComment[];
+}
+
 // ---- Directory ----
 export interface Country {
   id: string;
@@ -239,4 +338,7 @@ export interface PatientDetail extends PatientSummary {
   }[];
   recentDoses: { id: string; medicationName: string; scheduledFor: string; takenAt: string; doseMg: number | null }[];
   weightEntries: WeightEntry[];
+  assessment: ClinicalAssessment | null;
+  adverseEvents: AdverseEvent[];
+  comments: PatientComment[];
 }

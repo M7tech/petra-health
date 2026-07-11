@@ -7,6 +7,8 @@ import { ProfileModule } from './profile/profile.module';
 import { AdminModule } from './admin/admin.module';
 import { MedicationsModule } from './medications/medications.module';
 import { WeightsModule } from './weights/weights.module';
+import { DoctorModule } from './doctor/doctor.module';
+import { ClinicalModule } from './clinical/clinical.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { WeightsModule } from './weights/weights.module';
     AdminModule,
     MedicationsModule,
     WeightsModule,
+    DoctorModule,
+    ClinicalModule,
   ],
 })
 export class AppModule {}

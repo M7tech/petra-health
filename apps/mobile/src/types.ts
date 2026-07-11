@@ -35,6 +35,29 @@ export const CHRONIC_CONDITIONS = [
   'kidney_disease',
 ] as const;
 
+export type TreatmentStatus = 'ONGOING' | 'COMPLETED' | 'DISCONTINUED';
+export type AdverseSeverity = 'MILD' | 'MODERATE' | 'SEVERE';
+export const SEVERITIES: AdverseSeverity[] = ['MILD', 'MODERATE', 'SEVERE'];
+
+export interface AdverseEvent {
+  id: string;
+  description: string;
+  severity: AdverseSeverity;
+  onsetDate: string;
+  createdAt: string;
+}
+export interface PatientComment {
+  id: string;
+  body: string;
+  doctorName: string | null;
+  createdAt: string;
+}
+export interface ClinicalAssessment {
+  treatmentStatus: TreatmentStatus;
+  discontinuationReason: string | null;
+  physicianComments: string | null;
+}
+
 export interface UserLoginResponse {
   accessToken: string;
   user: AuthUser;

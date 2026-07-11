@@ -1,6 +1,6 @@
 import { AdminRole } from '@petra/shared';
 
-export type PrincipalType = 'user' | 'admin';
+export type PrincipalType = 'user' | 'admin' | 'doctor';
 
 export interface JwtPayload {
   sub: string;

@@ -8,6 +8,16 @@ import { api } from '@/lib/api';
 import { Card, PageHeader, StatTile } from '@/components/ui';
 import { WeightChart } from '@/components/WeightChart';
 
+function Row({ k, v }: { k: string; v: string | null | undefined }) {
+  if (!v) return null;
+  return (
+    <div className="flex justify-between gap-4">
+      <dt className="text-slate-500">{k}</dt>
+      <dd className="text-right font-medium text-slate-700">{v}</dd>
+    </div>
+  );
+}
+
 export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
   const [p, setP] = useState<PatientDetail | null>(null);
@@ -46,6 +56,48 @@ export default function PatientDetailPage() {
           <WeightChart data={p.weightEntries} />
         </Card>
       </div>
+
+      {(p.assessment || p.adverseEvents.length > 0 || p.comments.length > 0) && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <Card>
+            <h2 className="mb-3 font-semibold text-slate-700">Clinical follow-up</h2>
+            {p.assessment ? (
+              <dl className="space-y-1.5 text-sm">
+                <Row k="Treatment" v={p.assessment.treatmentStatus.toLowerCase()} />
+                <Row k="Diabetes duration" v={p.assessment.diabetesDuration} />
+                <Row k="Baseline HbA1c" v={p.assessment.baselineHba1c != null ? `${p.assessment.baselineHba1c}%` : null} />
+                <Row k="Starting dose" v={p.assessment.startingDose} />
+                <Row k="Concomitant meds" v={p.assessment.concomitantMeds} />
+                <Row k="Discontinuation" v={p.assessment.discontinuationReason} />
+                <Row k="Physician comments" v={p.assessment.physicianComments} />
+              </dl>
+            ) : (
+              <p className="text-sm text-slate-400">No assessment recorded.</p>
+            )}
+          </Card>
+          <Card>
+            <h2 className="mb-3 font-semibold text-slate-700">
+              Adverse events ({p.adverseEvents.length})
+            </h2>
+            {p.adverseEvents.length === 0 ? (
+              <p className="text-sm text-slate-400">None reported.</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {p.adverseEvents.map((e) => (
+                  <li key={e.id} className="flex justify-between border-b pb-2 last:border-0">
+                    <span className="text-slate-700">
+                      <span className="text-xs uppercase text-slate-400">{e.severity}</span> · {e.description}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {new Date(e.onsetDate).toLocaleDateString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

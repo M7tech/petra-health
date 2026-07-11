@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from './jwt.types';
 import { LoginRequest, SignupRequest } from './dto';
 import { toAuthUser } from '../common/user-mapper';
-import type { AdminLoginResponse, UserLoginResponse } from '@petra/shared';
+import type { AdminLoginResponse, DoctorLoginResponse, UserLoginResponse } from '@petra/shared';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -63,6 +63,24 @@ export class AuthService {
         email: admin.email,
         fullName: admin.fullName,
         role: admin.role,
+      },
+    };
+  }
+
+  async loginDoctor(dto: LoginRequest): Promise<DoctorLoginResponse> {
+    const email = dto.email.toLowerCase().trim();
+    const doctor = await this.prisma.doctor.findUnique({ where: { email } });
+    if (!doctor || !doctor.passwordHash || !(await bcrypt.compare(dto.password, doctor.passwordHash))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const accessToken = this.sign({ sub: doctor.id, email: email, type: 'doctor' });
+    return {
+      accessToken,
+      doctor: {
+        id: doctor.id,
+        email,
+        fullName: doctor.fullName,
+        specialty: doctor.specialty,
       },
     };
   }

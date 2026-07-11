@@ -35,27 +35,30 @@ async function main() {
     cities[name] = city.id;
   }
 
+  const doctorPassword = await bcrypt.hash('Doctor123!', 12);
   const doctors = [
-    { fullName: 'Dr. Sara Ahmed', specialty: 'Endocrinology', city: 'Erbil' },
-    { fullName: 'Dr. Omar Kareem', specialty: 'Internal Medicine', city: 'Erbil' },
-    { fullName: 'Dr. Layla Hassan', specialty: 'Endocrinology', city: 'Baghdad' },
-    { fullName: 'Dr. Yusuf Ali', specialty: 'Family Medicine', city: 'Basra' },
-    { fullName: 'Dr. Nûr Salih', specialty: 'Endocrinology', city: 'Sulaymaniyah' },
+    { fullName: 'Dr. Sara Ahmed', specialty: 'Endocrinology', city: 'Erbil', email: 'sara@petrapharma.com' },
+    { fullName: 'Dr. Omar Kareem', specialty: 'Internal Medicine', city: 'Erbil', email: 'omar@petrapharma.com' },
+    { fullName: 'Dr. Layla Hassan', specialty: 'Endocrinology', city: 'Baghdad', email: 'layla@petrapharma.com' },
+    { fullName: 'Dr. Yusuf Ali', specialty: 'Family Medicine', city: 'Basra', email: 'yusuf@petrapharma.com' },
+    { fullName: 'Dr. Nûr Salih', specialty: 'Endocrinology', city: 'Sulaymaniyah', email: 'nur@petrapharma.com' },
   ];
   for (const d of doctors) {
-    // No unique key on doctor name; guard against re-seeding by lookup.
     const existing = await prisma.doctor.findFirst({
       where: { fullName: d.fullName, cityId: cities[d.city] },
     });
-    if (!existing) {
-      await prisma.doctor.create({
-        data: {
-          fullName: d.fullName,
-          specialty: d.specialty,
-          cityId: cities[d.city],
-          countryId: iraq.id,
-        },
-      });
+    const data = {
+      fullName: d.fullName,
+      specialty: d.specialty,
+      email: d.email,
+      passwordHash: doctorPassword,
+      cityId: cities[d.city],
+      countryId: iraq.id,
+    };
+    if (existing) {
+      await prisma.doctor.update({ where: { id: existing.id }, data });
+    } else {
+      await prisma.doctor.create({ data });
     }
   }
 
@@ -122,14 +125,31 @@ async function main() {
     cityId: cities['Erbil'],
     doctorId: firstDoctor?.id ?? null,
   };
-  await prisma.user.upsert({
+  const demoPatient = await prisma.user.upsert({
     where: { email: 'patient@example.com' },
     update: demoProfile, // keep the demo profile populated on re-seed
     create: { email: 'patient@example.com', passwordHash: demoPassword, ...demoProfile },
   });
 
+  // --- Demo clinical follow-up for the demo patient ---
+  await prisma.clinicalAssessment.upsert({
+    where: { userId: demoPatient.id },
+    update: {},
+    create: {
+      userId: demoPatient.id,
+      doctorId: firstDoctor?.id ?? null,
+      diabetesDuration: '5 years',
+      baselineHba1c: 8.2,
+      startingDose: '0.25 mg',
+      concomitantMeds: 'Metformin 1000mg, Lisinopril 10mg',
+      treatmentStatus: 'ONGOING',
+      physicianComments: 'Tolerating titration well. Review weight in 4 weeks.',
+    },
+  });
+
   console.log('Seed complete.');
   console.log('  Admin:   admin@petrapharma.com / Admin123!');
+  console.log('  Doctor:  sara@petrapharma.com / Doctor123!');
   console.log('  Patient: patient@example.com / Patient123!');
 }
 
