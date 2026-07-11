@@ -111,22 +111,21 @@ async function main() {
   // --- Demo patient ---
   const demoPassword = await bcrypt.hash('Patient123!', 12);
   const firstDoctor = await prisma.doctor.findFirst({ where: { cityId: cities['Erbil'] } });
+  const demoProfile = {
+    fullName: 'Demo Patient',
+    phone: '+964 750 000 0000',
+    birthDate: new Date('1990-05-15'),
+    gender: 'FEMALE' as const,
+    heightCm: 168,
+    chronicConditions: ['diabetes', 'hypertension'],
+    countryId: iraq.id,
+    cityId: cities['Erbil'],
+    doctorId: firstDoctor?.id ?? null,
+  };
   await prisma.user.upsert({
     where: { email: 'patient@example.com' },
-    update: {},
-    create: {
-      email: 'patient@example.com',
-      passwordHash: demoPassword,
-      fullName: 'Demo Patient',
-      phone: '+964 750 000 0000',
-      birthDate: new Date('1990-05-15'),
-      gender: 'FEMALE',
-      heightCm: 168,
-      chronicConditions: ['diabetes', 'hypertension'],
-      countryId: iraq.id,
-      cityId: cities['Erbil'],
-      doctorId: firstDoctor?.id ?? null,
-    },
+    update: demoProfile, // keep the demo profile populated on re-seed
+    create: { email: 'patient@example.com', passwordHash: demoPassword, ...demoProfile },
   });
 
   console.log('Seed complete.');
