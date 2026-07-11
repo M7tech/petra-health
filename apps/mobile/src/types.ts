@@ -1,13 +1,39 @@
 // Self-contained copy of the API contract (mobile is outside the TS workspace,
 // so it doesn't import @petra/shared directly to keep Metro bundling simple).
+export type Gender = 'MALE' | 'FEMALE' | 'UNSPECIFIED';
+
 export interface AuthUser {
   id: string;
   email: string;
   fullName: string;
+  phone: string | null;
+  birthDate: string | null;
+  gender: Gender | null;
+  heightCm: number | null;
+  chronicConditions: string[];
+  otherConditions: string | null;
   countryId: string | null;
   cityId: string | null;
   doctorId: string | null;
 }
+
+export type BmiCategory = 'underweight' | 'normal' | 'overweight' | 'obese';
+
+export interface PatientProfile extends AuthUser {
+  latestWeightKg: number | null;
+  bmi: number | null;
+  bmiCategory: BmiCategory | null;
+  age: number | null;
+}
+
+export const CHRONIC_CONDITIONS = [
+  'diabetes',
+  'hypertension',
+  'heart_disease',
+  'asthma',
+  'thyroid',
+  'kidney_disease',
+] as const;
 
 export interface UserLoginResponse {
   accessToken: string;

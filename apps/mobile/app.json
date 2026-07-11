@@ -24,8 +24,11 @@
       "expo-notifications",
       [
         "expo-local-authentication",
-        { "faceIDPermission": "Petra Health uses Face ID to unlock the app." }
-      ]
+        {
+          "faceIDPermission": "Petra Health uses Face ID to unlock the app."
+        }
+      ],
+      "expo-localization"
     ]
   }
 }

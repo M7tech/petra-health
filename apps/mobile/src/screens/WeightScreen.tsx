@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Svg, { Path, Circle, Line as SvgLine, Text as SvgText } from 'react-native-svg';
 import { api } from '../api';
+import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
 import type { WeightEntry } from '../types';
 
@@ -69,6 +70,8 @@ function WeightTrend({ data }: { data: WeightEntry[] }) {
 }
 
 export default function WeightScreen() {
+  const { t, isRTL } = useI18n();
+  const align = { textAlign: isRTL ? 'right' : 'left' } as const;
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(true);
@@ -93,7 +96,7 @@ export default function WeightScreen() {
   async function save() {
     const kg = parseFloat(value.replace(',', '.'));
     if (Number.isNaN(kg) || kg < 20 || kg > 500) {
-      setError('Enter a weight between 20 and 500 kg.');
+      setError(t('weight.invalid'));
       return;
     }
     setBusy(true);
@@ -124,26 +127,31 @@ export default function WeightScreen() {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
-      <Text style={styles.title}>Weight</Text>
-      {latest != null && <Text style={styles.latest}>Latest: {latest.toFixed(1)} kg</Text>}
+      <Text style={[styles.title, align]}>{t('weight.title')}</Text>
+      {latest != null && (
+        <Text style={[styles.latest, align]}>
+          {t('weight.latest')}: {latest.toFixed(1)} kg
+        </Text>
+      )}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={[styles.error, align]}>{error}</Text>}
 
       <View style={styles.card}>
         <Field
-          label="Today's weight (kg)"
+          label={t('weight.todaysWeight')}
           value={value}
           onChangeText={setValue}
           keyboardType="decimal-pad"
-          placeholder="e.g. 82.5"
+          placeholder="82.5"
+          textAlign={isRTL ? 'right' : 'left'}
         />
-        <PrimaryButton title="Log weight" onPress={save} loading={busy} />
+        <PrimaryButton title={t('weight.log')} onPress={save} loading={busy} />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Trend</Text>
+        <Text style={[styles.cardTitle, align]}>{t('weight.trend')}</Text>
         {entries.length === 0 ? (
-          <Text style={styles.muted}>No entries yet — log your first weight above.</Text>
+          <Text style={[styles.muted, align]}>{t('weight.noEntries')}</Text>
         ) : (
           <WeightTrend data={entries} />
         )}

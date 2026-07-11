@@ -8,13 +8,48 @@ export interface AuthTokens {
   accessToken: string;
 }
 
+export type Gender = 'MALE' | 'FEMALE' | 'UNSPECIFIED';
+
 export interface AuthUser {
   id: string;
   email: string;
   fullName: string;
+  phone: string | null;
+  birthDate: string | null; // ISO date
+  gender: Gender | null;
+  heightCm: number | null;
+  chronicConditions: string[];
+  otherConditions: string | null;
   countryId: string | null;
   cityId: string | null;
   doctorId: string | null;
+}
+
+// Canonical chronic-condition keys (labels are localized in the client).
+export const CHRONIC_CONDITIONS = [
+  'diabetes',
+  'hypertension',
+  'heart_disease',
+  'asthma',
+  'thyroid',
+  'kidney_disease',
+] as const;
+export type ChronicCondition = (typeof CHRONIC_CONDITIONS)[number];
+
+// BMI = kg / m^2. Returns null if inputs missing/invalid.
+export function computeBmi(weightKg?: number | null, heightCm?: number | null): number | null {
+  if (!weightKg || !heightCm || heightCm <= 0) return null;
+  const m = heightCm / 100;
+  return Math.round((weightKg / (m * m)) * 10) / 10;
+}
+
+export type BmiCategory = 'underweight' | 'normal' | 'overweight' | 'obese';
+export function bmiCategory(bmi: number | null): BmiCategory | null {
+  if (bmi == null) return null;
+  if (bmi < 18.5) return 'underweight';
+  if (bmi < 25) return 'normal';
+  if (bmi < 30) return 'overweight';
+  return 'obese';
 }
 
 export interface AuthAdmin {
@@ -86,9 +121,25 @@ export interface UpsertDoctorDto {
 // ---- Profile ----
 export interface UpdateProfileDto {
   fullName?: string;
+  phone?: string;
+  birthDate?: string; // ISO date
+  gender?: Gender;
+  heightCm?: number;
+  chronicConditions?: string[];
+  otherConditions?: string;
   countryId?: string;
   cityId?: string;
   doctorId?: string;
+  // When present, also records a weight entry (used for BMI).
+  currentWeightKg?: number;
+}
+
+// Full profile with derived health metrics.
+export interface PatientProfile extends AuthUser {
+  latestWeightKg: number | null;
+  bmi: number | null;
+  bmiCategory: BmiCategory | null;
+  age: number | null;
 }
 
 // ---- Medication / titration ----

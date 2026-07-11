@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../ui';
+import { useI18n } from '../i18n';
 import {
   cancelReminder,
   getReminder,
@@ -9,12 +10,14 @@ import {
 } from '../notifications';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // index 0..6 -> weekday 1..7
-const TIMES = [
-  { label: 'Morning · 9:00', hour: 9, minute: 0 },
-  { label: 'Evening · 20:00', hour: 20, minute: 0 },
-];
 
 export default function RemindersCard() {
+  const { t, isRTL } = useI18n();
+  const align = { textAlign: isRTL ? 'right' : 'left' } as const;
+  const TIMES = [
+    { label: t('semetra.morning'), hour: 9, minute: 0 },
+    { label: t('semetra.evening'), hour: 20, minute: 0 },
+  ];
   const [reminder, setReminder] = useState<ReminderState | null>(null);
   const [weekday, setWeekday] = useState(1); // Sunday default
   const [timeIdx, setTimeIdx] = useState(0);
@@ -28,12 +31,12 @@ export default function RemindersCard() {
   async function enable() {
     setBusy(true);
     setMsg(null);
-    const t = TIMES[timeIdx];
-    const state = await scheduleWeeklyReminder(weekday, t.hour, t.minute);
+    const time = TIMES[timeIdx];
+    const state = await scheduleWeeklyReminder(weekday, time.hour, time.minute);
     if (state) {
       setReminder(state);
     } else {
-      setMsg('Enable notifications in your device settings to use reminders.');
+      setMsg(t('semetra.enableNotif'));
     }
     setBusy(false);
   }
@@ -50,20 +53,21 @@ export default function RemindersCard() {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Weekly reminder</Text>
+      <Text style={[styles.title, align]}>{t('semetra.weeklyReminder')}</Text>
       {reminder ? (
         <>
-          <Text style={styles.on}>
-            ✓ On — every {DAYS[reminder.weekday - 1]} at {fmtTime(reminder.hour, reminder.minute)}
+          <Text style={[styles.on, align]}>
+            {t('semetra.reminderOn')} — {DAYS[reminder.weekday - 1]}{' '}
+            {fmtTime(reminder.hour, reminder.minute)}
           </Text>
-          <Text style={styles.note}>Works offline; fires even without a connection.</Text>
+          <Text style={[styles.note, align]}>{t('semetra.worksOffline')}</Text>
           <TouchableOpacity onPress={disable} disabled={busy} style={styles.disableBtn}>
-            <Text style={styles.disableText}>Turn off</Text>
+            <Text style={styles.disableText}>{t('semetra.turnOff')}</Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
-          <Text style={styles.label}>Day</Text>
+          <Text style={[styles.label, align]}>{t('semetra.day')}</Text>
           <View style={styles.dayRow}>
             {DAYS.map((d, i) => {
               const wd = i + 1;
@@ -80,25 +84,25 @@ export default function RemindersCard() {
             })}
           </View>
 
-          <Text style={styles.label}>Time</Text>
+          <Text style={[styles.label, align]}>{t('semetra.time')}</Text>
           <View style={styles.timeRow}>
-            {TIMES.map((t, i) => {
+            {TIMES.map((opt, i) => {
               const active = i === timeIdx;
               return (
                 <TouchableOpacity
-                  key={t.label}
+                  key={opt.label}
                   onPress={() => setTimeIdx(i)}
                   style={[styles.timeBtn, active && styles.timeBtnActive]}
                 >
-                  <Text style={[styles.timeText, active && styles.timeTextActive]}>{t.label}</Text>
+                  <Text style={[styles.timeText, active && styles.timeTextActive]}>{opt.label}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
-          {msg && <Text style={styles.msg}>{msg}</Text>}
+          {msg && <Text style={[styles.msg, align]}>{msg}</Text>}
           <TouchableOpacity onPress={enable} disabled={busy} style={styles.enableBtn}>
-            <Text style={styles.enableText}>Turn on weekly reminder</Text>
+            <Text style={styles.enableText}>{t('semetra.turnOn')}</Text>
           </TouchableOpacity>
         </>
       )}

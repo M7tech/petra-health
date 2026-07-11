@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from './jwt.types';
 import { LoginRequest, SignupRequest } from './dto';
+import { toAuthUser } from '../common/user-mapper';
 import type { AdminLoginResponse, UserLoginResponse } from '@petra/shared';
 
 const BCRYPT_ROUNDS = 12;
@@ -30,17 +31,7 @@ export class AuthService {
       data: { email, passwordHash, fullName: dto.fullName },
     });
     const accessToken = this.sign({ sub: user.id, email: user.email, type: 'user' });
-    return {
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        countryId: user.countryId,
-        cityId: user.cityId,
-        doctorId: user.doctorId,
-      },
-    };
+    return { accessToken, user: toAuthUser(user) };
   }
 
   async loginUser(dto: LoginRequest): Promise<UserLoginResponse> {
@@ -50,17 +41,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const accessToken = this.sign({ sub: user.id, email: user.email, type: 'user' });
-    return {
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        countryId: user.countryId,
-        cityId: user.cityId,
-        doctorId: user.doctorId,
-      },
-    };
+    return { accessToken, user: toAuthUser(user) };
   }
 
   async loginAdmin(dto: LoginRequest): Promise<AdminLoginResponse> {

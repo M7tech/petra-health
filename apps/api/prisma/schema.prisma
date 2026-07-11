@@ -74,6 +74,13 @@ model User {
   email        String   @unique
   passwordHash String
   fullName     String
+  // Health profile
+  phone            String?
+  birthDate        DateTime?
+  gender           Gender?
+  heightCm         Float?
+  chronicConditions String[] @default([]) // condition keys, e.g. ["diabetes"]
+  otherConditions  String?
   // Chosen during hierarchical onboarding.
   countryId    String?
   cityId       String?
@@ -88,6 +95,12 @@ model User {
   weightEntries WeightEntry[]
 
   @@map("users")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNSPECIFIED
 }
 
 model Admin {

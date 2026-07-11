@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '../auth';
+import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
 
 export default function SignupScreen({ onGoLogin }: { onGoLogin: () => void }) {
   const { signup } = useAuth();
+  const { t } = useI18n();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,25 +28,20 @@ export default function SignupScreen({ onGoLogin }: { onGoLogin: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create account</Text>
+      <Text style={styles.title}>{t('auth.signupCta')}</Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <Field label="Full name" value={fullName} onChangeText={setFullName} />
+      <Field label={t('auth.fullName')} value={fullName} onChangeText={setFullName} />
       <Field
-        label="Email"
+        label={t('auth.email')}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      <Field
-        label="Password (min 8 chars)"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <PrimaryButton title="Sign up" onPress={submit} loading={busy} />
+      <Field label={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
+      <PrimaryButton title={t('auth.signupCta')} onPress={submit} loading={busy} />
       <TouchableOpacity onPress={onGoLogin} style={{ marginTop: 18 }}>
-        <Text style={styles.link}>Already have an account? Sign in</Text>
+        <Text style={styles.link}>{t('auth.haveAccount')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { api } from '../api';
 import { useAuth } from '../auth';
+import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import type { City, Country, Doctor } from '../types';
 
 export default function OnboardingScreen() {
   const { user, refresh } = useAuth();
+  const { t } = useI18n();
   const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -60,43 +62,43 @@ export default function OnboardingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Set up your profile</Text>
-      <Text style={styles.subtitle}>Choose your country, city, and treating doctor.</Text>
+      <Text style={styles.title}>{t('onboarding.title')}</Text>
+      <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Text style={styles.label}>Country</Text>
+      <Text style={styles.label}>{t('onboarding.country')}</Text>
       <View style={styles.pickerWrap}>
         <Picker selectedValue={countryId} onValueChange={(v) => setCountryId(String(v))}>
-          <Picker.Item label="Select country…" value="" />
+          <Picker.Item label={t('onboarding.selectCountry')} value="" />
           {countries.map((c) => (
             <Picker.Item key={c.id} label={c.name} value={c.id} />
           ))}
         </Picker>
       </View>
 
-      <Text style={styles.label}>City</Text>
+      <Text style={styles.label}>{t('onboarding.city')}</Text>
       <View style={[styles.pickerWrap, !countryId && styles.disabled]}>
         <Picker
           enabled={!!countryId}
           selectedValue={cityId}
           onValueChange={(v) => setCityId(String(v))}
         >
-          <Picker.Item label={countryId ? 'Select city…' : 'Choose a country first'} value="" />
+          <Picker.Item label={countryId ? t('onboarding.selectCity') : t('onboarding.selectCountry')} value="" />
           {cities.map((c) => (
             <Picker.Item key={c.id} label={c.name} value={c.id} />
           ))}
         </Picker>
       </View>
 
-      <Text style={styles.label}>Doctor</Text>
+      <Text style={styles.label}>{t('onboarding.doctor')}</Text>
       <View style={[styles.pickerWrap, !cityId && styles.disabled]}>
         <Picker
           enabled={!!cityId}
           selectedValue={doctorId}
           onValueChange={(v) => setDoctorId(String(v))}
         >
-          <Picker.Item label={cityId ? 'Select doctor…' : 'Choose a city first'} value="" />
+          <Picker.Item label={cityId ? t('onboarding.selectDoctor') : t('onboarding.selectCity')} value="" />
           {doctors.map((d) => (
             <Picker.Item
               key={d.id}
@@ -109,7 +111,7 @@ export default function OnboardingScreen() {
 
       <View style={{ marginTop: 20 }}>
         <PrimaryButton
-          title="Continue"
+          title={t('onboarding.finish')}
           onPress={save}
           loading={busy}
           disabled={!countryId || !cityId || !doctorId}

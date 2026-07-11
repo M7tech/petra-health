@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { api } from '../api';
+import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
 import type { DoseLog, Medication, UserMedication } from '../types';
@@ -22,6 +23,8 @@ const addDays = (date: Date, days: number) => {
 };
 
 export default function MedicationScreen() {
+  const { t, isRTL } = useI18n();
+  const align = { textAlign: isRTL ? 'right' : 'left' } as const;
   const [catalog, setCatalog] = useState<Medication | null>(null);
   const [mine, setMine] = useState<UserMedication | null>(null);
   const [doses, setDoses] = useState<DoseLog[]>([]);
@@ -131,32 +134,29 @@ export default function MedicationScreen() {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
-      <Text style={styles.title}>{catalog?.name ?? 'Medication'}</Text>
-      <Text style={styles.subtitle}>
+      <Text style={[styles.title, align]}>{catalog?.name ?? t('semetra.title')}</Text>
+      <Text style={[styles.subtitle, align]}>
         {catalog?.genericName} · {catalog?.manufacturer}
       </Text>
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Text style={[styles.error, align]}>{error}</Text>}
 
       {!mine ? (
         <View style={styles.card}>
-          <Text style={styles.cardText}>
-            Start your Semetra titration course. You'll get a weekly checklist to tick off each
-            dose as directed by your physician.
-          </Text>
+          <Text style={[styles.cardText, align]}>{t('semetra.startDesc')}</Text>
           <View style={{ marginTop: 14 }}>
-            <PrimaryButton title="Start my Semetra course" onPress={enroll} loading={busy} />
+            <PrimaryButton title={t('semetra.start')} onPress={enroll} loading={busy} />
           </View>
         </View>
       ) : (
         <>
           <RemindersCard />
-          <Text style={styles.hint}>
-            Tap a week after your weekly injection to log it. {takenKeys.size} logged.
+          <Text style={[styles.hint, align]}>
+            {t('semetra.tapToLog')} {takenKeys.size} {t('semetra.loggedSuffix')}.
           </Text>
           {schedule.map(({ pen, weeks }) => (
             <View key={pen.id} style={styles.penBlock}>
-              <Text style={styles.penTitle}>{pen.label}</Text>
+              <Text style={[styles.penTitle, align]}>{pen.label}</Text>
               {weeks.map(({ week, date }) => {
                 const key = dayKey(date.toISOString());
                 const taken = takenKeys.has(key);
@@ -171,7 +171,9 @@ export default function MedicationScreen() {
                     <View style={[styles.checkbox, taken && styles.checkboxDone]}>
                       {taken && <Text style={styles.check}>✓</Text>}
                     </View>
-                    <Text style={styles.weekLabel}>Week {week.weekNumber}</Text>
+                    <Text style={styles.weekLabel}>
+                      {t('semetra.week')} {week.weekNumber}
+                    </Text>
                     <Text style={styles.dose}>{week.doseMg.toFixed(2)} mg</Text>
                     <Text style={styles.date}>
                       {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}

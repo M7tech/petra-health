@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { useAuth } from '../auth';
+import { useI18n } from '../i18n';
 import { colors } from '../ui';
 import {
   isBiometricAvailable,
@@ -11,6 +12,8 @@ import {
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
+  const { t, isRTL } = useI18n();
+  const align = { textAlign: isRTL ? 'right' : 'left' } as const;
   const [bioAvailable, setBioAvailable] = useState(false);
   const [bioOn, setBioOn] = useState(false);
 
@@ -33,27 +36,21 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.hi}>Hi, {user?.fullName} 👋</Text>
-      <Text style={styles.muted}>You're all set up.</Text>
+      <Text style={[styles.hi, align]}>{t('home.hi')}, {user?.fullName} 👋</Text>
+      <Text style={[styles.muted, align]}>{t('home.allSet')}</Text>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Your Semetra course</Text>
-        <Text style={styles.item}>
-          Open the <Text style={{ fontWeight: '700' }}>Semetra</Text> tab below to start your
-          titration and tick off each weekly dose. Log your weight in the{' '}
-          <Text style={{ fontWeight: '700' }}>Weight</Text> tab.
-        </Text>
+        <Text style={[styles.cardTitle, align]}>{t('home.yourCourse')}</Text>
+        <Text style={[styles.item, align]}>{t('home.semetraCard')}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Security</Text>
-        <View style={styles.row}>
-          <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={styles.rowLabel}>Require biometric unlock</Text>
-            <Text style={styles.item}>
-              {bioAvailable
-                ? 'Use Face ID / fingerprint each time you open the app.'
-                : 'No enrolled biometrics on this device.'}
+        <Text style={[styles.cardTitle, align]}>{t('home.security')}</Text>
+        <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
+          <View style={{ flex: 1, paddingHorizontal: 12 }}>
+            <Text style={[styles.rowLabel, align]}>{t('home.biometric')}</Text>
+            <Text style={[styles.item, align]}>
+              {bioAvailable ? t('home.biometricDesc') : t('home.noBiometric')}
             </Text>
           </View>
           <Switch
@@ -66,7 +63,7 @@ export default function HomeScreen() {
       </View>
 
       <TouchableOpacity onPress={logout} style={{ marginTop: 24 }}>
-        <Text style={styles.link}>Sign out</Text>
+        <Text style={styles.link}>{t('common.signOut')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

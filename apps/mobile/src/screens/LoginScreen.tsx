@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '../auth';
+import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) {
   const { login } = useAuth();
+  const { t } = useI18n();
   const [email, setEmail] = useState('patient@example.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,23 +30,27 @@ export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) 
       <View style={styles.logo}>
         <Text style={styles.logoText}>8</Text>
       </View>
-      <Text style={styles.title}>Petra Health</Text>
-      <Text style={styles.subtitle}>Track your Semetra titration & weight</Text>
+      <Text style={styles.title}>{t('auth.welcome')}</Text>
+      <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
+
+      <View style={{ marginBottom: 24 }}>
+        <LanguageSwitcher />
+      </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Field
-        label="Email"
+        label={t('auth.email')}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
       />
-      <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry />
-      <PrimaryButton title="Sign in" onPress={submit} loading={busy} />
+      <Field label={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
+      <PrimaryButton title={t('auth.loginCta')} onPress={submit} loading={busy} />
 
       <TouchableOpacity onPress={onGoSignup} style={{ marginTop: 18 }}>
-        <Text style={styles.link}>New here? Create an account</Text>
+        <Text style={styles.link}>{t('auth.noAccount')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,19 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileRequest } from './dto';
-import type { AuthUser } from '@petra/shared';
+import { toAuthUser, computeAge } from '../common/user-mapper';
+import { bmiCategory, computeBmi, type PatientProfile } from '@petra/shared';
 
 @Injectable()
 export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async me(userId: string): Promise<AuthUser> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
-    return this.toAuthUser(user);
+  async me(userId: string): Promise<PatientProfile> {
+    return this.buildProfile(userId);
   }
 
-  async update(userId: string, dto: UpdateProfileRequest): Promise<AuthUser> {
+  async update(userId: string, dto: UpdateProfileRequest): Promise<PatientProfile> {
     // Validate the hierarchical selection is internally consistent.
     if (dto.cityId) {
       const city = await this.prisma.city.findUnique({ where: { id: dto.cityId } });
@@ -30,33 +29,47 @@ export class ProfileService {
       }
     }
 
-    const user = await this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: userId },
       data: {
         fullName: dto.fullName,
+        phone: dto.phone,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        gender: dto.gender,
+        heightCm: dto.heightCm,
+        chronicConditions: dto.chronicConditions,
+        otherConditions: dto.otherConditions,
         countryId: dto.countryId,
         cityId: dto.cityId,
         doctorId: dto.doctorId,
       },
     });
-    return this.toAuthUser(user);
+
+    // A profile weight update is also recorded as a weight entry (drives BMI + trend).
+    if (dto.currentWeightKg != null) {
+      await this.prisma.weightEntry.create({
+        data: { userId, weightKg: dto.currentWeightKg },
+      });
+    }
+
+    return this.buildProfile(userId);
   }
 
-  private toAuthUser(user: {
-    id: string;
-    email: string;
-    fullName: string;
-    countryId: string | null;
-    cityId: string | null;
-    doctorId: string | null;
-  }): AuthUser {
+  private async buildProfile(userId: string): Promise<PatientProfile> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { weightEntries: { orderBy: { recordedAt: 'desc' }, take: 1 } },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const latestWeightKg = user.weightEntries[0]?.weightKg ?? null;
+    const bmi = computeBmi(latestWeightKg, user.heightCm);
     return {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      countryId: user.countryId,
-      cityId: user.cityId,
-      doctorId: user.doctorId,
+      ...toAuthUser(user),
+      latestWeightKg,
+      bmi,
+      bmiCategory: bmiCategory(bmi),
+      age: computeAge(user.birthDate),
     };
   }
 }
