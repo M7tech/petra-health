@@ -8,7 +8,8 @@ const REMINDER_KEY = 'petra_reminder'; // stored: { weekday, hour, minute, id }
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -58,7 +59,13 @@ export async function scheduleWeeklyReminder(
       title: 'Semetra weekly dose',
       body: "Time for your weekly injection. Open the app to log it once it's done.",
     },
-    trigger: { weekday, hour, minute, repeats: true, channelId: 'reminders' },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+      weekday,
+      hour,
+      minute,
+      channelId: 'reminders',
+    },
   });
 
   const state: ReminderState = { weekday, hour, minute, id };
