@@ -17,6 +17,11 @@ export class MailService {
       this.transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: { user, pass },
+        // Fail fast instead of hanging the request if outbound SMTP is
+        // blocked/unreachable (some PaaS hosts restrict egress on 465/587).
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000,
       });
     }
   }
