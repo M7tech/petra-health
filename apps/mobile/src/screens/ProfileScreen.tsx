@@ -13,6 +13,7 @@ import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import DatePicker from '../components/DatePicker';
 import { CHRONIC_CONDITIONS, Gender, PatientProfile } from '../types';
 
 const GENDERS: Gender[] = ['MALE', 'FEMALE', 'UNSPECIFIED'];
@@ -49,7 +50,9 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [birthDate, setBirthDate] = useState('');
+  const [birthYear, setBirthYear] = useState(2000);
+  const [birthMonth, setBirthMonth] = useState(1);
+  const [birthDay, setBirthDay] = useState(1);
   const [gender, setGender] = useState<Gender>('UNSPECIFIED');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -62,7 +65,12 @@ export default function ProfileScreen() {
         setEmail(p.email);
         setFullName(p.fullName ?? '');
         setPhone(p.phone ?? '');
-        setBirthDate(p.birthDate ? p.birthDate.slice(0, 10) : '');
+        if (p.birthDate) {
+          const d = new Date(p.birthDate);
+          setBirthYear(d.getUTCFullYear());
+          setBirthMonth(d.getUTCMonth() + 1);
+          setBirthDay(d.getUTCDate());
+        }
         setGender(p.gender ?? 'UNSPECIFIED');
         setHeight(p.heightCm ? String(p.heightCm) : '');
         setWeight(p.latestWeightKg ? String(p.latestWeightKg) : '');
@@ -90,7 +98,7 @@ export default function ProfileScreen() {
     const body: Record<string, unknown> = {
       fullName: fullName.trim() || undefined,
       phone: phone.trim() || undefined,
-      birthDate: /^\d{4}-\d{2}-\d{2}$/.test(birthDate) ? `${birthDate}T00:00:00.000Z` : undefined,
+      birthDate: new Date(Date.UTC(birthYear, birthMonth - 1, birthDay)).toISOString(),
       gender,
       chronicConditions: conditions,
       otherConditions: otherConditions.trim() || undefined,
@@ -169,13 +177,16 @@ export default function ProfileScreen() {
           />,
         )}
         {labeled(
-          `${t('profile.birthday')} (${t('profile.birthdayHint')})`,
-          <TextInput
-            style={[styles.input, align]}
-            value={birthDate}
-            onChangeText={setBirthDate}
-            placeholder="1990-05-15"
-            placeholderTextColor="#94a3b8"
+          t('profile.birthday'),
+          <DatePicker
+            year={birthYear}
+            month={birthMonth}
+            day={birthDay}
+            onChange={(y, m, d) => {
+              setBirthYear(y);
+              setBirthMonth(m);
+              setBirthDay(d);
+            }}
           />,
         )}
         {labeled(
