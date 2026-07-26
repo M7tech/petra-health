@@ -28,7 +28,8 @@
           "faceIDPermission": "Petra Health uses Face ID to unlock the app."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-status-bar"
     ]
   }
 }
