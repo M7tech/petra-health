@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../ui';
 import { useI18n } from '../i18n';
+import TimePicker from './TimePicker';
 import {
   cancelReminder,
   getReminder,
@@ -14,13 +15,10 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // index 0..6 ->
 export default function RemindersCard() {
   const { t, isRTL } = useI18n();
   const align = { textAlign: isRTL ? 'right' : 'left' } as const;
-  const TIMES = [
-    { label: t('semetra.morning'), hour: 9, minute: 0 },
-    { label: t('semetra.evening'), hour: 20, minute: 0 },
-  ];
   const [reminder, setReminder] = useState<ReminderState | null>(null);
   const [weekday, setWeekday] = useState(1); // Sunday default
-  const [timeIdx, setTimeIdx] = useState(0);
+  const [hour, setHour] = useState(9);
+  const [minute, setMinute] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -31,8 +29,7 @@ export default function RemindersCard() {
   async function enable() {
     setBusy(true);
     setMsg(null);
-    const time = TIMES[timeIdx];
-    const state = await scheduleWeeklyReminder(weekday, time.hour, time.minute);
+    const state = await scheduleWeeklyReminder(weekday, hour, minute);
     if (state) {
       setReminder(state);
     } else {
@@ -85,20 +82,7 @@ export default function RemindersCard() {
           </View>
 
           <Text style={[styles.label, align]}>{t('semetra.time')}</Text>
-          <View style={styles.timeRow}>
-            {TIMES.map((opt, i) => {
-              const active = i === timeIdx;
-              return (
-                <TouchableOpacity
-                  key={opt.label}
-                  onPress={() => setTimeIdx(i)}
-                  style={[styles.timeBtn, active && styles.timeBtnActive]}
-                >
-                  <Text style={[styles.timeText, active && styles.timeTextActive]}>{opt.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <TimePicker hour={hour} minute={minute} onChange={(h, m) => { setHour(h); setMinute(m); }} />
 
           {msg && <Text style={[styles.msg, align]}>{msg}</Text>}
           <TouchableOpacity onPress={enable} disabled={busy} style={styles.enableBtn}>
@@ -128,11 +112,6 @@ const styles = StyleSheet.create({
   dayBtnActive: { backgroundColor: colors.petra },
   dayText: { color: colors.muted, fontWeight: '600' },
   dayTextActive: { color: '#fff' },
-  timeRow: { flexDirection: 'row', gap: 10 },
-  timeBtn: { flex: 1, borderRadius: 10, padding: 12, backgroundColor: '#f1f5f9', alignItems: 'center' },
-  timeBtnActive: { backgroundColor: colors.petra },
-  timeText: { color: colors.muted, fontWeight: '600', fontSize: 13 },
-  timeTextActive: { color: '#fff' },
   msg: { color: colors.danger, fontSize: 12, marginTop: 10 },
   enableBtn: { marginTop: 14, backgroundColor: colors.petra, borderRadius: 10, padding: 13, alignItems: 'center' },
   enableText: { color: '#fff', fontWeight: '600' },

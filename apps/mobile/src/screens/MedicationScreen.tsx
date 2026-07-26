@@ -14,6 +14,7 @@ import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
 import OtherMedsCard from '../components/OtherMedsCard';
+import TimePicker from '../components/TimePicker';
 import { scheduleWeeklyReminder } from '../notifications';
 import type { DoseLog, Medication, UserMedication } from '../types';
 
@@ -40,11 +41,8 @@ export default function MedicationScreen() {
   // Pre-enrollment choices: which pen, which day, which reminder time.
   const [startPen, setStartPen] = useState<1 | 2>(1);
   const [startDayStr, setStartDayStr] = useState(todayStr());
-  const [timeIdx, setTimeIdx] = useState(0);
-  const TIME_PRESETS = [
-    { label: t('semetra.morning'), hour: 9, minute: 0 },
-    { label: t('semetra.evening'), hour: 20, minute: 0 },
-  ];
+  const [reminderHour, setReminderHour] = useState(9);
+  const [reminderMinute, setReminderMinute] = useState(0);
 
   const load = useCallback(async () => {
     setError(null);
@@ -93,9 +91,8 @@ export default function MedicationScreen() {
           startPenSequence: startPen,
         }),
       });
-      const time = TIME_PRESETS[timeIdx];
       // expo weekday convention: 1=Sunday..7=Saturday.
-      await scheduleWeeklyReminder(startDate.getUTCDay() + 1, time.hour, time.minute);
+      await scheduleWeeklyReminder(startDate.getUTCDay() + 1, reminderHour, reminderMinute);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start course');
@@ -200,17 +197,7 @@ export default function MedicationScreen() {
           />
 
           <Text style={[styles.label, align]}>{t('semetra.reminderTimeLabel')}</Text>
-          <View style={[styles.segRow, isRTL && { flexDirection: 'row-reverse' }]}>
-            {TIME_PRESETS.map((tp, i) => (
-              <TouchableOpacity
-                key={tp.label}
-                style={[styles.seg, timeIdx === i && styles.segActive]}
-                onPress={() => setTimeIdx(i)}
-              >
-                <Text style={[styles.segText, timeIdx === i && styles.segTextActive]}>{tp.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <TimePicker hour={reminderHour} minute={reminderMinute} onChange={(h, m) => { setReminderHour(h); setReminderMinute(m); }} />
 
           <View style={{ marginTop: 16 }}>
             <PrimaryButton title={t('semetra.startCourse')} onPress={enroll} loading={busy} />

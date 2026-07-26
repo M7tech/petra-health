@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../ui';
 import { useI18n } from '../i18n';
+import TimePicker from './TimePicker';
 import {
   addMedReminder,
   getMedReminders,
@@ -12,12 +13,8 @@ import {
 } from '../notifications';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TIMES = [
-  { label: '08:00', hour: 8, minute: 0 },
-  { label: '14:00', hour: 14, minute: 0 },
-  { label: '20:00', hour: 20, minute: 0 },
-];
 const MONTH_DAYS = Array.from({ length: 28 }, (_, i) => i + 1);
+const MAX_DAILY_TIMES = 3;
 
 export default function OtherMedsCard() {
   const { t, isRTL } = useI18n();
@@ -28,32 +25,35 @@ export default function OtherMedsCard() {
   const [freq, setFreq] = useState<MedFrequency>('daily');
   const [weekday, setWeekday] = useState(1);
   const [dayOfMonth, setDayOfMonth] = useState(1);
-  // Daily: select 1-3 time slots (that count IS "how many times a day").
-  // Weekly/monthly: exactly one slot selected.
-  const [timeIdxs, setTimeIdxs] = useState<number[]>([2]);
+  // Weekly/monthly: one time. Daily: a picker to build up to 3 times.
+  const [hour, setHour] = useState(8);
+  const [minute, setMinute] = useState(0);
+  const [dailyTimes, setDailyTimes] = useState<TimeOfDay[]>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     getMedReminders().then(setMeds);
   }, []);
 
-  function toggleTime(i: number) {
-    if (freq !== 'daily') {
-      setTimeIdxs([i]);
-      return;
-    }
-    setTimeIdxs((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i].sort()));
-  }
-
   function changeFreq(f: MedFrequency) {
     setFreq(f);
-    setTimeIdxs((prev) => (f === 'daily' ? prev : [prev[0] ?? 2]));
+    setDailyTimes([]);
+  }
+
+  function addDailyTime() {
+    if (dailyTimes.length >= MAX_DAILY_TIMES) return;
+    if (dailyTimes.some((t) => t.hour === hour && t.minute === minute)) return;
+    setDailyTimes((prev) => [...prev, { hour, minute }]);
+  }
+
+  function removeDailyTime(i: number) {
+    setDailyTimes((prev) => prev.filter((_, idx) => idx !== i));
   }
 
   async function add() {
-    if (name.trim().length < 2 || timeIdxs.length === 0) return;
+    const times: TimeOfDay[] = freq === 'daily' ? dailyTimes : [{ hour, minute }];
+    if (name.trim().length < 2 || times.length === 0) return;
     setBusy(true);
-    const times: TimeOfDay[] = timeIdxs.map((i) => ({ hour: TIMES[i].hour, minute: TIMES[i].minute }));
     const next = await addMedReminder({
       name: name.trim(),
       freq,
@@ -64,6 +64,7 @@ export default function OtherMedsCard() {
     if (next) {
       setMeds(next);
       setName('');
+      setDailyTimes([]);
     }
     setBusy(false);
   }
@@ -148,21 +149,35 @@ export default function OtherMedsCard() {
         </>
       )}
 
-      {freq === 'daily' && <Text style={[styles.label, align]}>{t('meds.timesPerDay')}</Text>}
-      <View style={styles.segRow}>
-        {TIMES.map((tm, i) => {
-          const on = timeIdxs.includes(i);
-          return (
-            <TouchableOpacity
-              key={tm.label}
-              style={[styles.seg, on && styles.segActive]}
-              onPress={() => toggleTime(i)}
-            >
-              <Text style={[styles.segText, on && styles.segTextActive]}>{tm.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {freq === 'daily' && dailyTimes.length > 0 && (
+        <View style={[styles.chipsRow, isRTL && { flexDirection: 'row-reverse' }]}>
+          {dailyTimes.map((tm, i) => (
+            <View key={i} style={styles.timeChip}>
+              <Text style={styles.timeChipText}>{fmtTime(tm)}</Text>
+              <TouchableOpacity onPress={() => removeDailyTime(i)}>
+                <Text style={styles.timeChipRemove}> ✕</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <Text style={[styles.label, align]}>
+        {freq === 'daily' ? t('meds.timesPerDay') : t('meds.time')}
+      </Text>
+      <TimePicker hour={hour} minute={minute} onChange={(h, m) => { setHour(h); setMinute(m); }} />
+
+      {freq === 'daily' && (
+        <TouchableOpacity
+          style={[styles.addTimeBtn, dailyTimes.length >= MAX_DAILY_TIMES && { opacity: 0.5 }]}
+          onPress={addDailyTime}
+          disabled={dailyTimes.length >= MAX_DAILY_TIMES}
+        >
+          <Text style={styles.addTimeText}>
+            {t('meds.addTime')} ({dailyTimes.length}/{MAX_DAILY_TIMES})
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.addBtn} onPress={add} disabled={busy}>
         <Text style={styles.addText}>{t('meds.add')}</Text>
@@ -216,6 +231,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   monthDayText: { color: colors.muted, fontWeight: '600', fontSize: 12 },
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  timeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fdf2f8',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  timeChipText: { color: colors.petra, fontWeight: '700', fontSize: 13 },
+  timeChipRemove: { color: colors.petra, fontWeight: '700', fontSize: 13 },
+  addTimeBtn: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.petra,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  addTimeText: { color: colors.petra, fontWeight: '600', fontSize: 13 },
   addBtn: { marginTop: 14, backgroundColor: colors.petra, borderRadius: 10, padding: 13, alignItems: 'center' },
   addText: { color: '#fff', fontWeight: '600' },
 });
