@@ -15,10 +15,16 @@ export class MailService {
     const pass = this.config.get<string>('GMAIL_APP_PASSWORD');
     if (user && pass) {
       this.transporter = nodemailer.createTransport({
-        service: 'gmail',
+        // Explicit host/port (587, STARTTLS) rather than the 'gmail' shorthand
+        // (which defaults to port 465/implicit TLS) — some restrictive PaaS
+        // networks allow 587 but block 465.
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        requireTLS: true,
         auth: { user, pass },
         // Fail fast instead of hanging the request if outbound SMTP is
-        // blocked/unreachable (some PaaS hosts restrict egress on 465/587).
+        // blocked/unreachable (some PaaS hosts restrict egress entirely).
         connectionTimeout: 8000,
         greetingTimeout: 8000,
         socketTimeout: 8000,

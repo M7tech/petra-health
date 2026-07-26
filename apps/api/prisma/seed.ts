@@ -5,12 +5,14 @@ const prisma = new PrismaClient();
 
 async function main() {
   // --- Admin (web portal) ---
+  // Keyed by username (stable) rather than email, since the email is the one
+  // field we intentionally change here (to a real inbox for OTP delivery).
   const adminPassword = await bcrypt.hash('Admin123!', 12);
   await prisma.admin.upsert({
-    where: { email: 'admin@petrapharma.com' },
-    update: { username: 'superadmin' },
+    where: { username: 'superadmin' },
+    update: { email: 'm7.kurd@gmail.com' },
     create: {
-      email: 'admin@petrapharma.com',
+      email: 'm7.kurd@gmail.com',
       username: 'superadmin',
       passwordHash: adminPassword,
       fullName: 'Portal Administrator',
