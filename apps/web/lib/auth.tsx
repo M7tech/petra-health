@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type {
   AdminLoginResponse,
   DoctorLoginResponse,
-  LoginDto,
+  OtpChallengeResponse,
 } from '@petra/shared';
 import { api, getToken, setToken } from './api';
 
@@ -16,13 +16,17 @@ export interface Session {
   id: string;
   email: string;
   fullName: string;
-  subtitle: string; // admin role or doctor specialty
+  subtitle: string; // admin role / office, or doctor specialty
+  isSuperAdmin: boolean;
 }
 
 interface AuthState {
   session: Session | null;
   loading: boolean;
-  login: (dto: LoginDto, role: Role) => Promise<Session>;
+  // Doctor: single step. Admin: request OTP, then verify.
+  doctorLogin: (email: string, password: string) => Promise<Session>;
+  adminRequestOtp: (username: string, password: string) => Promise<OtpChallengeResponse>;
+  adminVerifyOtp: (username: string, otp: string, rememberMe: boolean) => Promise<Session>;
   logout: () => void;
 }
 
@@ -41,37 +45,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  async function login(dto: LoginDto, role: Role): Promise<Session> {
-    let s: Session;
-    if (role === 'admin') {
-      const res = await api<AdminLoginResponse>('/auth/admin/login', {
-        method: 'POST',
-        body: JSON.stringify(dto),
-      });
-      setToken(res.accessToken);
-      s = {
-        role: 'admin',
-        id: res.admin.id,
-        email: res.admin.email,
-        fullName: res.admin.fullName,
-        subtitle: res.admin.role,
-      };
-    } else {
-      const res = await api<DoctorLoginResponse>('/auth/doctor/login', {
-        method: 'POST',
-        body: JSON.stringify(dto),
-      });
-      setToken(res.accessToken);
-      s = {
-        role: 'doctor',
-        id: res.doctor.id,
-        email: res.doctor.email,
-        fullName: res.doctor.fullName,
-        subtitle: res.doctor.specialty ?? 'Doctor',
-      };
-    }
+  function persist(s: Session) {
     window.localStorage.setItem(SESSION_KEY, JSON.stringify(s));
     setSession(s);
+  }
+
+  async function doctorLogin(email: string, password: string): Promise<Session> {
+    const res = await api<DoctorLoginResponse>('/auth/doctor/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    setToken(res.accessToken);
+    const s: Session = {
+      role: 'doctor',
+      id: res.doctor.id,
+      email: res.doctor.email,
+      fullName: res.doctor.fullName,
+      subtitle: res.doctor.specialty ?? 'Doctor',
+      isSuperAdmin: false,
+    };
+    persist(s);
+    return s;
+  }
+
+  async function adminRequestOtp(username: string, password: string) {
+    return api<OtpChallengeResponse>('/auth/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  async function adminVerifyOtp(username: string, otp: string, rememberMe: boolean): Promise<Session> {
+    const res = await api<AdminLoginResponse>('/auth/admin/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ username, otp, rememberMe }),
+    });
+    setToken(res.accessToken);
+    const s: Session = {
+      role: 'admin',
+      id: res.admin.id,
+      email: res.admin.email,
+      fullName: res.admin.fullName,
+      subtitle: res.admin.officeName || res.admin.role,
+      isSuperAdmin: res.admin.role === 'SUPERADMIN',
+    };
+    persist(s);
     return s;
   }
 
@@ -83,7 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ session, loading, doctorLogin, adminRequestOtp, adminVerifyOtp, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 
-const NAV = [
+const BASE_NAV = [
   { href: '/dashboard/overview', label: 'Overview' },
   { href: '/dashboard/patients', label: 'Patients' },
   { href: '/dashboard/messages', label: 'Messages' },
@@ -26,6 +26,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading || !session || session.role !== 'admin') {
     return <main className="flex min-h-screen items-center justify-center text-slate-400">Loading…</main>;
   }
+
+  // Only the super-admin can manage manager users.
+  const NAV = session.isSuperAdmin
+    ? [...BASE_NAV, { href: '/dashboard/users', label: 'Users' }]
+    : BASE_NAV;
 
   return (
     <div className="flex min-h-screen">

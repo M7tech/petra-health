@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpsertCityRequest, UpsertCountryRequest, UpsertDoctorRequest } from './dto';
 
@@ -25,6 +27,17 @@ export class DirectoryService {
         countryId: params.countryId,
       },
       orderBy: { fullName: 'asc' },
+      // Never expose passwordHash to clients.
+      select: {
+        id: true,
+        fullName: true,
+        specialty: true,
+        phone: true,
+        cityId: true,
+        countryId: true,
+        email: true,
+        managerId: true,
+      },
     });
   }
 
@@ -66,13 +79,29 @@ export class DirectoryService {
   // ---- Doctor CRUD ----
   async createDoctor(dto: UpsertDoctorRequest) {
     await this.assertCityInCountry(dto.cityId, dto.countryId);
-    return this.prisma.doctor.create({ data: dto });
+    return this.prisma.doctor.create({ data: await this.doctorData(dto) });
   }
 
   async updateDoctor(id: string, dto: UpsertDoctorRequest) {
     await this.ensureDoctor(id);
     await this.assertCityInCountry(dto.cityId, dto.countryId);
-    return this.prisma.doctor.update({ where: { id }, data: dto });
+    return this.prisma.doctor.update({ where: { id }, data: await this.doctorData(dto) });
+  }
+
+  // Builds doctor write-data, hashing an optional login password and
+  // normalizing the optional email / manager assignment.
+  private async doctorData(dto: UpsertDoctorRequest): Promise<Prisma.DoctorUncheckedCreateInput> {
+    const data: Prisma.DoctorUncheckedCreateInput = {
+      fullName: dto.fullName,
+      specialty: dto.specialty,
+      phone: dto.phone,
+      cityId: dto.cityId,
+      countryId: dto.countryId,
+    };
+    if (dto.managerId !== undefined) data.managerId = dto.managerId || null;
+    if (dto.email !== undefined) data.email = dto.email ? dto.email.toLowerCase().trim() : null;
+    if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 12);
+    return data;
   }
 
   async deleteDoctor(id: string) {

@@ -57,6 +57,30 @@ export interface AuthAdmin {
   email: string;
   fullName: string;
   role: AdminRole;
+  officeName?: string | null;
+}
+
+// Admin/manager login is by username, with an OTP second step.
+export interface AdminLoginDto {
+  username: string;
+  password: string;
+}
+export interface OtpChallengeResponse {
+  otpRequired: true;
+  sentTo?: string; // masked email the code went to
+  devOtp?: string; // present ONLY when email isn't configured (dev fallback)
+}
+export interface VerifyOtpDto {
+  username: string;
+  otp: string;
+  rememberMe?: boolean;
+}
+export interface ForgotPasswordDto {
+  usernameOrEmail: string;
+}
+export interface ResetPasswordDto {
+  token: string;
+  password: string;
 }
 
 export interface LoginDto {
@@ -198,6 +222,8 @@ export interface Doctor {
   phone: string | null;
   cityId: string;
   countryId: string;
+  email?: string | null;
+  managerId?: string | null;
 }
 
 export interface UpsertCountryDto {
@@ -216,6 +242,36 @@ export interface UpsertDoctorDto {
   phone?: string;
   cityId: string;
   countryId: string;
+  // Optional portal login for the doctor.
+  email?: string;
+  password?: string;
+  managerId?: string | null;
+}
+
+// ---- Manager users (EDITOR admins created by the super-admin) ----
+export interface ManagerUser {
+  id: string;
+  username: string | null;
+  email: string;
+  fullName: string;
+  officeName: string | null;
+  role: AdminRole;
+  doctorCount: number;
+  doctorIds: string[];
+}
+export interface CreateManagerDto {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  officeName?: string;
+  doctorIds?: string[];
+}
+export interface UpdateManagerDto {
+  fullName?: string;
+  officeName?: string;
+  password?: string;
+  doctorIds?: string[];
 }
 
 // ---- Profile ----

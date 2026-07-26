@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Length, Matches } from 'class-validator';
+import { IsString, IsOptional, IsEmail, Length, Matches, MinLength, MaxLength } from 'class-validator';
 
 export class UpsertCountryRequest {
   @IsString()
@@ -39,4 +39,19 @@ export class UpsertDoctorRequest {
 
   @IsString()
   countryId!: string;
+
+  // Optional portal login for the doctor.
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  managerId?: string;
 }

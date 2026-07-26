@@ -53,6 +53,9 @@ model Doctor {
   // Optional login credentials so a doctor can access the portal.
   email        String? @unique
   passwordHash String?
+  // Manager (EDITOR admin) who oversees this doctor.
+  managerId    String?
+  manager      Admin?  @relation("ManagerDoctors", fields: [managerId], references: [id], onDelete: SetNull)
   // Doctor -> City -> Country, both FKs enforced for relational integrity.
   cityId    String
   city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
@@ -203,11 +206,21 @@ model PatientComment {
 model Admin {
   id           String    @id @default(uuid())
   email        String    @unique
+  username     String?   @unique
   passwordHash String
   fullName     String
+  officeName   String?
   role         AdminRole @default(EDITOR)
+  // OTP (2FA) + password reset
+  otpHash        String?
+  otpExpiresAt   DateTime?
+  resetTokenHash String?
+  resetExpiresAt DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  // Doctors this manager (EDITOR) oversees.
+  managedDoctors Doctor[] @relation("ManagerDoctors")
 
   @@map("admins")
 }

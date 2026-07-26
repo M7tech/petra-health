@@ -8,9 +8,10 @@ async function main() {
   const adminPassword = await bcrypt.hash('Admin123!', 12);
   await prisma.admin.upsert({
     where: { email: 'admin@petrapharma.com' },
-    update: {},
+    update: { username: 'superadmin' },
     create: {
       email: 'admin@petrapharma.com',
+      username: 'superadmin',
       passwordHash: adminPassword,
       fullName: 'Portal Administrator',
       role: AdminRole.SUPERADMIN,
@@ -61,6 +62,25 @@ async function main() {
       await prisma.doctor.create({ data });
     }
   }
+
+  // --- Demo manager (EDITOR admin) who oversees the Erbil doctors ---
+  const managerPassword = await bcrypt.hash('Manager123!', 12);
+  const manager = await prisma.admin.upsert({
+    where: { email: 'manager@petrapharma.com' },
+    update: { username: 'manager1', officeName: 'Erbil Regional Office' },
+    create: {
+      email: 'manager@petrapharma.com',
+      username: 'manager1',
+      passwordHash: managerPassword,
+      fullName: 'Region Manager',
+      officeName: 'Erbil Regional Office',
+      role: AdminRole.EDITOR,
+    },
+  });
+  await prisma.doctor.updateMany({
+    where: { cityId: cities['Erbil'] },
+    data: { managerId: manager.id },
+  });
 
   // --- Semetra (Semaglutide) titration schedule from the patient guide ---
   const semetra = await prisma.medication.upsert({
@@ -161,9 +181,10 @@ async function main() {
   }
 
   console.log('Seed complete.');
-  console.log('  Admin:   admin@petrapharma.com / Admin123!');
-  console.log('  Doctor:  sara@petrapharma.com / Doctor123!');
-  console.log('  Patient: patient@example.com / Patient123!');
+  console.log('  Super-admin: username "superadmin" / Admin123!');
+  console.log('  Manager:     username "manager1" / Manager123!');
+  console.log('  Doctor:      sara@petrapharma.com / Doctor123!');
+  console.log('  Patient:     patient@example.com / Patient123!');
 }
 
 main()

@@ -11,6 +11,8 @@ const EMPTY: UpsertDoctorDto = {
   phone: '',
   cityId: '',
   countryId: '',
+  email: '',
+  password: '',
 };
 
 export default function DoctorsPage() {
@@ -48,7 +50,11 @@ export default function DoctorsPage() {
     e.preventDefault();
     setError(null);
     try {
-      const body = JSON.stringify(form);
+      // Only send login fields when filled (empty email fails validation).
+      const payload: UpsertDoctorDto = { ...form };
+      if (!payload.email) delete payload.email;
+      if (!payload.password) delete payload.password;
+      const body = JSON.stringify(payload);
       if (editingId) await api(`/directory/doctors/${editingId}`, { method: 'PUT', body });
       else await api('/directory/doctors', { method: 'POST', body });
       setForm(EMPTY);
@@ -100,6 +106,8 @@ export default function DoctorsPage() {
                               phone: d.phone ?? '',
                               cityId: d.cityId,
                               countryId: d.countryId,
+                              email: d.email ?? '',
+                              password: '',
                             });
                           }}
                         >
@@ -186,6 +194,25 @@ export default function DoctorsPage() {
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+            <div className="border-t pt-3">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                Portal login (optional)
+              </p>
+              <label className="mb-1 block text-sm text-slate-600">Login email</label>
+              <Input
+                type="email"
+                value={form.email ?? ''}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+              <label className="mb-1 mt-2 block text-sm text-slate-600">
+                {editingId ? 'New password (leave blank to keep)' : 'Password'}
+              </label>
+              <Input
+                type="password"
+                value={form.password ?? ''}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
             <div className="flex gap-2">
