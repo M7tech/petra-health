@@ -76,16 +76,35 @@ export class DirectoryService {
     return { ok: true };
   }
 
+  // Never return passwordHash to clients.
+  private static readonly DOCTOR_SELECT = {
+    id: true,
+    fullName: true,
+    specialty: true,
+    phone: true,
+    cityId: true,
+    countryId: true,
+    email: true,
+    managerId: true,
+  } as const;
+
   // ---- Doctor CRUD ----
   async createDoctor(dto: UpsertDoctorRequest) {
     await this.assertCityInCountry(dto.cityId, dto.countryId);
-    return this.prisma.doctor.create({ data: await this.doctorData(dto) });
+    return this.prisma.doctor.create({
+      data: await this.doctorData(dto),
+      select: DirectoryService.DOCTOR_SELECT,
+    });
   }
 
   async updateDoctor(id: string, dto: UpsertDoctorRequest) {
     await this.ensureDoctor(id);
     await this.assertCityInCountry(dto.cityId, dto.countryId);
-    return this.prisma.doctor.update({ where: { id }, data: await this.doctorData(dto) });
+    return this.prisma.doctor.update({
+      where: { id },
+      data: await this.doctorData(dto),
+      select: DirectoryService.DOCTOR_SELECT,
+    });
   }
 
   // Builds doctor write-data, hashing an optional login password and
