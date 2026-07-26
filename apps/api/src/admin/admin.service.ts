@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeAssessment } from '../doctor/doctor.service';
-import type { AdminStats, PatientDetail, PatientSummary, RegionCount } from '@petra/shared';
+import type {
+  AdminStats,
+  MessageThreadSummary,
+  PatientDetail,
+  PatientSummary,
+  RegionCount,
+  SupportMessage,
+} from '@petra/shared';
 
 @Injectable()
 export class AdminService {
@@ -19,6 +26,7 @@ export class AdminService {
       patientsByCityRaw,
       doctorsByCityRaw,
       recent,
+      patientsForMetrics,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.doctor.count(),
@@ -38,7 +46,42 @@ export class AdminService {
         take: 5,
         select: { id: true, fullName: true, email: true, createdAt: true },
       }),
+      this.prisma.user.findMany({
+        select: {
+          gender: true,
+          _count: { select: { medications: true } },
+          doseLogs: { orderBy: { takenAt: 'desc' }, take: 1, select: { takenAt: true } },
+          weightEntries: { orderBy: { recordedAt: 'asc' }, select: { weightKg: true } },
+        },
+      }),
     ]);
+
+    // --- CRF metrics: gender split, injection adherence, total weight lost ---
+    const genderBreakdown = { male: 0, female: 0, unspecified: 0 };
+    const adherence = { onTime: 0, overdue: 0, notStarted: 0 };
+    let totalKgLost = 0;
+    const WEEK_MS = 8 * 24 * 60 * 60 * 1000; // weekly injection + 1 day grace
+    const now = Date.now();
+    for (const u of patientsForMetrics) {
+      if (u.gender === 'MALE') genderBreakdown.male++;
+      else if (u.gender === 'FEMALE') genderBreakdown.female++;
+      else genderBreakdown.unspecified++;
+
+      if (u._count.medications === 0) {
+        adherence.notStarted++;
+      } else {
+        const last = u.doseLogs[0]?.takenAt;
+        if (last && now - last.getTime() <= WEEK_MS) adherence.onTime++;
+        else adherence.overdue++;
+      }
+
+      if (u.weightEntries.length >= 2) {
+        const first = u.weightEntries[0].weightKg;
+        const latest = u.weightEntries[u.weightEntries.length - 1].weightKg;
+        if (first > latest) totalKgLost += first - latest;
+      }
+    }
+    totalKgLost = Math.round(totalKgLost * 10) / 10;
 
     // Resolve city ids -> "City, Country" labels for the distributions.
     const cityIds = Array.from(
@@ -71,6 +114,9 @@ export class AdminService {
       totalMedicationsEnrolled,
       totalDosesLogged,
       totalWeightEntries,
+      genderBreakdown,
+      adherence,
+      totalKgLost,
       patientsByCity: toRegionCounts(patientsByCityRaw),
       doctorsByCity: toRegionCounts(doctorsByCityRaw),
       recentPatients: recent.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
@@ -112,6 +158,7 @@ export class AdminService {
           include: { userMedication: true },
         },
         weightEntries: { orderBy: { recordedAt: 'desc' }, take: 50 },
+        hba1cEntries: { orderBy: { recordedAt: 'asc' } },
         assessment: true,
         adverseEvents: { orderBy: { onsetDate: 'desc' } },
         comments: { orderBy: { createdAt: 'desc' }, include: { doctor: true } },
@@ -152,6 +199,11 @@ export class AdminService {
         recordedAt: w.recordedAt.toISOString(),
         note: w.note,
       })),
+      hba1cEntries: u.hba1cEntries.map((h) => ({
+        id: h.id,
+        value: h.value,
+        recordedAt: h.recordedAt.toISOString(),
+      })),
       assessment: u.assessment ? serializeAssessment(u.assessment) : null,
       adverseEvents: u.adverseEvents.map((e) => ({
         id: e.id,
@@ -169,5 +221,53 @@ export class AdminService {
         createdAt: c.createdAt.toISOString(),
       })),
     };
+  }
+
+  // ---- Support inbox (patient <-> admin) ----
+  async messageThreads(): Promise<MessageThreadSummary[]> {
+    const users = await this.prisma.user.findMany({
+      where: { messages: { some: {} } },
+      include: { messages: { orderBy: { createdAt: 'desc' } } },
+    });
+    return users
+      .map((u) => {
+        const last = u.messages[0];
+        // Patient messages newer than the most recent admin reply = "needs reply".
+        const lastAdminAt = u.messages.find((m) => m.sender === 'ADMIN')?.createdAt;
+        const unreadFromPatient = u.messages.filter(
+          (m) => m.sender === 'PATIENT' && (!lastAdminAt || m.createdAt > lastAdminAt),
+        ).length;
+        return {
+          userId: u.id,
+          patientName: u.fullName,
+          patientEmail: u.email,
+          lastMessage: last.body,
+          lastAt: last.createdAt.toISOString(),
+          unreadFromPatient,
+        };
+      })
+      .sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
+  }
+
+  async thread(userId: string): Promise<SupportMessage[]> {
+    const rows = await this.prisma.supportMessage.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((m) => ({
+      id: m.id,
+      sender: m.sender as SupportMessage['sender'],
+      body: m.body,
+      createdAt: m.createdAt.toISOString(),
+    }));
+  }
+
+  async reply(userId: string, body: string): Promise<SupportMessage> {
+    const patient = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!patient) throw new NotFoundException('Patient not found');
+    const m = await this.prisma.supportMessage.create({
+      data: { userId, sender: 'ADMIN', body },
+    });
+    return { id: m.id, sender: 'ADMIN', body: m.body, createdAt: m.createdAt.toISOString() };
   }
 }

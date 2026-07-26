@@ -147,6 +147,19 @@ async function main() {
     },
   });
 
+  // Demo HbA1c trend (baseline + 3 & 6 month) if none yet.
+  if ((await prisma.hba1cEntry.count({ where: { userId: demoPatient.id } })) === 0) {
+    for (const [months, value] of [[0, 8.2], [3, 7.4], [6, 6.8]] as const) {
+      await prisma.hba1cEntry.create({
+        data: {
+          userId: demoPatient.id,
+          value,
+          recordedAt: new Date(2026, 0 + months, 15),
+        },
+      });
+    }
+  }
+
   console.log('Seed complete.');
   console.log('  Admin:   admin@petrapharma.com / Admin123!');
   console.log('  Doctor:  sara@petrapharma.com / Doctor123!');

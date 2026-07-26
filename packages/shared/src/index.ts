@@ -173,6 +173,7 @@ export interface DoctorPatientDetail extends DoctorPatientSummary {
   bmiCategory: BmiCategory | null;
   assessment: ClinicalAssessment | null;
   weightEntries: WeightEntry[];
+  hba1cEntries: Hba1cEntry[];
   adverseEvents: AdverseEvent[];
   comments: PatientComment[];
 }
@@ -309,9 +310,44 @@ export interface AdminStats {
   totalMedicationsEnrolled: number;
   totalDosesLogged: number;
   totalWeightEntries: number;
+  // New CRF-driven metrics
+  genderBreakdown: { male: number; female: number; unspecified: number };
+  adherence: { onTime: number; overdue: number; notStarted: number };
+  totalKgLost: number;
   patientsByCity: RegionCount[];
   doctorsByCity: RegionCount[];
   recentPatients: { id: string; fullName: string; email: string; createdAt: string }[];
+}
+
+// ---- HbA1c ----
+export interface Hba1cEntry {
+  id: string;
+  value: number;
+  recordedAt: string;
+}
+export interface CreateHba1cDto {
+  value: number;
+  recordedAt?: string;
+}
+
+// ---- Support messaging (patient <-> admin) ----
+export type MessageSender = 'PATIENT' | 'ADMIN';
+export interface SupportMessage {
+  id: string;
+  sender: MessageSender;
+  body: string;
+  createdAt: string;
+}
+export interface CreateMessageDto {
+  body: string;
+}
+export interface MessageThreadSummary {
+  userId: string;
+  patientName: string;
+  patientEmail: string;
+  lastMessage: string;
+  lastAt: string;
+  unreadFromPatient: number;
 }
 
 export interface PatientSummary {
@@ -338,6 +374,7 @@ export interface PatientDetail extends PatientSummary {
   }[];
   recentDoses: { id: string; medicationName: string; scheduledFor: string; takenAt: string; doseMg: number | null }[];
   weightEntries: WeightEntry[];
+  hba1cEntries: Hba1cEntry[];
   assessment: ClinicalAssessment | null;
   adverseEvents: AdverseEvent[];
   comments: PatientComment[];

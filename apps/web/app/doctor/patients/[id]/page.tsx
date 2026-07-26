@@ -13,6 +13,7 @@ import type {
 import { api } from '@/lib/api';
 import { Card, StatTile } from '@/components/ui';
 import { WeightChart } from '@/components/WeightChart';
+import { MetricChart } from '@/components/MetricChart';
 
 const SEVERITY_STYLE: Record<string, string> = {
   MILD: 'bg-green-100 text-green-700',
@@ -131,10 +132,14 @@ export default function DoctorPatientDetailPage() {
         <StatTile label="BMI" value={p.bmi ?? '—'} hint={p.bmiCategory ?? undefined} />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-3 font-semibold text-slate-700">Weight trend</h2>
+          <h2 className="mb-3 font-semibold text-slate-700">Weight trend (kg)</h2>
           <WeightChart data={p.weightEntries} />
+        </Card>
+        <Card>
+          <h2 className="mb-3 font-semibold text-slate-700">HbA1c trend (%)</h2>
+          <MetricChart data={p.hba1cEntries} color="#0284c7" unit="%" empty="No HbA1c readings yet." />
         </Card>
       </div>
 

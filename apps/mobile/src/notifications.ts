@@ -84,3 +84,63 @@ export async function cancelReminder(): Promise<void> {
   }
   await AsyncStorage.removeItem(REMINDER_KEY);
 }
+
+// ---- Arbitrary "other medication" reminders (daily or weekly) ----
+const MEDS_KEY = 'petra_med_reminders';
+
+export interface MedReminder {
+  id: string; // scheduled notification id
+  name: string;
+  freq: 'daily' | 'weekly';
+  weekday: number; // used when weekly (1=Sun..7=Sat)
+  hour: number;
+  minute: number;
+}
+
+export async function getMedReminders(): Promise<MedReminder[]> {
+  const raw = await AsyncStorage.getItem(MEDS_KEY);
+  return raw ? (JSON.parse(raw) as MedReminder[]) : [];
+}
+
+export async function addMedReminder(
+  name: string,
+  freq: 'daily' | 'weekly',
+  weekday: number,
+  hour: number,
+  minute: number,
+): Promise<MedReminder[] | null> {
+  const ok = await requestPermission();
+  if (!ok) return null;
+
+  const trigger =
+    freq === 'daily'
+      ? { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: 'reminders' }
+      : {
+          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+          weekday,
+          hour,
+          minute,
+          channelId: 'reminders',
+        };
+
+  const id = await Notifications.scheduleNotificationAsync({
+    content: { title: name, body: `Time to take ${name}.` },
+    trigger,
+  });
+
+  const list = await getMedReminders();
+  const next = [...list, { id, name, freq, weekday, hour, minute }];
+  await AsyncStorage.setItem(MEDS_KEY, JSON.stringify(next));
+  return next;
+}
+
+export async function removeMedReminder(id: string): Promise<MedReminder[]> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(id);
+  } catch {
+    /* already gone */
+  }
+  const list = (await getMedReminders()).filter((m) => m.id !== id);
+  await AsyncStorage.setItem(MEDS_KEY, JSON.stringify(list));
+  return list;
+}

@@ -12,6 +12,7 @@ import { api } from '../api';
 import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
+import OtherMedsCard from '../components/OtherMedsCard';
 import type { DoseLog, Medication, UserMedication } from '../types';
 
 const dayKey = (iso: string) => iso.slice(0, 10);
@@ -185,6 +186,8 @@ export default function MedicationScreen() {
           ))}
         </>
       )}
+
+      <OtherMedsCard />
     </ScrollView>
   );
 }

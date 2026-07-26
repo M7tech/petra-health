@@ -18,6 +18,7 @@ import {
   ClinicalAssessment,
   PatientComment,
   SEVERITIES,
+  SupportMessage,
 } from '../types';
 
 const SEV_COLOR: Record<AdverseSeverity, string> = {
@@ -41,24 +42,45 @@ export default function CareScreen() {
   const [severity, setSeverity] = useState<AdverseSeverity>('MILD');
   const [ending, setEnding] = useState(false);
   const [reason, setReason] = useState('');
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
+  const [msgText, setMsgText] = useState('');
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [c, e, a] = await Promise.all([
+      const [c, e, a, m] = await Promise.all([
         api<PatientComment[]>('/me/comments'),
         api<AdverseEvent[]>('/me/adverse-events'),
         api<ClinicalAssessment | null>('/me/assessment'),
+        api<SupportMessage[]>('/me/messages'),
       ]);
       setComments(c);
       setEvents(e);
       setAssessment(a);
+      setMessages(m);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  async function sendMessage() {
+    if (msgText.trim().length < 1) return;
+    setBusy(true);
+    try {
+      const m = await api<SupportMessage>('/me/messages', {
+        method: 'POST',
+        body: JSON.stringify({ body: msgText.trim() }),
+      });
+      setMessages((prev) => [...prev, m]);
+      setMsgText('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not send');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   useEffect(() => {
     load();
@@ -225,6 +247,42 @@ export default function CareScreen() {
           )}
         </View>
       </View>
+
+      {/* Contact Petra Health */}
+      <View style={styles.card}>
+        <Text style={[styles.cardTitle, align]}>{t('contact.title')}</Text>
+        <Text style={[styles.muted, align, { marginBottom: 10 }]}>{t('contact.desc')}</Text>
+        {messages.length === 0 ? (
+          <Text style={[styles.muted, align]}>{t('contact.none')}</Text>
+        ) : (
+          messages.map((m) => (
+            <View
+              key={m.id}
+              style={[
+                styles.bubble,
+                m.sender === 'PATIENT' ? styles.bubbleMe : styles.bubbleThem,
+              ]}
+            >
+              <Text style={m.sender === 'PATIENT' ? styles.bubbleMeText : styles.body}>{m.body}</Text>
+              <Text style={m.sender === 'PATIENT' ? styles.bubbleMeMeta : styles.meta}>
+                {m.sender === 'PATIENT' ? t('contact.you') : t('contact.team')}
+              </Text>
+            </View>
+          ))
+        )}
+        <View style={{ marginTop: 12 }}>
+          <TextInput
+            style={[styles.input, align]}
+            value={msgText}
+            onChangeText={setMsgText}
+            placeholder={t('contact.placeholder')}
+            placeholderTextColor="#94a3b8"
+          />
+          <View style={{ marginTop: 10 }}>
+            <PrimaryButton title={t('contact.send')} onPress={sendMessage} loading={busy} />
+          </View>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -260,4 +318,9 @@ const styles = StyleSheet.create({
   eventItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 10 },
   sevDot: { width: 8, height: 8, borderRadius: 4 },
   eventText: { flex: 1, color: colors.text },
+  bubble: { maxWidth: '85%', borderRadius: 16, padding: 10, marginBottom: 8 },
+  bubbleMe: { backgroundColor: colors.petra, alignSelf: 'flex-end' },
+  bubbleThem: { backgroundColor: '#f1f5f9', alignSelf: 'flex-start' },
+  bubbleMeText: { color: '#fff' },
+  bubbleMeMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 },
 });

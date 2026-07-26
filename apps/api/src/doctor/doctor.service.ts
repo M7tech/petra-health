@@ -136,6 +136,7 @@ export async function buildPatientDetail(
     where: { id: patientId },
     include: {
       weightEntries: { orderBy: { recordedAt: 'asc' } },
+      hba1cEntries: { orderBy: { recordedAt: 'asc' } },
       adverseEvents: { orderBy: { onsetDate: 'desc' } },
       assessment: true,
       comments: { orderBy: { createdAt: 'desc' }, include: { doctor: true } },
@@ -171,6 +172,11 @@ export async function buildPatientDetail(
       weightKg: w.weightKg,
       recordedAt: w.recordedAt.toISOString(),
       note: w.note,
+    })),
+    hba1cEntries: p.hba1cEntries.map((h) => ({
+      id: h.id,
+      value: h.value,
+      recordedAt: h.recordedAt.toISOString(),
     })),
     adverseEvents: p.adverseEvents.map((e) => ({
       id: e.id,

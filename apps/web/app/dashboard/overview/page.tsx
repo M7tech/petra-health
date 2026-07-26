@@ -39,6 +39,17 @@ export default function OverviewPage() {
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatTile label="Total patients" value={stats.totalPatients} />
+        <StatTile
+          label="Male / Female"
+          value={`${stats.genderBreakdown.male} / ${stats.genderBreakdown.female}`}
+          hint={stats.genderBreakdown.unspecified ? `${stats.genderBreakdown.unspecified} unspecified` : undefined}
+        />
+        <StatTile
+          label="Injections on time"
+          value={stats.adherence.onTime}
+          hint={`${stats.adherence.overdue} overdue · ${stats.adherence.notStarted} not started`}
+        />
+        <StatTile label="Total weight lost" value={`${stats.totalKgLost} kg`} hint="all patients" />
         <StatTile label="Total doctors" value={stats.totalDoctors} />
         <StatTile label="Doses logged" value={stats.totalDosesLogged} />
         <StatTile label="Medications enrolled" value={stats.totalMedicationsEnrolled} />

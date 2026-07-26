@@ -98,11 +98,39 @@ model User {
   medications   UserMedication[]
   doseLogs      DoseLog[]
   weightEntries WeightEntry[]
+  hba1cEntries  Hba1cEntry[]
   adverseEvents AdverseEvent[]
   comments      PatientComment[]
   assessment    ClinicalAssessment?
+  messages      SupportMessage[]
 
   @@map("users")
+}
+
+// HbA1c measurements over time (baseline + monthly/3-monthly follow-up).
+model Hba1cEntry {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value      Float // percent
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId, recordedAt])
+  @@map("hba1c_entries")
+}
+
+// Support thread between a patient and Petra Health admins.
+model SupportMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender    String // 'PATIENT' | 'ADMIN'
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("support_messages")
 }
 
 enum Gender {

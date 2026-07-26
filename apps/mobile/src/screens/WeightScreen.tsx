@@ -12,11 +12,20 @@ import Svg, { Path, Circle, Line as SvgLine, Text as SvgText } from 'react-nativ
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
-import type { WeightEntry } from '../types';
+import type { Hba1cEntry, WeightEntry } from '../types';
 
-function WeightTrend({ data }: { data: WeightEntry[] }) {
+// Generic single-series trend chart over {value, recordedAt}.
+function MetricTrend({
+  data,
+  color = colors.petra,
+  decimals = 1,
+}: {
+  data: { value: number; recordedAt: string }[];
+  color?: string;
+  decimals?: number;
+}) {
   const W = Dimensions.get('window').width - 40;
-  const H = 200;
+  const H = 190;
   const pad = { l: 40, r: 14, t: 16, b: 26 };
   const innerW = W - pad.l - pad.r;
   const innerH = H - pad.t - pad.b;
@@ -24,38 +33,36 @@ function WeightTrend({ data }: { data: WeightEntry[] }) {
   const pts = [...data].sort(
     (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime(),
   );
-  const weights = pts.map((p) => p.weightKg);
+  const vals = pts.map((p) => p.value);
   const times = pts.map((p) => new Date(p.recordedAt).getTime());
-  const minW = Math.min(...weights);
-  const maxW = Math.max(...weights);
-  const wSpan = maxW - minW || 1;
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const vSpan = maxV - minV || 1;
   const tMin = Math.min(...times);
   const tSpan = Math.max(...times) - tMin || 1;
 
   const x = (t: number) =>
     pts.length === 1 ? pad.l + innerW / 2 : pad.l + ((t - tMin) / tSpan) * innerW;
-  const y = (w: number) => pad.t + innerH - ((w - minW) / wSpan) * innerH;
+  const y = (v: number) => pad.t + innerH - ((v - minV) / vSpan) * innerH;
 
-  const coords = pts.map((p) => ({ px: x(new Date(p.recordedAt).getTime()), py: y(p.weightKg), p }));
+  const coords = pts.map((p) => ({ px: x(new Date(p.recordedAt).getTime()), py: y(p.value) }));
   const path = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.px} ${c.py}`).join(' ');
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
   return (
     <Svg width={W} height={H}>
-      {[minW, maxW].map((wv) => (
-        <React.Fragment key={wv}>
-          <SvgLine x1={pad.l} x2={W - pad.r} y1={y(wv)} y2={y(wv)} stroke="#e2e8f0" strokeWidth={1} />
-          <SvgText x={pad.l - 6} y={y(wv) + 4} fontSize={10} fill="#94a3b8" textAnchor="end">
-            {wv.toFixed(1)}
+      {[minV, maxV].map((v) => (
+        <React.Fragment key={v}>
+          <SvgLine x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeWidth={1} />
+          <SvgText x={pad.l - 6} y={y(v) + 4} fontSize={10} fill="#94a3b8" textAnchor="end">
+            {v.toFixed(decimals)}
           </SvgText>
         </React.Fragment>
       ))}
-      {pts.length > 1 && (
-        <Path d={path} fill="none" stroke={colors.petra} strokeWidth={2} strokeLinejoin="round" />
-      )}
-      {coords.map((c) => (
-        <Circle key={c.p.id} cx={c.px} cy={c.py} r={4} fill={colors.petra} stroke="#fff" strokeWidth={2} />
+      {pts.length > 1 && <Path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />}
+      {coords.map((c, i) => (
+        <Circle key={i} cx={c.px} cy={c.py} r={4} fill={color} stroke="#fff" strokeWidth={2} />
       ))}
       <SvgText x={coords[0].px} y={H - 6} fontSize={10} fill="#94a3b8" textAnchor="start">
         {fmt(pts[0].recordedAt)}
@@ -77,17 +84,44 @@ export default function WeightScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hba1c, setHba1c] = useState<Hba1cEntry[]>([]);
+  const [a1cValue, setA1cValue] = useState('');
+  const [a1cBusy, setA1cBusy] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      setEntries(await api<WeightEntry[]>('/me/weights'));
+      const [w, h] = await Promise.all([
+        api<WeightEntry[]>('/me/weights'),
+        api<Hba1cEntry[]>('/me/hba1c'),
+      ]);
+      setEntries(w);
+      setHba1c(h);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  async function saveA1c() {
+    const v = parseFloat(a1cValue.replace(',', '.'));
+    if (Number.isNaN(v) || v < 3 || v > 20) {
+      setError(t('health.a1cInvalid'));
+      return;
+    }
+    setA1cBusy(true);
+    setError(null);
+    try {
+      await api('/me/hba1c', { method: 'POST', body: JSON.stringify({ value: v }) });
+      setA1cValue('');
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save');
+    } finally {
+      setA1cBusy(false);
+    }
+  }
 
   useEffect(() => {
     load();
@@ -153,7 +187,28 @@ export default function WeightScreen() {
         {entries.length === 0 ? (
           <Text style={[styles.muted, align]}>{t('weight.noEntries')}</Text>
         ) : (
-          <WeightTrend data={entries} />
+          <MetricTrend data={entries.map((e) => ({ value: e.weightKg, recordedAt: e.recordedAt }))} />
+        )}
+      </View>
+
+      {/* HbA1c */}
+      <View style={styles.card}>
+        <Field
+          label={t('health.a1cLabel')}
+          value={a1cValue}
+          onChangeText={setA1cValue}
+          keyboardType="decimal-pad"
+          placeholder="7.4"
+          textAlign={isRTL ? 'right' : 'left'}
+        />
+        <PrimaryButton title={t('health.logA1c')} onPress={saveA1c} loading={a1cBusy} />
+      </View>
+      <View style={styles.card}>
+        <Text style={[styles.cardTitle, align]}>{t('health.a1cTrend')}</Text>
+        {hba1c.length === 0 ? (
+          <Text style={[styles.muted, align]}>{t('health.noA1c')}</Text>
+        ) : (
+          <MetricTrend data={hba1c} color="#0284c7" />
         )}
       </View>
     </ScrollView>

@@ -7,6 +7,7 @@ import type { PatientDetail } from '@petra/shared';
 import { api } from '@/lib/api';
 import { Card, PageHeader, StatTile } from '@/components/ui';
 import { WeightChart } from '@/components/WeightChart';
+import { MetricChart } from '@/components/MetricChart';
 
 function Row({ k, v }: { k: string; v: string | null | undefined }) {
   if (!v) return null;
@@ -50,10 +51,14 @@ export default function PatientDetailPage() {
         <StatTile label="Weight entries" value={p.weightEntries.length} />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-3 font-semibold text-slate-700">Weight trend</h2>
+          <h2 className="mb-3 font-semibold text-slate-700">Weight trend (kg)</h2>
           <WeightChart data={p.weightEntries} />
+        </Card>
+        <Card>
+          <h2 className="mb-3 font-semibold text-slate-700">HbA1c trend (%)</h2>
+          <MetricChart data={p.hba1cEntries} color="#0284c7" unit="%" empty="No HbA1c readings yet." />
         </Card>
       </div>
 

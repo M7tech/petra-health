@@ -57,6 +57,18 @@ export interface ClinicalAssessment {
   discontinuationReason: string | null;
   physicianComments: string | null;
 }
+export interface Hba1cEntry {
+  id: string;
+  value: number;
+  recordedAt: string;
+}
+export type MessageSender = 'PATIENT' | 'ADMIN';
+export interface SupportMessage {
+  id: string;
+  sender: MessageSender;
+  body: string;
+  createdAt: string;
+}
 
 export interface UserLoginResponse {
   accessToken: string;

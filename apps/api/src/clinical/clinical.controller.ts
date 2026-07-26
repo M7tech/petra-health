@@ -1,10 +1,19 @@
 import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
-import { IsIn, IsOptional, IsString, IsDateString, Length } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsDateString, IsNumber, Length, Min, Max } from 'class-validator';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard, CurrentPrincipal } from '../auth/guards';
 import { Principal } from '../auth/jwt.types';
 import { serializeAssessment } from '../doctor/doctor.service';
 import type { AdverseSeverity, TreatmentStatus } from '@petra/shared';
+
+class CreateHba1cRequest {
+  @IsNumber() @Min(3) @Max(20) value!: number;
+  @IsOptional() @IsDateString() recordedAt?: string;
+}
+
+class CreateMessageRequest {
+  @IsString() @Length(1, 1000) body!: string;
+}
 
 class CreateAdverseEventRequest {
   @IsString() @Length(2, 300) description!: string;
@@ -58,6 +67,40 @@ export class ClinicalController {
       weightEntryId: c.weightEntryId,
       createdAt: c.createdAt.toISOString(),
     }));
+  }
+
+  @Get('hba1c')
+  listHba1c(@CurrentPrincipal() p: Principal) {
+    return this.prisma.hba1cEntry.findMany({
+      where: { userId: p.id },
+      orderBy: { recordedAt: 'asc' },
+    });
+  }
+
+  @Post('hba1c')
+  createHba1c(@CurrentPrincipal() p: Principal, @Body() dto: CreateHba1cRequest) {
+    return this.prisma.hba1cEntry.create({
+      data: {
+        userId: p.id,
+        value: dto.value,
+        recordedAt: dto.recordedAt ? new Date(dto.recordedAt) : undefined,
+      },
+    });
+  }
+
+  @Get('messages')
+  messages(@CurrentPrincipal() p: Principal) {
+    return this.prisma.supportMessage.findMany({
+      where: { userId: p.id },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  @Post('messages')
+  sendMessage(@CurrentPrincipal() p: Principal, @Body() dto: CreateMessageRequest) {
+    return this.prisma.supportMessage.create({
+      data: { userId: p.id, sender: 'PATIENT', body: dto.body },
+    });
   }
 
   @Get('assessment')
