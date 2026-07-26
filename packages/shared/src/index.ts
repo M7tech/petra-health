@@ -348,6 +348,7 @@ export interface CreateUserMedicationDto {
   frequency?: string;
   timeOfDay?: string; // "HH:mm"
   startDate?: string; // ISO
+  startPenSequence?: number; // 1=First Pen, 2=Second Pen (titrated meds)
 }
 
 export interface LogDoseDto {

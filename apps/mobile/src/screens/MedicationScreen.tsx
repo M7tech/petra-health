@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -13,7 +14,10 @@ import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
 import OtherMedsCard from '../components/OtherMedsCard';
+import { scheduleWeeklyReminder } from '../notifications';
 import type { DoseLog, Medication, UserMedication } from '../types';
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const dayKey = (iso: string) => iso.slice(0, 10);
 const addDays = (date: Date, days: number) => {
@@ -32,6 +36,15 @@ export default function MedicationScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pre-enrollment choices: which pen, which day, which reminder time.
+  const [startPen, setStartPen] = useState<1 | 2>(1);
+  const [startDayStr, setStartDayStr] = useState(todayStr());
+  const [timeIdx, setTimeIdx] = useState(0);
+  const TIME_PRESETS = [
+    { label: t('semetra.morning'), hour: 9, minute: 0 },
+    { label: t('semetra.evening'), hour: 20, minute: 0 },
+  ];
 
   const load = useCallback(async () => {
     setError(null);
@@ -62,16 +75,27 @@ export default function MedicationScreen() {
 
   async function enroll() {
     if (!catalog) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDayStr)) {
+      setError(t('semetra.invalidDate'));
+      return;
+    }
     setBusy(true);
+    setError(null);
     try {
+      const startDate = new Date(`${startDayStr}T12:00:00.000Z`); // noon UTC avoids tz date-shift
       await api('/me/medications', {
         method: 'POST',
         body: JSON.stringify({
           medicationId: catalog.id,
           name: catalog.name,
           frequency: 'weekly',
+          startDate: startDate.toISOString(),
+          startPenSequence: startPen,
         }),
       });
+      const time = TIME_PRESETS[timeIdx];
+      // expo weekday convention: 1=Sunday..7=Saturday.
+      await scheduleWeeklyReminder(startDate.getUTCDay() + 1, time.hour, time.minute);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start course');
@@ -80,12 +104,16 @@ export default function MedicationScreen() {
     }
   }
 
-  // Flatten pens -> weeks with a global index → scheduled date from start date.
+  // Flatten pens (from the chosen starting pen onward) -> weeks, with a
+  // global index → scheduled date computed from the chosen start day.
   const schedule = useMemo(() => {
     if (!catalog || !mine) return [];
     const start = new Date(mine.startDate);
+    const pens = catalog.pens
+      .filter((p) => p.sequence >= mine.startPenSequence)
+      .sort((a, b) => a.sequence - b.sequence);
     let g = 0;
-    return catalog.pens.map((pen) => ({
+    return pens.map((pen) => ({
       pen,
       weeks: pen.weeks.map((w) => {
         const date = addDays(start, g * 7);
@@ -144,9 +172,48 @@ export default function MedicationScreen() {
 
       {!mine ? (
         <View style={styles.card}>
-          <Text style={[styles.cardText, align]}>{t('semetra.startDesc')}</Text>
-          <View style={{ marginTop: 14 }}>
-            <PrimaryButton title={t('semetra.start')} onPress={enroll} loading={busy} />
+          <Text style={[styles.welcomeTitle, align]}>{t('semetra.welcome')}</Text>
+          <Text style={[styles.cardText, align]}>{t('semetra.welcomeDesc')}</Text>
+
+          <Text style={[styles.label, align]}>{t('semetra.whichPen')}</Text>
+          <View style={[styles.segRow, isRTL && { flexDirection: 'row-reverse' }]}>
+            {([1, 2] as const).map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={[styles.seg, startPen === p && styles.segActive]}
+                onPress={() => setStartPen(p)}
+              >
+                <Text style={[styles.segText, startPen === p && styles.segTextActive]}>
+                  {p === 1 ? t('semetra.firstPen') : t('semetra.secondPen')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={[styles.label, align]}>{t('semetra.startDayLabel')}</Text>
+          <TextInput
+            style={[styles.input, align]}
+            value={startDayStr}
+            onChangeText={setStartDayStr}
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor="#94a3b8"
+          />
+
+          <Text style={[styles.label, align]}>{t('semetra.reminderTimeLabel')}</Text>
+          <View style={[styles.segRow, isRTL && { flexDirection: 'row-reverse' }]}>
+            {TIME_PRESETS.map((tp, i) => (
+              <TouchableOpacity
+                key={tp.label}
+                style={[styles.seg, timeIdx === i && styles.segActive]}
+                onPress={() => setTimeIdx(i)}
+              >
+                <Text style={[styles.segText, timeIdx === i && styles.segTextActive]}>{tp.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={{ marginTop: 16 }}>
+            <PrimaryButton title={t('semetra.startCourse')} onPress={enroll} loading={busy} />
           </View>
         </View>
       ) : (
@@ -200,6 +267,23 @@ const styles = StyleSheet.create({
   hint: { color: colors.muted, marginBottom: 12, fontSize: 13 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 18 },
   cardText: { color: colors.text, lineHeight: 20 },
+  welcomeTitle: { fontWeight: '700', fontSize: 17, color: colors.text, marginBottom: 6 },
+  label: { color: colors.muted, fontSize: 12, marginTop: 14, marginBottom: 6 },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: colors.text,
+    backgroundColor: '#fff',
+  },
+  segRow: { flexDirection: 'row', gap: 8 },
+  seg: { flex: 1, borderRadius: 10, paddingVertical: 10, backgroundColor: '#f1f5f9', alignItems: 'center' },
+  segActive: { backgroundColor: colors.petra },
+  segText: { color: colors.muted, fontWeight: '600', fontSize: 13 },
+  segTextActive: { color: '#fff' },
   error: {
     backgroundColor: '#fef2f2',
     color: colors.danger,

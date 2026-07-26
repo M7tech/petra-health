@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsNumber, IsDateString, Length, Min } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsInt, IsDateString, Length, Min, Max } from 'class-validator';
 
 export class EnrollMedicationRequest {
   @IsOptional()
@@ -24,6 +24,12 @@ export class EnrollMedicationRequest {
   @IsOptional()
   @IsDateString()
   startDate?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(2)
+  startPenSequence?: number;
 }
 
 export class LogDoseRequest {

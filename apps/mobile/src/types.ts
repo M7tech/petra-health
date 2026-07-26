@@ -118,6 +118,7 @@ export interface UserMedication {
   name: string;
   startDate: string;
   active: boolean;
+  startPenSequence: number;
 }
 export interface DoseLog {
   id: string;

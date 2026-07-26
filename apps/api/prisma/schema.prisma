@@ -291,6 +291,9 @@ model UserMedication {
   frequency    String?  // e.g. "weekly"
   timeOfDay    String?  // "HH:mm" for the local reminder
   startDate    DateTime @default(now())
+  // Which pen the patient started at (1=First Pen, 2=Second Pen) — lets
+  // someone mid-course skip the weeks they've already completed.
+  startPenSequence Int  @default(1)
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 

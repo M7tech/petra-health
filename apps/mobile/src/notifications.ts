@@ -8,7 +8,7 @@ const REMINDER_KEY = 'petra_reminder'; // stored: { weekday, hour, minute, id }
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
+    shouldShowBanner: true, // shows on the lock/home screen, not just in the tray
     shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
@@ -32,7 +32,8 @@ export async function requestPermission(): Promise<boolean> {
   if (granted && Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('reminders', {
       name: 'Dose reminders',
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: Notifications.AndroidImportance.HIGH, // heads-up banner + sound
+      sound: 'default',
     });
   }
   return granted;
@@ -58,6 +59,7 @@ export async function scheduleWeeklyReminder(
     content: {
       title: 'Semetra weekly dose',
       body: "Time for your weekly injection. Open the app to log it once it's done.",
+      sound: 'default',
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
@@ -85,16 +87,23 @@ export async function cancelReminder(): Promise<void> {
   await AsyncStorage.removeItem(REMINDER_KEY);
 }
 
-// ---- Arbitrary "other medication" reminders (daily or weekly) ----
+// ---- Arbitrary "other medication" reminders (daily/weekly/monthly) ----
 const MEDS_KEY = 'petra_med_reminders';
 
-export interface MedReminder {
-  id: string; // scheduled notification id
-  name: string;
-  freq: 'daily' | 'weekly';
-  weekday: number; // used when weekly (1=Sun..7=Sat)
+export type MedFrequency = 'daily' | 'weekly' | 'monthly';
+
+export interface TimeOfDay {
   hour: number;
   minute: number;
+}
+
+export interface MedReminder {
+  ids: string[]; // one scheduled notification per daily time slot; else length 1
+  name: string;
+  freq: MedFrequency;
+  times: TimeOfDay[]; // daily: 1-3 slots; weekly/monthly: exactly 1
+  weekday?: number; // weekly only (1=Sun..7=Sat)
+  dayOfMonth?: number; // monthly only (1-28)
 }
 
 export async function getMedReminders(): Promise<MedReminder[]> {
@@ -102,45 +111,91 @@ export async function getMedReminders(): Promise<MedReminder[]> {
   return raw ? (JSON.parse(raw) as MedReminder[]) : [];
 }
 
-export async function addMedReminder(
-  name: string,
-  freq: 'daily' | 'weekly',
-  weekday: number,
-  hour: number,
-  minute: number,
-): Promise<MedReminder[] | null> {
+export interface AddMedReminderInput {
+  name: string;
+  freq: MedFrequency;
+  times: TimeOfDay[]; // daily: up to 3; weekly/monthly: exactly 1
+  weekday?: number;
+  dayOfMonth?: number;
+}
+
+export async function addMedReminder(input: AddMedReminderInput): Promise<MedReminder[] | null> {
   const ok = await requestPermission();
   if (!ok) return null;
 
-  const trigger =
-    freq === 'daily'
-      ? { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: 'reminders' }
-      : {
-          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-          weekday,
-          hour,
-          minute,
+  const content = {
+    title: input.name,
+    body: `Time to take ${input.name}.`,
+    sound: 'default' as const,
+  };
+
+  const ids: string[] = [];
+  if (input.freq === 'daily') {
+    for (const t of input.times) {
+      const id = await Notifications.scheduleNotificationAsync({
+        content,
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour: t.hour,
+          minute: t.minute,
           channelId: 'reminders',
-        };
+        },
+      });
+      ids.push(id);
+    }
+  } else if (input.freq === 'weekly') {
+    const t = input.times[0];
+    const id = await Notifications.scheduleNotificationAsync({
+      content,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: input.weekday ?? 1,
+        hour: t.hour,
+        minute: t.minute,
+        channelId: 'reminders',
+      },
+    });
+    ids.push(id);
+  } else {
+    const t = input.times[0];
+    const id = await Notifications.scheduleNotificationAsync({
+      content,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.MONTHLY,
+        day: input.dayOfMonth ?? 1,
+        hour: t.hour,
+        minute: t.minute,
+        channelId: 'reminders',
+      },
+    });
+    ids.push(id);
+  }
 
-  const id = await Notifications.scheduleNotificationAsync({
-    content: { title: name, body: `Time to take ${name}.` },
-    trigger,
-  });
-
+  const reminder: MedReminder = {
+    ids,
+    name: input.name,
+    freq: input.freq,
+    times: input.times,
+    weekday: input.weekday,
+    dayOfMonth: input.dayOfMonth,
+  };
   const list = await getMedReminders();
-  const next = [...list, { id, name, freq, weekday, hour, minute }];
+  const next = [...list, reminder];
   await AsyncStorage.setItem(MEDS_KEY, JSON.stringify(next));
   return next;
 }
 
-export async function removeMedReminder(id: string): Promise<MedReminder[]> {
-  try {
-    await Notifications.cancelScheduledNotificationAsync(id);
-  } catch {
-    /* already gone */
+export async function removeMedReminder(reminder: MedReminder): Promise<MedReminder[]> {
+  for (const id of reminder.ids) {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(id);
+    } catch {
+      /* already gone */
+    }
   }
-  const list = (await getMedReminders()).filter((m) => m.id !== id);
+  const list = (await getMedReminders()).filter(
+    (m) => JSON.stringify(m.ids) !== JSON.stringify(reminder.ids),
+  );
   await AsyncStorage.setItem(MEDS_KEY, JSON.stringify(list));
   return list;
 }

@@ -52,6 +52,7 @@ export class MedicationsService {
         frequency: dto.frequency,
         timeOfDay: dto.timeOfDay,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+        startPenSequence: dto.startPenSequence ?? 1,
       },
     });
   }
