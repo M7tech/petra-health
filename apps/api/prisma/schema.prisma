@@ -39,6 +39,8 @@ model City {
 
   doctors Doctor[]
   users   User[]
+  // Managers (EDITOR admins) assigned to oversee this city's doctors/patients.
+  managers Admin[] @relation("ManagerCities")
 
   @@unique([countryId, name])
   @@index([countryId])
@@ -219,8 +221,11 @@ model Admin {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  // Doctors this manager (EDITOR) oversees.
+  // Doctors this manager (EDITOR) directly oversees (legacy/manual assignment).
   managedDoctors Doctor[] @relation("ManagerDoctors")
+  // Cities this manager (EDITOR) is assigned — grants visibility into all
+  // doctors and patients within them (the primary assignment mechanism).
+  managedCities City[] @relation("ManagerCities")
 
   @@map("admins")
 }

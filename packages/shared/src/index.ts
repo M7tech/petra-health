@@ -249,6 +249,14 @@ export interface UpsertDoctorDto {
 }
 
 // ---- Manager users (EDITOR admins created by the super-admin) ----
+// A manager is assigned a set of CITIES; the doctors and patients in those
+// cities are then automatically visible to them (region-based scoping).
+export interface ManagerCity {
+  id: string;
+  name: string;
+  countryId: string;
+  countryName: string;
+}
 export interface ManagerUser {
   id: string;
   username: string | null;
@@ -256,8 +264,9 @@ export interface ManagerUser {
   fullName: string;
   officeName: string | null;
   role: AdminRole;
+  cities: ManagerCity[];
   doctorCount: number;
-  doctorIds: string[];
+  patientCount: number;
 }
 export interface CreateManagerDto {
   username: string;
@@ -265,13 +274,23 @@ export interface CreateManagerDto {
   password: string;
   fullName: string;
   officeName?: string;
-  doctorIds?: string[];
+  cityIds?: string[];
 }
 export interface UpdateManagerDto {
   fullName?: string;
   officeName?: string;
   password?: string;
-  doctorIds?: string[];
+  cityIds?: string[];
+}
+
+// What the currently-logged-in admin/manager is scoped to — lets a manager
+// see exactly which cities, doctors, and patients are assigned to them.
+export interface ManagerScope {
+  isSuperAdmin: boolean;
+  officeName: string | null;
+  cities: ManagerCity[];
+  doctors: Doctor[];
+  patientCount: number;
 }
 
 // ---- Profile ----

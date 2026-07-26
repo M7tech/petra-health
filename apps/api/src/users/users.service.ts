@@ -3,6 +3,20 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateManagerDto, ManagerUser, UpdateManagerDto } from '@petra/shared';
 
+const MANAGER_INCLUDE = {
+  managedCities: { include: { country: true } },
+} as const;
+
+type ManagerRow = {
+  id: string;
+  username: string | null;
+  email: string;
+  fullName: string;
+  officeName: string | null;
+  role: string;
+  managedCities: { id: string; name: string; countryId: string; country: { name: string } }[];
+};
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -11,9 +25,9 @@ export class UsersService {
     const managers = await this.prisma.admin.findMany({
       where: { role: 'EDITOR' },
       orderBy: { createdAt: 'desc' },
-      include: { managedDoctors: { select: { id: true } } },
+      include: MANAGER_INCLUDE,
     });
-    return managers.map((m) => this.toManager(m));
+    return Promise.all(managers.map((m) => this.toManager(m)));
   }
 
   async create(dto: CreateManagerDto): Promise<ManagerUser> {
@@ -33,9 +47,9 @@ export class UsersService {
         fullName: dto.fullName,
         officeName: dto.officeName,
         role: 'EDITOR',
+        managedCities: dto.cityIds?.length ? { connect: dto.cityIds.map((id) => ({ id })) } : undefined,
       },
     });
-    await this.assignDoctors(manager.id, dto.doctorIds ?? []);
     return this.get(manager.id);
   }
 
@@ -49,47 +63,35 @@ export class UsersService {
         fullName: dto.fullName,
         officeName: dto.officeName,
         ...(dto.password ? { passwordHash: await bcrypt.hash(dto.password, 12) } : {}),
+        // `set` replaces the manager's whole city assignment with this list.
+        ...(dto.cityIds ? { managedCities: { set: dto.cityIds.map((cid) => ({ id: cid })) } } : {}),
       },
     });
-    if (dto.doctorIds) await this.assignDoctors(id, dto.doctorIds);
     return this.get(id);
   }
 
   async remove(id: string): Promise<{ ok: true }> {
     const manager = await this.prisma.admin.findUnique({ where: { id } });
     if (!manager || manager.role !== 'EDITOR') throw new NotFoundException('Manager not found');
-    await this.prisma.admin.delete({ where: { id } }); // doctors' managerId -> null (SetNull)
+    await this.prisma.admin.delete({ where: { id } });
     return { ok: true };
   }
 
-  // Set this manager as the owner of exactly `doctorIds` (release the rest).
-  private async assignDoctors(managerId: string, doctorIds: string[]) {
-    await this.prisma.$transaction([
-      this.prisma.doctor.updateMany({ where: { managerId }, data: { managerId: null } }),
-      ...(doctorIds.length
-        ? [this.prisma.doctor.updateMany({ where: { id: { in: doctorIds } }, data: { managerId } })]
-        : []),
-    ]);
-  }
-
   private async get(id: string): Promise<ManagerUser> {
-    const m = await this.prisma.admin.findUnique({
-      where: { id },
-      include: { managedDoctors: { select: { id: true } } },
-    });
+    const m = await this.prisma.admin.findUnique({ where: { id }, include: MANAGER_INCLUDE });
     if (!m) throw new NotFoundException('Manager not found');
     return this.toManager(m);
   }
 
-  private toManager(m: {
-    id: string;
-    username: string | null;
-    email: string;
-    fullName: string;
-    officeName: string | null;
-    role: string;
-    managedDoctors: { id: string }[];
-  }): ManagerUser {
+  private async toManager(m: ManagerRow): Promise<ManagerUser> {
+    const cityIds = m.managedCities.map((c) => c.id);
+    const [doctorCount, patientCount] = cityIds.length
+      ? await Promise.all([
+          this.prisma.doctor.count({ where: { cityId: { in: cityIds } } }),
+          this.prisma.user.count({ where: { cityId: { in: cityIds } } }),
+        ])
+      : [0, 0];
+
     return {
       id: m.id,
       username: m.username,
@@ -97,8 +99,14 @@ export class UsersService {
       fullName: m.fullName,
       officeName: m.officeName,
       role: m.role as ManagerUser['role'],
-      doctorCount: m.managedDoctors.length,
-      doctorIds: m.managedDoctors.map((d) => d.id),
+      cities: m.managedCities.map((c) => ({
+        id: c.id,
+        name: c.name,
+        countryId: c.countryId,
+        countryName: c.country.name,
+      })),
+      doctorCount,
+      patientCount,
     };
   }
 }

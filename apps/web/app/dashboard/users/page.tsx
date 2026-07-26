@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import type { Doctor, ManagerUser } from '@petra/shared';
+import type { City, Country, ManagerUser } from '@petra/shared';
 import { api } from '@/lib/api';
 import { Card, PageHeader } from '@/components/ui';
 
@@ -10,21 +10,23 @@ const inputCls =
 
 export default function UsersPage() {
   const [managers, setManagers] = useState<ManagerUser[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // create form
   const [form, setForm] = useState({ username: '', email: '', password: '', fullName: '', officeName: '' });
-  const [newDoctorIds, setNewDoctorIds] = useState<string[]>([]);
+  const [newCityIds, setNewCityIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   function load() {
     api<ManagerUser[]>('/admin/users').then(setManagers).catch((e) => setError(e.message));
-    api<Doctor[]>('/directory/doctors').then(setDoctors).catch(() => {});
+    api<City[]>('/directory/cities').then(setCities).catch(() => {});
+    api<Country[]>('/directory/countries').then(setCountries).catch(() => {});
   }
   useEffect(load, []);
 
-  const doctorName = (id: string) => doctors.find((d) => d.id === id)?.fullName ?? id;
+  const countryName = (id: string) => countries.find((c) => c.id === id)?.name ?? '';
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -33,10 +35,10 @@ export default function UsersPage() {
     try {
       await api<ManagerUser>('/admin/users', {
         method: 'POST',
-        body: JSON.stringify({ ...form, doctorIds: newDoctorIds }),
+        body: JSON.stringify({ ...form, cityIds: newCityIds }),
       });
       setForm({ username: '', email: '', password: '', fullName: '', officeName: '' });
-      setNewDoctorIds([]);
+      setNewCityIds([]);
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create');
@@ -45,8 +47,8 @@ export default function UsersPage() {
     }
   }
 
-  async function saveDoctors(m: ManagerUser, doctorIds: string[]) {
-    await api(`/admin/users/${m.id}`, { method: 'PATCH', body: JSON.stringify({ doctorIds }) });
+  async function saveCities(m: ManagerUser, cityIds: string[]) {
+    await api(`/admin/users/${m.id}`, { method: 'PATCH', body: JSON.stringify({ cityIds }) });
     load();
   }
 
@@ -59,6 +61,10 @@ export default function UsersPage() {
   return (
     <>
       <PageHeader title="Manager users" />
+      <p className="-mt-4 mb-6 text-sm text-slate-500">
+        Assign a manager one or more cities — every doctor and patient in those cities becomes
+        visible to them automatically.
+      </p>
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <div className="mb-6">
@@ -71,8 +77,8 @@ export default function UsersPage() {
             <input placeholder="Office name" className={inputCls} value={form.officeName} onChange={(e) => setForm({ ...form, officeName: e.target.value })} />
             <input required type="password" placeholder="Password (min 8)" className={inputCls} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
             <div className="sm:col-span-2">
-              <p className="mb-1 text-sm font-medium text-slate-600">Doctors managed</p>
-              <DoctorPicker doctors={doctors} selected={newDoctorIds} onChange={setNewDoctorIds} />
+              <p className="mb-1 text-sm font-medium text-slate-600">Cities assigned</p>
+              <CityPicker cities={cities} countryName={countryName} selected={newCityIds} onChange={setNewCityIds} />
             </div>
             <div className="sm:col-span-2">
               <button type="submit" disabled={busy} className="rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600 disabled:opacity-60">
@@ -97,17 +103,21 @@ export default function UsersPage() {
                 Delete
               </button>
             </div>
-            <p className="mb-1 text-sm font-medium text-slate-600">
-              Doctors managed ({m.doctorCount})
-            </p>
-            <DoctorPicker
-              doctors={doctors}
-              selected={m.doctorIds}
-              onChange={(ids) => saveDoctors(m, ids)}
+            <div className="mb-2 flex gap-4 text-sm text-slate-600">
+              <span>
+                <b className="tabular-nums">{m.doctorCount}</b> doctors
+              </span>
+              <span>
+                <b className="tabular-nums">{m.patientCount}</b> patients
+              </span>
+            </div>
+            <p className="mb-1 text-sm font-medium text-slate-600">Cities assigned</p>
+            <CityPicker
+              cities={cities}
+              countryName={countryName}
+              selected={m.cities.map((c) => c.id)}
+              onChange={(ids) => saveCities(m, ids)}
             />
-            {m.doctorIds.length > 0 && (
-              <p className="mt-2 text-xs text-slate-400">{m.doctorIds.map(doctorName).join(', ')}</p>
-            )}
           </Card>
         ))}
         {managers.length === 0 && <p className="text-sm text-slate-400">No managers yet.</p>}
@@ -116,12 +126,14 @@ export default function UsersPage() {
   );
 }
 
-function DoctorPicker({
-  doctors,
+function CityPicker({
+  cities,
+  countryName,
   selected,
   onChange,
 }: {
-  doctors: Doctor[];
+  cities: City[];
+  countryName: (id: string) => string;
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
@@ -130,23 +142,23 @@ function DoctorPicker({
   }
   return (
     <div className="flex flex-wrap gap-2">
-      {doctors.map((d) => {
-        const on = selected.includes(d.id);
+      {cities.map((c) => {
+        const on = selected.includes(c.id);
         return (
           <button
-            key={d.id}
+            key={c.id}
             type="button"
-            onClick={() => toggle(d.id)}
+            onClick={() => toggle(c.id)}
             className={`rounded-full border px-3 py-1 text-xs transition ${
               on ? 'border-petra-500 bg-petra-50 text-petra-700' : 'border-slate-300 text-slate-500'
             }`}
           >
             {on ? '✓ ' : ''}
-            {d.fullName}
+            {c.name}, {countryName(c.countryId)}
           </button>
         );
       })}
-      {doctors.length === 0 && <span className="text-xs text-slate-400">No doctors yet.</span>}
+      {cities.length === 0 && <span className="text-xs text-slate-400">No cities yet.</span>}
     </div>
   );
 }

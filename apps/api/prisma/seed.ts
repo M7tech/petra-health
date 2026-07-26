@@ -65,11 +65,15 @@ async function main() {
     }
   }
 
-  // --- Demo manager (EDITOR admin) who oversees the Erbil doctors ---
+  // --- Demo manager (EDITOR admin) assigned to the Erbil region ---
+  // Doctors + patients in this city become visible to them automatically.
   const managerPassword = await bcrypt.hash('Manager123!', 12);
-  const manager = await prisma.admin.upsert({
-    where: { email: 'manager@petrapharma.com' },
-    update: { username: 'manager1', officeName: 'Erbil Regional Office' },
+  await prisma.admin.upsert({
+    where: { username: 'manager1' },
+    update: {
+      officeName: 'Erbil Regional Office',
+      managedCities: { set: [{ id: cities['Erbil'] }] },
+    },
     create: {
       email: 'manager@petrapharma.com',
       username: 'manager1',
@@ -77,11 +81,8 @@ async function main() {
       fullName: 'Region Manager',
       officeName: 'Erbil Regional Office',
       role: AdminRole.EDITOR,
+      managedCities: { connect: [{ id: cities['Erbil'] }] },
     },
-  });
-  await prisma.doctor.updateMany({
-    where: { cityId: cities['Erbil'] },
-    data: { managerId: manager.id },
   });
 
   // --- Semetra (Semaglutide) titration schedule from the patient guide ---

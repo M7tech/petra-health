@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { IsString, Length } from 'class-validator';
 import { AdminService } from './admin.service';
-import { AdminGuard, JwtAuthGuard } from '../auth/guards';
+import { AdminGuard, JwtAuthGuard, CurrentPrincipal } from '../auth/guards';
+import { Principal } from '../auth/jwt.types';
 
 class ReplyRequest {
   @IsString() @Length(1, 1000) body!: string;
@@ -18,14 +19,20 @@ export class AdminController {
     return this.admin.getStats();
   }
 
+  // What the logged-in admin/manager is scoped to (their assigned region).
+  @Get('me')
+  me(@CurrentPrincipal() p: Principal) {
+    return this.admin.myScope(p);
+  }
+
   @Get('patients')
-  patients() {
-    return this.admin.listPatients();
+  patients(@CurrentPrincipal() p: Principal) {
+    return this.admin.listPatients(p);
   }
 
   @Get('patients/:id')
-  patient(@Param('id') id: string) {
-    return this.admin.getPatient(id);
+  patient(@CurrentPrincipal() p: Principal, @Param('id') id: string) {
+    return this.admin.getPatient(id, p);
   }
 
   @Get('messages')

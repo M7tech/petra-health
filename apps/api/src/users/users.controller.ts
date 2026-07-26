@@ -17,14 +17,14 @@ class CreateManagerRequest {
   @IsString() @MinLength(8) @MaxLength(72) password!: string;
   @IsString() @Length(2, 120) fullName!: string;
   @IsOptional() @IsString() @Length(0, 120) officeName?: string;
-  @IsOptional() @IsArray() @IsString({ each: true }) doctorIds?: string[];
+  @IsOptional() @IsArray() @IsString({ each: true }) cityIds?: string[];
 }
 
 class UpdateManagerRequest {
   @IsOptional() @IsString() @Length(2, 120) fullName?: string;
   @IsOptional() @IsString() @Length(0, 120) officeName?: string;
   @IsOptional() @IsString() @MinLength(8) @MaxLength(72) password?: string;
-  @IsOptional() @IsArray() @IsString({ each: true }) doctorIds?: string[];
+  @IsOptional() @IsArray() @IsString({ each: true }) cityIds?: string[];
 }
 
 @UseGuards(JwtAuthGuard, SuperAdminGuard)

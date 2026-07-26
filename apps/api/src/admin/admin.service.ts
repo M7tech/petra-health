@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeAssessment } from '../doctor/doctor.service';
+import { Principal } from '../auth/jwt.types';
 import type {
   AdminStats,
+  ManagerScope,
   MessageThreadSummary,
   PatientDetail,
   PatientSummary,
@@ -13,6 +15,63 @@ import type {
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // Returns the city ids a manager is scoped to, or null for a super-admin
+  // (meaning "no restriction" — sees everything).
+  private async scopeCityIds(principal: Principal): Promise<string[] | null> {
+    if (principal.role === 'SUPERADMIN') return null;
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: principal.id },
+      include: { managedCities: { select: { id: true } } },
+    });
+    return admin?.managedCities.map((c) => c.id) ?? [];
+  }
+
+  // What the logged-in admin/manager is scoped to (their region summary).
+  async myScope(principal: Principal): Promise<ManagerScope> {
+    if (principal.role === 'SUPERADMIN') {
+      return { isSuperAdmin: true, officeName: null, cities: [], doctors: [], patientCount: 0 };
+    }
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: principal.id },
+      include: { managedCities: { include: { country: true } } },
+    });
+    if (!admin) throw new NotFoundException('Admin not found');
+
+    const cityIds = admin.managedCities.map((c) => c.id);
+    const [doctors, patientCount] = cityIds.length
+      ? await Promise.all([
+          this.prisma.doctor.findMany({
+            where: { cityId: { in: cityIds } },
+            orderBy: { fullName: 'asc' },
+            select: {
+              id: true,
+              fullName: true,
+              specialty: true,
+              phone: true,
+              cityId: true,
+              countryId: true,
+              email: true,
+              managerId: true,
+            },
+          }),
+          this.prisma.user.count({ where: { cityId: { in: cityIds } } }),
+        ])
+      : [[], 0];
+
+    return {
+      isSuperAdmin: false,
+      officeName: admin.officeName,
+      cities: admin.managedCities.map((c) => ({
+        id: c.id,
+        name: c.name,
+        countryId: c.countryId,
+        countryName: c.country.name,
+      })),
+      doctors,
+      patientCount,
+    };
+  }
 
   async getStats(): Promise<AdminStats> {
     const [
@@ -123,8 +182,10 @@ export class AdminService {
     };
   }
 
-  async listPatients(): Promise<PatientSummary[]> {
+  async listPatients(principal: Principal): Promise<PatientSummary[]> {
+    const cityIds = await this.scopeCityIds(principal);
     const users = await this.prisma.user.findMany({
+      where: cityIds ? { cityId: { in: cityIds } } : undefined,
       orderBy: { createdAt: 'desc' },
       include: {
         city: { include: { country: true } },
@@ -145,7 +206,8 @@ export class AdminService {
     }));
   }
 
-  async getPatient(id: string): Promise<PatientDetail> {
+  async getPatient(id: string, principal: Principal): Promise<PatientDetail> {
+    const cityIds = await this.scopeCityIds(principal);
     const u = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -166,6 +228,11 @@ export class AdminService {
       },
     });
     if (!u) throw new NotFoundException('Patient not found');
+    // A manager can only see patients within their assigned cities — return
+    // NotFound (not Forbidden) to avoid revealing the patient exists elsewhere.
+    if (cityIds && (!u.cityId || !cityIds.includes(u.cityId))) {
+      throw new NotFoundException('Patient not found');
+    }
 
     return {
       id: u.id,
