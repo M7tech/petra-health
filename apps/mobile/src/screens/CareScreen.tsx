@@ -86,6 +86,22 @@ export default function CareScreen() {
     load();
   }, [load]);
 
+  // Keep the support thread live while this screen stays open, so a reply
+  // shows up without leaving and re-entering the Care tab.
+  const pollMessages = useCallback(async () => {
+    try {
+      const m = await api<SupportMessage[]>('/me/messages');
+      setMessages(m);
+    } catch {
+      /* ignore transient poll errors */
+    }
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(pollMessages, 12000);
+    return () => clearInterval(id);
+  }, [pollMessages]);
+
   async function logEvent() {
     if (desc.trim().length < 2) return;
     setBusy(true);

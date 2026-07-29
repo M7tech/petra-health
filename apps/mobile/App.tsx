@@ -14,6 +14,7 @@ import CareScreen from './src/screens/CareScreen';
 import BiometricGate from './src/BiometricGate';
 import FloatingTabBar, { TabDef } from './src/components/FloatingTabBar';
 import QuickActionSheet from './src/components/QuickActionSheet';
+import { useMessageNotifications } from './src/messageAlerts';
 import { colors } from './src/ui';
 
 type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'profile';
@@ -34,6 +35,8 @@ function MainTabs() {
   ];
 
   const bumpHome = useCallback(() => setHomeRefreshKey((k) => k + 1), []);
+
+  useMessageNotifications(true);
 
   return (
     <View style={{ flex: 1 }}>
