@@ -1,4 +1,6 @@
 import * as Notifications from 'expo-notifications';
+import { isRunningInExpoGo } from 'expo';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -37,6 +39,22 @@ export async function requestPermission(): Promise<boolean> {
     });
   }
   return granted;
+}
+
+// Remote push token (real, server-deliverable push — requires a dev/prod
+// build; Expo Go can no longer register for Android remote push as of SDK53).
+export async function registerForPushNotificationsAsync(): Promise<string | null> {
+  if (isRunningInExpoGo()) return null;
+  const ok = await requestPermission();
+  if (!ok) return null;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+  if (!projectId) return null;
+  try {
+    const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 export async function getReminder(): Promise<ReminderState | null> {

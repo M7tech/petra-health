@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeAssessment } from '../doctor/doctor.service';
+import { PushService } from '../push/push.service';
 import { Principal } from '../auth/jwt.types';
 import type {
   AdminStats,
@@ -14,7 +15,10 @@ import type {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly push: PushService,
+  ) {}
 
   // Returns the city ids a manager is scoped to, or null for a super-admin
   // (meaning "no restriction" — sees everything).
@@ -335,6 +339,8 @@ export class AdminService {
     const m = await this.prisma.supportMessage.create({
       data: { userId, sender: 'ADMIN', body },
     });
+    // Fire-and-forget: a failed/unregistered push shouldn't fail the reply itself.
+    void this.push.send(patient.pushToken, 'Petra Health', body);
     return { id: m.id, sender: 'ADMIN', body: m.body, createdAt: m.createdAt.toISOString() };
   }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/auth';
@@ -15,6 +15,8 @@ import BiometricGate from './src/BiometricGate';
 import FloatingTabBar, { TabDef } from './src/components/FloatingTabBar';
 import QuickActionSheet from './src/components/QuickActionSheet';
 import { useMessageNotifications } from './src/messageAlerts';
+import { registerForPushNotificationsAsync } from './src/notifications';
+import { api } from './src/api';
 import { colors } from './src/ui';
 
 type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'profile';
@@ -37,6 +39,21 @@ function MainTabs() {
   const bumpHome = useCallback(() => setHomeRefreshKey((k) => k + 1), []);
 
   useMessageNotifications(true);
+
+  // No-op in Expo Go (returns null there); registers a real deliverable
+  // push token once running from an EAS dev/prod build.
+  useEffect(() => {
+    (async () => {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        try {
+          await api('/me/push-token', { method: 'POST', body: JSON.stringify({ token }) });
+        } catch {
+          /* non-fatal: will retry next app launch */
+        }
+      }
+    })();
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>

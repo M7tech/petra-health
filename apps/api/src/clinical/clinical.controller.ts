@@ -15,6 +15,10 @@ class CreateMessageRequest {
   @IsString() @Length(1, 1000) body!: string;
 }
 
+class RegisterPushTokenRequest {
+  @IsString() @Length(1, 200) token!: string;
+}
+
 class CreateAdverseEventRequest {
   @IsString() @Length(2, 300) description!: string;
   @IsOptional() @IsIn(['MILD', 'MODERATE', 'SEVERE']) severity?: AdverseSeverity;
@@ -101,6 +105,15 @@ export class ClinicalController {
     return this.prisma.supportMessage.create({
       data: { userId: p.id, sender: 'PATIENT', body: dto.body },
     });
+  }
+
+  // Registers this device's Expo push token so admin replies can be
+  // delivered even when the app isn't running (requires a dev/prod build,
+  // not Expo Go, which no longer supports remote push).
+  @Post('push-token')
+  async registerPushToken(@CurrentPrincipal() p: Principal, @Body() dto: RegisterPushTokenRequest) {
+    await this.prisma.user.update({ where: { id: p.id }, data: { pushToken: dto.token } });
+    return { ok: true };
   }
 
   @Get('assessment')

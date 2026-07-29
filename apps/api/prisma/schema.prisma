@@ -91,6 +91,7 @@ model User {
   heightCm         Float?
   chronicConditions String[] @default([]) // condition keys, e.g. ["diabetes"]
   otherConditions  String?
+  pushToken        String? // Expo push token, registered from a dev/production build (not Expo Go)
   // Chosen during hierarchical onboarding.
   countryId    String?
   cityId       String?

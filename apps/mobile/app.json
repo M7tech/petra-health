@@ -18,7 +18,11 @@
       }
     },
     "android": {
-      "package": "com.petrapharma.health"
+      "package": "com.petrapharma.health",
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "plugins": [
       "expo-notifications",
@@ -29,6 +33,12 @@
         }
       ],
       "expo-localization"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "43e3843e-a614-4a66-bc53-f7772185640f"
+      }
+    },
+    "owner": "mohammedshukur"
   }
 }
