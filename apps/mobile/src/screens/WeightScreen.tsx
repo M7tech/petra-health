@@ -217,7 +217,7 @@ export default function WeightScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  container: { padding: 20, paddingTop: 60, backgroundColor: colors.bg, flexGrow: 1 },
+  container: { padding: 20, paddingTop: 60, paddingBottom: 140, backgroundColor: colors.bg, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: '700', color: colors.text },
   latest: { color: colors.muted, marginBottom: 16, marginTop: 2 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14 },

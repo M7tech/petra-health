@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/auth';
@@ -12,16 +12,20 @@ import WeightScreen from './src/screens/WeightScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CareScreen from './src/screens/CareScreen';
 import BiometricGate from './src/BiometricGate';
+import FloatingTabBar, { TabDef } from './src/components/FloatingTabBar';
+import QuickActionSheet from './src/components/QuickActionSheet';
 import { colors } from './src/ui';
 
 type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'profile';
 
-// Lightweight bottom-tab navigation (no nav library needed for the slice).
+// Floating pill nav + raised quick-add button (no nav library needed for the slice).
 function MainTabs() {
   const { t, isRTL } = useI18n();
   const [tab, setTab] = useState<TabKey>('home');
+  const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const TABS: { key: TabKey; label: string; icon: string }[] = [
+  const TABS: TabDef<TabKey>[] = [
     { key: 'home', label: t('tabs.home'), icon: '🏠' },
     { key: 'meds', label: t('tabs.semetra'), icon: '💊' },
     { key: 'weight', label: t('tabs.weight'), icon: '⚖️' },
@@ -29,11 +33,13 @@ function MainTabs() {
     { key: 'profile', label: t('tabs.profile'), icon: '👤' },
   ];
 
+  const bumpHome = useCallback(() => setHomeRefreshKey((k) => k + 1), []);
+
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         {tab === 'home' ? (
-          <HomeScreen />
+          <HomeScreen refreshKey={homeRefreshKey} onNavigate={setTab} />
         ) : tab === 'meds' ? (
           <MedicationScreen />
         ) : tab === 'weight' ? (
@@ -44,14 +50,23 @@ function MainTabs() {
           <ProfileScreen />
         )}
       </View>
-      <View style={[styles.tabBar, isRTL && { flexDirection: 'row-reverse' }]}>
-        {TABS.map((tb) => (
-          <TouchableOpacity key={tb.key} style={styles.tab} onPress={() => setTab(tb.key)}>
-            <Text style={styles.tabIcon}>{tb.icon}</Text>
-            <Text style={[styles.tabLabel, tab === tb.key && styles.tabLabelActive]}>{tb.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setSheetOpen(true)}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
+
+      <FloatingTabBar tabs={TABS} active={tab} onSelect={setTab} isRTL={isRTL} />
+
+      <QuickActionSheet
+        visible={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        onNavigate={(t) => setTab(t)}
+        onLogged={bumpHome}
+      />
     </View>
   );
 }
@@ -102,16 +117,23 @@ export default function App() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  tabBar: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    backgroundColor: '#fff',
-    paddingBottom: 24,
-    paddingTop: 8,
+  fab: {
+    position: 'absolute',
+    alignSelf: 'center',
+    bottom: 78,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: colors.petra,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.petra,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 12,
+    borderWidth: 4,
+    borderColor: colors.bg,
   },
-  tab: { flex: 1, alignItems: 'center' },
-  tabIcon: { fontSize: 20 },
-  tabLabel: { fontSize: 12, color: colors.muted, marginTop: 2 },
-  tabLabelActive: { color: colors.petra, fontWeight: '700' },
+  fabIcon: { color: '#fff', fontSize: 28, fontWeight: '700', marginTop: -2 },
 });

@@ -289,7 +289,7 @@ export default function CareScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  container: { padding: 20, paddingTop: 56, paddingBottom: 40, backgroundColor: colors.bg, flexGrow: 1 },
+  container: { padding: 20, paddingTop: 56, paddingBottom: 140, backgroundColor: colors.bg, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: 12 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 14 },
   cardTitle: { fontWeight: '700', color: colors.text, marginBottom: 10, fontSize: 15 },
