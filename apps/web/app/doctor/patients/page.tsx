@@ -11,10 +11,19 @@ const STATUS_STYLE: Record<string, string> = {
   DISCONTINUED: 'bg-red-100 text-red-700',
 };
 
+// Case/script-agnostic substring match — NFKC normalization means an accented
+// or differently-composed Unicode variant of the same characters still
+// matches, and works equally for Latin, Arabic, and Kurdish (Sorani) names.
+function matchesQuery(name: string, query: string): boolean {
+  const norm = (s: string) => s.normalize('NFKC').toLowerCase();
+  return norm(name).includes(norm(query));
+}
+
 export default function DoctorPatientsPage() {
   const [patients, setPatients] = useState<DoctorPatientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     api<DoctorPatientSummary[]>('/doctor/patients')
@@ -22,6 +31,8 @@ export default function DoctorPatientsPage() {
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
       .finally(() => setLoading(false));
   }, []);
+
+  const filtered = query.trim() ? patients.filter((p) => matchesQuery(p.fullName, query)) : patients;
 
   return (
     <>
@@ -31,6 +42,14 @@ export default function DoctorPatientsPage() {
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search patient name…"
+          dir="auto"
+          className="mb-4 w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-petra-500 focus:outline-none"
+        />
         {loading ? (
           <p className="text-slate-400">Loading…</p>
         ) : (
@@ -46,7 +65,7 @@ export default function DoctorPatientsPage() {
               </tr>
             </thead>
             <tbody>
-              {patients.map((p) => (
+              {filtered.map((p) => (
                 <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50">
                   <td className="py-2.5 font-medium text-petra-700">
                     <Link href={`/doctor/patients/${p.id}`} className="hover:underline">
@@ -80,10 +99,12 @@ export default function DoctorPatientsPage() {
                   </td>
                 </tr>
               ))}
-              {patients.length === 0 && (
+              {filtered.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-6 text-center text-slate-400">
-                    No patients have selected you yet.
+                    {patients.length === 0
+                      ? 'No patients have selected you yet.'
+                      : 'No patients match your search.'}
                   </td>
                 </tr>
               )}
