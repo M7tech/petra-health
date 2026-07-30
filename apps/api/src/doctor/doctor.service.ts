@@ -6,6 +6,7 @@ import type {
   ClinicalAssessment,
   DoctorPatientDetail,
   DoctorPatientSummary,
+  DoctorStats,
   PatientComment,
 } from '@petra/shared';
 import { CreateCommentRequest, UpsertAssessmentRequest } from './dto';
@@ -39,6 +40,89 @@ export class DoctorService {
         createdAt: p.createdAt.toISOString(),
       };
     });
+  }
+
+  async getStats(doctorId: string): Promise<DoctorStats> {
+    const [patients, recentPatients] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { doctorId },
+        select: {
+          gender: true,
+          assessment: { select: { treatmentStatus: true } },
+          _count: { select: { medications: true, adverseEvents: true } },
+          doseLogs: { orderBy: { takenAt: 'desc' }, take: 1, select: { takenAt: true } },
+          weightEntries: { orderBy: { recordedAt: 'asc' }, select: { weightKg: true } },
+          hba1cEntries: { orderBy: { recordedAt: 'asc' }, select: { value: true } },
+        },
+      }),
+      this.prisma.user.findMany({
+        where: { doctorId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, fullName: true, email: true, createdAt: true },
+      }),
+    ]);
+
+    const genderBreakdown = { male: 0, female: 0, unspecified: 0 };
+    const adherence = { onTime: 0, overdue: 0, notStarted: 0 };
+    const treatmentStatus = { ongoing: 0, completed: 0, discontinued: 0 };
+    let totalKgLost = 0;
+    let totalAdverseEvents = 0;
+    const hba1cChanges: number[] = [];
+    const WEEK_MS = 8 * 24 * 60 * 60 * 1000; // weekly injection + 1 day grace
+    const now = Date.now();
+
+    for (const p of patients) {
+      if (p.gender === 'MALE') genderBreakdown.male++;
+      else if (p.gender === 'FEMALE') genderBreakdown.female++;
+      else genderBreakdown.unspecified++;
+
+      if (p._count.medications === 0) {
+        adherence.notStarted++;
+      } else {
+        const last = p.doseLogs[0]?.takenAt;
+        if (last && now - last.getTime() <= WEEK_MS) adherence.onTime++;
+        else adherence.overdue++;
+      }
+
+      const status = p.assessment?.treatmentStatus ?? 'ONGOING';
+      if (status === 'ONGOING') treatmentStatus.ongoing++;
+      else if (status === 'COMPLETED') treatmentStatus.completed++;
+      else treatmentStatus.discontinued++;
+
+      if (p.weightEntries.length >= 2) {
+        const first = p.weightEntries[0].weightKg;
+        const latest = p.weightEntries[p.weightEntries.length - 1].weightKg;
+        if (first > latest) totalKgLost += first - latest;
+      }
+
+      if (p.hba1cEntries.length >= 2) {
+        const first = p.hba1cEntries[0].value;
+        const latest = p.hba1cEntries[p.hba1cEntries.length - 1].value;
+        hba1cChanges.push(latest - first);
+      }
+
+      totalAdverseEvents += p._count.adverseEvents;
+    }
+
+    return {
+      totalPatients: patients.length,
+      genderBreakdown,
+      adherence,
+      treatmentStatus,
+      totalKgLost: Math.round(totalKgLost * 10) / 10,
+      avgHba1cChange:
+        hba1cChanges.length === 0
+          ? null
+          : Math.round((hba1cChanges.reduce((a, b) => a + b, 0) / hba1cChanges.length) * 10) / 10,
+      totalAdverseEvents,
+      recentPatients: recentPatients.map((p) => ({
+        id: p.id,
+        fullName: p.fullName,
+        email: p.email,
+        createdAt: p.createdAt.toISOString(),
+      })),
+    };
   }
 
   // Ensures the patient is assigned to this doctor before returning anything.

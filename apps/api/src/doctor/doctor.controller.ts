@@ -9,6 +9,11 @@ import { Principal } from '../auth/jwt.types';
 export class DoctorController {
   constructor(private readonly doctor: DoctorService) {}
 
+  @Get('stats')
+  stats(@CurrentPrincipal() p: Principal) {
+    return this.doctor.getStats(p.id);
+  }
+
   @Get('patients')
   patients(@CurrentPrincipal() p: Principal) {
     return this.doctor.listPatients(p.id);

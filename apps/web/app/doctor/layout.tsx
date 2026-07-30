@@ -1,12 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+
+const NAV = [
+  { href: '/doctor/overview', label: 'Overview' },
+  { href: '/doctor/patients', label: 'My Patients' },
+];
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   const { session, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && (!session || session.role !== 'doctor')) router.replace('/login');
@@ -25,6 +32,22 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
           </span>
           <span className="font-semibold text-slate-800">Petra Health · Doctor</span>
         </div>
+        <nav className="flex items-center gap-1">
+          {NAV.map((n) => {
+            const active = pathname === n.href || pathname?.startsWith(`${n.href}/`);
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  active ? 'bg-petra-50 text-petra-700' : 'text-slate-500 hover:bg-slate-100'
+                }`}
+              >
+                {n.label}
+              </Link>
+            );
+          })}
+        </nav>
         <div className="flex items-center gap-4 text-sm">
           <div className="text-right">
             <p className="font-medium text-slate-700">{session.fullName}</p>

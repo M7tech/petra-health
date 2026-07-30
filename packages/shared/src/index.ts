@@ -395,6 +395,17 @@ export interface AdminStats {
   recentPatients: { id: string; fullName: string; email: string; createdAt: string }[];
 }
 
+export interface DoctorStats {
+  totalPatients: number;
+  genderBreakdown: { male: number; female: number; unspecified: number };
+  adherence: { onTime: number; overdue: number; notStarted: number };
+  treatmentStatus: { ongoing: number; completed: number; discontinued: number };
+  totalKgLost: number;
+  avgHba1cChange: number | null; // negative = average improvement (lower A1c); null if no patient has 2+ readings
+  totalAdverseEvents: number;
+  recentPatients: { id: string; fullName: string; email: string; createdAt: string }[];
+}
+
 // ---- HbA1c ----
 export interface Hba1cEntry {
   id: string;

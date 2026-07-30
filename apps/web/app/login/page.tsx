@@ -39,7 +39,7 @@ export default function LoginPage() {
     try {
       if (role === 'doctor') {
         await doctorLogin(email.trim(), password);
-        router.replace('/doctor/patients');
+        router.replace('/doctor/overview');
       } else {
         const res = await adminRequestOtp(username.trim(), password);
         setSentTo(res.sentTo ?? null);
