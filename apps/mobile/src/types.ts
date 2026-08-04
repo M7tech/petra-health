@@ -133,3 +133,22 @@ export interface WeightEntry {
   recordedAt: string;
   note: string | null;
 }
+
+export type ContentType = 'NEWS' | 'TRAINING';
+export interface ContentPost {
+  id: string;
+  type: ContentType;
+  titleEn: string;
+  titleAr: string | null;
+  titleKu: string | null;
+  bodyEn: string | null;
+  bodyAr: string | null;
+  bodyKu: string | null;
+  videoUrlEn: string | null;
+  videoUrlAr: string | null;
+  videoUrlKu: string | null;
+  photoUrls: string[];
+  publishedAt: string;
+  updatedAt: string;
+  authorName: string | null;
+}

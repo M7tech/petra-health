@@ -9,6 +9,7 @@ const BASE_NAV = [
   { href: '/dashboard/overview', label: 'Overview' },
   { href: '/dashboard/patients', label: 'Patients' },
   { href: '/dashboard/messages', label: 'Messages' },
+  { href: '/dashboard/content', label: 'Training & News' },
   { href: '/dashboard/countries', label: 'Countries' },
   { href: '/dashboard/cities', label: 'Cities' },
   { href: '/dashboard/doctors', label: 'Doctors' },

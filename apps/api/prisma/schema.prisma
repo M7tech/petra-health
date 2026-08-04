@@ -227,6 +227,7 @@ model Admin {
   // Cities this manager (EDITOR) is assigned — grants visibility into all
   // doctors and patients within them (the primary assignment mechanism).
   managedCities City[] @relation("ManagerCities")
+  contentPosts  ContentPost[]
 
   @@map("admins")
 }
@@ -334,4 +335,44 @@ model WeightEntry {
 
   @@index([userId, recordedAt])
   @@map("weight_entries")
+}
+
+// ---------------------------------------------------------------------------
+// Training & News — admin-published content, localized per language.
+// ---------------------------------------------------------------------------
+
+enum ContentType {
+  NEWS
+  TRAINING
+}
+
+model ContentPost {
+  id          String      @id @default(uuid())
+  type        ContentType
+
+  titleEn String
+  titleAr String?
+  titleKu String?
+
+  bodyEn String?
+  bodyAr String?
+  bodyKu String?
+
+  // YouTube (or other embeddable) video links, per language.
+  videoUrlEn String?
+  videoUrlAr String?
+  videoUrlKu String?
+
+  // External image URLs (no upload pipeline — admin pastes hosted links).
+  photoUrls String[] @default([])
+
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId String?
+  author   Admin?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([type, publishedAt])
+  @@map("content_posts")
 }

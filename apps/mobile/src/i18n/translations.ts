@@ -42,7 +42,7 @@ export const en = {
     selectDoctor: 'Select a doctor',
     finish: 'Finish',
   },
-  tabs: { home: 'Home', semetra: 'Semetra', weight: 'Weight', profile: 'Profile', care: 'Care' },
+  tabs: { home: 'Home', semetra: 'Semetra', weight: 'Weight', profile: 'Profile', care: 'Care', learn: 'Learn' },
   care: {
     title: 'My care',
     comments: 'Doctor comments',
@@ -160,6 +160,16 @@ export const en = {
     you: 'You',
     team: 'Petra Health',
   },
+  learn: {
+    title: 'Training & News',
+    subtitle: 'Shared by Petra Health.',
+    filterAll: 'All',
+    filterTraining: 'Training',
+    filterNews: 'News',
+    watchVideo: 'Watch video',
+    noPosts: 'Nothing shared yet.',
+    loadFailed: 'Could not load Training & News.',
+  },
   profile: {
     title: 'Profile',
     personalInfo: 'Personal information',
@@ -236,7 +246,7 @@ export const ar: Dict = {
     selectDoctor: 'اختر طبيبًا',
     finish: 'إنهاء',
   },
-  tabs: { home: 'الرئيسية', semetra: 'سيميترا', weight: 'الوزن', profile: 'الملف', care: 'الرعاية' },
+  tabs: { home: 'الرئيسية', semetra: 'سيميترا', weight: 'الوزن', profile: 'الملف', care: 'الرعاية', learn: 'تعلّم' },
   care: {
     title: 'رعايتي',
     comments: 'تعليقات الطبيب',
@@ -353,6 +363,16 @@ export const ar: Dict = {
     you: 'أنت',
     team: 'بيترا هيلث',
   },
+  learn: {
+    title: 'تدريب وأخبار',
+    subtitle: 'مشاركة من بيترا هيلث.',
+    filterAll: 'الكل',
+    filterTraining: 'تدريب',
+    filterNews: 'أخبار',
+    watchVideo: 'مشاهدة الفيديو',
+    noPosts: 'لا يوجد محتوى بعد.',
+    loadFailed: 'تعذر تحميل التدريب والأخبار.',
+  },
   profile: {
     title: 'الملف الشخصي',
     personalInfo: 'المعلومات الشخصية',
@@ -427,7 +447,7 @@ export const ku: Dict = {
     selectDoctor: 'پزیشکێک هەڵبژێرە',
     finish: 'تەواوکردن',
   },
-  tabs: { home: 'ماڵەوە', semetra: 'سیمێترا', weight: 'کێش', profile: 'پڕۆفایل', care: 'چاودێری' },
+  tabs: { home: 'ماڵەوە', semetra: 'سیمێترا', weight: 'کێش', profile: 'پڕۆفایل', care: 'چاودێری', learn: 'فێربوون' },
   care: {
     title: 'چاودێری من',
     comments: 'تێبینییەکانی پزیشک',
@@ -543,6 +563,16 @@ export const ku: Dict = {
     none: 'هێشتا هیچ پەیامێک نییە. سڵاو بکە!',
     you: 'تۆ',
     team: 'پێترا هێڵث',
+  },
+  learn: {
+    title: 'ڕاهێنان و هەواڵ',
+    subtitle: 'هاوبەشکراو لەلایەن پێترا هێڵثەوە.',
+    filterAll: 'هەموو',
+    filterTraining: 'ڕاهێنان',
+    filterNews: 'هەواڵ',
+    watchVideo: 'ڤیدیۆکە ببینە',
+    noPosts: 'هێشتا هیچ شتێک هاوبەش نەکراوە.',
+    loadFailed: 'نەتوانرا ڕاهێنان و هەواڵ بار بکرێت.',
   },
   profile: {
     title: 'پڕۆفایل',

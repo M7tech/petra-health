@@ -8,7 +8,7 @@ async function main() {
   // Keyed by username (stable) rather than email, since the email is the one
   // field we intentionally change here (to a real inbox for OTP delivery).
   const adminPassword = await bcrypt.hash('Admin123!', 12);
-  await prisma.admin.upsert({
+  const superAdmin = await prisma.admin.upsert({
     where: { username: 'superadmin' },
     update: { email: 'm7.kurd@gmail.com' },
     create: {
@@ -181,6 +181,27 @@ async function main() {
         },
       });
     }
+  }
+
+  // --- Training & News: starter "how to inject" training post ---
+  const existingTraining = await prisma.contentPost.findFirst({
+    where: { type: 'TRAINING', titleEn: 'How to Take a Semetra Injection' },
+  });
+  if (!existingTraining) {
+    await prisma.contentPost.create({
+      data: {
+        type: 'TRAINING',
+        authorId: superAdmin.id,
+        titleEn: 'How to Take a Semetra Injection',
+        titleAr: 'كيفية أخذ حقنة سيميترا',
+        titleKu: 'چۆنیەتی وەرگرتنی دەرزی سیمێترا',
+        bodyEn: 'Watch this short video to learn the correct injection technique for your weekly Semetra dose.',
+        bodyAr: 'شاهد هذا الفيديو القصير لتتعلم الطريقة الصحيحة لحقن جرعة سيميترا الأسبوعية.',
+        bodyKu: 'ئەم ڤیدیۆیە کورتە ببینە بۆ فێربوونی شێوازی ڕاستی دەرزیدان بۆ دۆزی هەفتانەی سیمێترا.',
+        videoUrlAr: 'https://youtu.be/0AFahS331p4?si=2peSjtRF4f7BMpGH',
+        videoUrlKu: 'https://youtu.be/WRWYIRp0yNM?si=R7LhZJiuk87SACoL',
+      },
+    });
   }
 
   console.log('Seed complete.');

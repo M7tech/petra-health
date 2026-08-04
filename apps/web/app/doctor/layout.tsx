@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 const NAV = [
   { href: '/doctor/overview', label: 'Overview' },
   { href: '/doctor/patients', label: 'My Patients' },
+  { href: '/doctor/content', label: 'Training & News' },
 ];
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {

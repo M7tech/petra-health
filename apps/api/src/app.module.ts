@@ -12,6 +12,7 @@ import { ClinicalModule } from './clinical/clinical.module';
 import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 import { PushModule } from './push/push.module';
+import { ContentModule } from './content/content.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PushModule } from './push/push.module';
     MailModule,
     UsersModule,
     PushModule,
+    ContentModule,
   ],
 })
 export class AppModule {}

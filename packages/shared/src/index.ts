@@ -466,3 +466,42 @@ export interface PatientDetail extends PatientSummary {
   adverseEvents: AdverseEvent[];
   comments: PatientComment[];
 }
+
+// ---- Training & News ----
+export type ContentType = 'NEWS' | 'TRAINING';
+export type ContentLang = 'en' | 'ar' | 'ku';
+
+export interface ContentPost {
+  id: string;
+  type: ContentType;
+  titleEn: string;
+  titleAr: string | null;
+  titleKu: string | null;
+  bodyEn: string | null;
+  bodyAr: string | null;
+  bodyKu: string | null;
+  videoUrlEn: string | null;
+  videoUrlAr: string | null;
+  videoUrlKu: string | null;
+  photoUrls: string[];
+  publishedAt: string;
+  updatedAt: string;
+  authorName: string | null;
+}
+
+export interface CreateContentDto {
+  type: ContentType;
+  titleEn: string;
+  titleAr?: string;
+  titleKu?: string;
+  bodyEn?: string;
+  bodyAr?: string;
+  bodyKu?: string;
+  videoUrlEn?: string;
+  videoUrlAr?: string;
+  videoUrlKu?: string;
+  photoUrls?: string[];
+  publishedAt?: string;
+}
+
+export type UpdateContentDto = Partial<CreateContentDto>;
