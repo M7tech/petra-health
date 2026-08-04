@@ -6,10 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "petrahealth",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#a4225f"
-    },
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.petrapharma.health",
@@ -22,7 +19,11 @@
       "permissions": [
         "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#a4225f"
+      }
     },
     "plugins": [
       "expo-notifications",
@@ -32,7 +33,15 @@
           "faceIDPermission": "Petra Health uses Face ID to unlock the app."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#a4225f"
+        }
+      ]
     ],
     "extra": {
       "eas": {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
@@ -27,9 +27,7 @@ export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) 
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.logo}>
-        <Text style={styles.logoText}>8</Text>
-      </View>
+      <Image source={require('../../assets/logo-mark.png')} style={styles.logo} />
       <Text style={styles.title}>{t('auth.welcome')}</Text>
       <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
 
@@ -59,16 +57,11 @@ export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) 
 const styles = StyleSheet.create({
   container: { padding: 24, paddingTop: 80, backgroundColor: colors.bg, flexGrow: 1 },
   logo: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.petra,
+    width: 64,
+    height: 64,
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 12,
   },
-  logoText: { color: '#fff', fontSize: 24, fontWeight: '700' },
   title: { fontSize: 24, fontWeight: '700', textAlign: 'center', color: colors.text },
   subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 28 },
   error: {

@@ -71,9 +71,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
       <div className="w-full max-w-sm space-y-5 rounded-2xl bg-white p-8 shadow-lg">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-petra-500 text-lg font-bold text-white">
-            8
-          </div>
+          <img src="/logo-mark.png" alt="Petra Pharma" className="mx-auto mb-3 h-14 w-14" />
           <h1 className="text-xl font-semibold text-slate-800">Petra Health Portal</h1>
           <p className="text-sm text-slate-500">Sign in to continue</p>
         </div>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { authenticate, isBiometricEnabled } from './biometrics';
 import { colors } from './ui';
 
@@ -36,9 +36,7 @@ export default function BiometricGate({ children }: { children: React.ReactNode 
   if (locked) {
     return (
       <View style={styles.center}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>8</Text>
-        </View>
+        <Image source={require('../assets/logo-mark.png')} style={styles.logo} />
         <Text style={styles.title}>Petra Health is locked</Text>
         <Text style={styles.subtitle}>Unlock with Face ID or fingerprint to continue.</Text>
         <TouchableOpacity style={styles.button} onPress={attempt}>
@@ -60,15 +58,10 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.petra,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 64,
+    height: 64,
     marginBottom: 16,
   },
-  logoText: { color: '#fff', fontSize: 24, fontWeight: '700' },
   title: { fontSize: 20, fontWeight: '700', color: colors.text },
   subtitle: { color: colors.muted, textAlign: 'center', marginTop: 6, marginBottom: 24 },
   button: { backgroundColor: colors.petra, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 40 },

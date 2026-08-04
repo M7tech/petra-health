@@ -37,9 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="flex w-60 flex-col justify-between bg-white p-5 shadow-sm">
         <div>
           <div className="mb-6 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-petra-500 text-sm font-bold text-white">
-              8
-            </span>
+            <img src="/logo-mark.png" alt="" className="h-8 w-8" />
             <span className="font-semibold text-slate-800">Petra Health</span>
           </div>
           <nav className="space-y-1">

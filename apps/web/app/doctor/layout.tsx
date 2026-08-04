@@ -27,9 +27,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
     <div className="min-h-screen bg-slate-100">
       <header className="flex items-center justify-between bg-white px-6 py-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-petra-500 text-sm font-bold text-white">
-            8
-          </span>
+          <img src="/logo-mark.png" alt="" className="h-8 w-8" />
           <span className="font-semibold text-slate-800">Petra Health · Doctor</span>
         </div>
         <nav className="flex items-center gap-1">
