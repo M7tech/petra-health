@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -15,6 +14,7 @@ import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
 import OtherMedsCard from '../components/OtherMedsCard';
 import TimePicker from '../components/TimePicker';
+import KeyboardScreen from '../components/KeyboardScreen';
 import { scheduleWeeklyReminder } from '../notifications';
 import type { DoseLog, Medication, UserMedication } from '../types';
 
@@ -156,7 +156,7 @@ export default function MedicationScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardScreen
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
@@ -242,7 +242,7 @@ export default function MedicationScreen() {
       )}
 
       <OtherMedsCard />
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

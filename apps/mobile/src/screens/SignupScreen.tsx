@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
+import KeyboardScreen from '../components/KeyboardScreen';
 
 export default function SignupScreen({ onGoLogin }: { onGoLogin: () => void }) {
   const { signup } = useAuth();
@@ -27,7 +28,7 @@ export default function SignupScreen({ onGoLogin }: { onGoLogin: () => void }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardScreen contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t('auth.signupCta')}</Text>
       {error && <Text style={styles.error}>{error}</Text>}
       <Field label={t('auth.fullName')} value={fullName} onChangeText={setFullName} />
@@ -43,7 +44,7 @@ export default function SignupScreen({ onGoLogin }: { onGoLogin: () => void }) {
       <TouchableOpacity onPress={onGoLogin} style={{ marginTop: 18 }}>
         <Text style={styles.link}>{t('auth.haveAccount')}</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

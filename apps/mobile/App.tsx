@@ -12,6 +12,7 @@ import WeightScreen from './src/screens/WeightScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import CareScreen from './src/screens/CareScreen';
 import LearnScreen from './src/screens/LearnScreen';
+import PharmacyScreen from './src/screens/PharmacyScreen';
 import BiometricGate from './src/BiometricGate';
 import FloatingTabBar, { TabDef } from './src/components/FloatingTabBar';
 import QuickActionSheet from './src/components/QuickActionSheet';
@@ -20,7 +21,7 @@ import { registerForPushNotificationsAsync } from './src/notifications';
 import { api } from './src/api';
 import { colors } from './src/ui';
 
-type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'learn' | 'profile';
+type TabKey = 'home' | 'meds' | 'weight' | 'care' | 'learn' | 'pharmacy' | 'profile';
 
 // Floating pill nav + raised quick-add button (no nav library needed for the slice).
 function MainTabs() {
@@ -35,6 +36,7 @@ function MainTabs() {
     { key: 'weight', label: t('tabs.weight'), icon: '⚖️' },
     { key: 'care', label: t('tabs.care'), icon: '🩺' },
     { key: 'learn', label: t('tabs.learn'), icon: '🎓' },
+    { key: 'pharmacy', label: t('tabs.pharmacy'), icon: '🏥' },
     { key: 'profile', label: t('tabs.profile'), icon: '👤' },
   ];
 
@@ -70,6 +72,8 @@ function MainTabs() {
           <CareScreen />
         ) : tab === 'learn' ? (
           <LearnScreen />
+        ) : tab === 'pharmacy' ? (
+          <PharmacyScreen />
         ) : (
           <ProfileScreen />
         )}

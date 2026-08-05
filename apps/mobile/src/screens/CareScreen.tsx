@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -12,6 +11,7 @@ import {
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
+import KeyboardScreen from '../components/KeyboardScreen';
 import {
   AdverseEvent,
   AdverseSeverity,
@@ -155,7 +155,7 @@ export default function CareScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardScreen
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
@@ -299,7 +299,7 @@ export default function CareScreen() {
           </View>
         </View>
       </View>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

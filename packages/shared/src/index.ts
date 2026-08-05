@@ -301,6 +301,33 @@ export interface UpdateSelfDto {
   whatsappPhone?: string;
 }
 
+export interface Pharmacy {
+  id: string;
+  name: string;
+  phone: string | null;
+  address: string | null;
+  latitude: number;
+  longitude: number;
+  active: boolean;
+  createdAt: string;
+}
+export interface CreatePharmacyDto {
+  name: string;
+  phone?: string;
+  address?: string;
+  latitude: number;
+  longitude: number;
+  active?: boolean;
+}
+export interface UpdatePharmacyDto {
+  name?: string;
+  phone?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  active?: boolean;
+}
+
 export interface PatientLocation {
   id: string;
   fullName: string;

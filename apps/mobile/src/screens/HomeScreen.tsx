@@ -194,6 +194,20 @@ export default function HomeScreen({
     return `${t('home.dueIn')} ${diff} ${t('home.days')}`;
   };
 
+  const daysUntilNextDose = nextDose ? Math.round((nextDose.date.getTime() - now) / 86400000) : null;
+  const reminderTitle =
+    daysUntilNextDose == null
+      ? ''
+      : daysUntilNextDose < 0
+        ? t('home.reminderOverdue')
+        : daysUntilNextDose === 0
+          ? t('home.reminderToday')
+          : daysUntilNextDose === 1
+            ? t('home.reminderTomorrow')
+            : `${daysUntilNextDose} ${t('home.reminderDaysUntil')}`;
+  const reminderSubtitle =
+    daysUntilNextDose != null && daysUntilNextDose < 0 ? t('home.reminderGentle') : t('home.reminderEncourage');
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -216,6 +230,16 @@ export default function HomeScreen({
           </View>
         )}
       </View>
+
+      {mine && daysUntilNextDose != null && (
+        <View style={[styles.reminderBanner, isRTL && { flexDirection: 'row-reverse' }]}>
+          <Text style={styles.reminderIcon}>{daysUntilNextDose <= 0 ? '💉' : '🎯'}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.reminderTitle, align]}>{reminderTitle}</Text>
+            <Text style={[styles.reminderSubtitle, align]}>{reminderSubtitle}</Text>
+          </View>
+        </View>
+      )}
 
       <View style={styles.card}>
         <WeekStrip activeDays={activeDays} labels={weekLabels} isRTL={isRTL} />
@@ -330,6 +354,20 @@ const styles = StyleSheet.create({
   streakIcon: { fontSize: 15 },
   streakNum: { fontWeight: '800', color: '#c2410c', fontSize: 14 },
   card: { backgroundColor: '#fff', borderRadius: 18, padding: 18, marginBottom: 14 },
+  reminderBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#fde8cd',
+  },
+  reminderIcon: { fontSize: 26 },
+  reminderTitle: { fontWeight: '800', color: '#9a3412', fontSize: 15 },
+  reminderSubtitle: { color: '#c2703d', fontSize: 12, marginTop: 2 },
   cardTitle: { fontWeight: '600', color: colors.text, marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center' },
   rowLabel: { fontWeight: '600', color: colors.text, marginBottom: 4 },

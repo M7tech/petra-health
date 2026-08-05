@@ -66,6 +66,11 @@ export default function WheelPicker<T extends string | number>({
         data={options}
         keyExtractor={(o) => String(o.value)}
         showsVerticalScrollIndicator={false}
+        // This wheel scrolls vertically while sitting inside a vertically
+        // scrolling screen — without this, Android's touch dispatch hands
+        // the whole gesture to the outer ScrollView, so drags/flicks here
+        // do nothing and only individual taps register.
+        nestedScrollEnabled
         snapToInterval={ITEM_HEIGHT}
         decelerationRate="fast"
         getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}

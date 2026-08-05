@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import KeyboardScreen from '../components/KeyboardScreen';
 
 export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) {
   const { login } = useAuth();
@@ -26,7 +27,7 @@ export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) 
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardScreen contentContainerStyle={styles.container}>
       <Image source={require('../../assets/logo-mark.png')} style={styles.logo} />
       <Text style={styles.title}>{t('auth.welcome')}</Text>
       <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
@@ -50,7 +51,7 @@ export default function LoginScreen({ onGoSignup }: { onGoSignup: () => void }) 
       <TouchableOpacity onPress={onGoSignup} style={{ marginTop: 18 }}>
         <Text style={styles.link}>{t('auth.noAccount')}</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

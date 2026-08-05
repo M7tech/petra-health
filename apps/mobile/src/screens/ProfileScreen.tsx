@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { PrimaryButton, colors } from '../ui';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DatePicker from '../components/DatePicker';
 import WheelPicker from '../components/WheelPicker';
+import KeyboardScreen from '../components/KeyboardScreen';
 import { CHRONIC_CONDITIONS, Gender, PatientProfile, Country, City } from '../types';
 
 const GENDERS: Gender[] = ['MALE', 'FEMALE', 'UNSPECIFIED'];
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardScreen contentContainerStyle={styles.container}>
       <LanguageSwitcher />
       <Text style={[styles.title, align]}>{t('profile.title')}</Text>
 
@@ -327,7 +327,7 @@ export default function ProfileScreen() {
       <TouchableOpacity onPress={logout} style={{ marginTop: 20 }}>
         <Text style={styles.signOut}>{t('common.signOut')}</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

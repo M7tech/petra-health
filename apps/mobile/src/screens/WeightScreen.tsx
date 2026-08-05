@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   ActivityIndicator,
   Dimensions,
   RefreshControl,
@@ -12,6 +11,7 @@ import Svg, { Path, Circle, Line as SvgLine, Text as SvgText } from 'react-nativ
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { Field, PrimaryButton, colors } from '../ui';
+import KeyboardScreen from '../components/KeyboardScreen';
 import type { Hba1cEntry, WeightEntry } from '../types';
 
 // Generic single-series trend chart over {value, recordedAt}.
@@ -157,7 +157,7 @@ export default function WeightScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardScreen
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
@@ -211,7 +211,7 @@ export default function WeightScreen() {
           <MetricTrend data={hba1c} color="#0284c7" />
         )}
       </View>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 

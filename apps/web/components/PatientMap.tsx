@@ -3,7 +3,7 @@
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import type { PatientLocation } from '@petra/shared';
+import type { PatientLocation, Pharmacy } from '@petra/shared';
 
 // Leaflet's default marker icons reference relative image paths that don't
 // resolve under Next.js's bundler — point them at the CDN copies instead.
@@ -17,12 +17,26 @@ const markerIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-export default function PatientMap({ locations }: { locations: PatientLocation[] }) {
-  const center: [number, number] =
-    locations.length > 0 ? [locations[0].latitude, locations[0].longitude] : [33.3152, 44.3661]; // Baghdad fallback
+// Emoji divIcon so pharmacies read as visually distinct from patient pins.
+const pharmacyIcon = L.divIcon({
+  html: '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4))">💊</div>',
+  className: '',
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+export default function PatientMap({
+  locations,
+  pharmacies = [],
+}: {
+  locations: PatientLocation[];
+  pharmacies?: Pharmacy[];
+}) {
+  const first = locations[0] ?? pharmacies[0];
+  const center: [number, number] = first ? [first.latitude, first.longitude] : [33.3152, 44.3661]; // Baghdad fallback
 
   return (
-    <MapContainer center={center} zoom={locations.length ? 6 : 5} style={{ height: '600px', width: '100%' }}>
+    <MapContainer center={center} zoom={first ? 6 : 5} style={{ height: '600px', width: '100%' }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -37,6 +51,31 @@ export default function PatientMap({ locations }: { locations: PatientLocation[]
             <span style={{ color: '#94a3b8', fontSize: 12 }}>
               {new Date(loc.capturedAt).toLocaleDateString()}
             </span>
+          </Popup>
+        </Marker>
+      ))}
+      {pharmacies.map((p) => (
+        <Marker key={p.id} position={[p.latitude, p.longitude]} icon={pharmacyIcon}>
+          <Popup>
+            <b>💊 {p.name}</b>
+            {p.address && (
+              <>
+                <br />
+                {p.address}
+              </>
+            )}
+            {p.phone && (
+              <>
+                <br />
+                {p.phone}
+              </>
+            )}
+            {!p.active && (
+              <>
+                <br />
+                <span style={{ color: '#dc2626', fontSize: 12 }}>Disabled — hidden from patients</span>
+              </>
+            )}
           </Popup>
         </Marker>
       ))}

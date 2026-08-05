@@ -383,3 +383,21 @@ model ContentPost {
   @@index([type, publishedAt])
   @@map("content_posts")
 }
+
+// ---------------------------------------------------------------------------
+// Pharmacy directory (admin-managed, patient "near me" finder)
+// ---------------------------------------------------------------------------
+
+model Pharmacy {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  address   String?
+  latitude  Float
+  longitude Float
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pharmacies")
+}

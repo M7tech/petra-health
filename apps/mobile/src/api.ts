@@ -25,16 +25,29 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       ...(options.headers ?? {}),
     },
   });
+  // Read as text first — Render's proxy occasionally returns an empty body
+  // (cold start, gateway timeout) even with a 200/OK status, and res.json()
+  // on an empty string throws "Unexpected end of input" instead of a
+  // meaningful error.
+  const text = await res.text();
+  const body = text ? safeJsonParse(text) : undefined;
+
   if (!res.ok) {
-    let message = res.statusText;
-    try {
-      const body = await res.json();
-      message = Array.isArray(body.message) ? body.message.join(', ') : body.message ?? message;
-    } catch {
-      /* ignore */
-    }
+    const message =
+      body && typeof body === 'object' && 'message' in body
+        ? Array.isArray((body as { message: unknown }).message)
+          ? (body as { message: string[] }).message.join(', ')
+          : String((body as { message: unknown }).message)
+        : res.statusText || 'Request failed';
     throw new Error(message);
   }
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  return body as T;
+}
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
 }

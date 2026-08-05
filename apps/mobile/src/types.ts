@@ -152,3 +152,14 @@ export interface ContentPost {
   updatedAt: string;
   authorName: string | null;
 }
+
+export interface Pharmacy {
+  id: string;
+  name: string;
+  phone: string | null;
+  address: string | null;
+  latitude: number;
+  longitude: number;
+  active: boolean;
+  createdAt: string;
+}

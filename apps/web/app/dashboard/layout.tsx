@@ -29,9 +29,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return <main className="flex min-h-screen items-center justify-center text-slate-400">Loading…</main>;
   }
 
-  // Only the super-admin can manage manager users.
+  // Only the super-admin can manage manager users and the pharmacy directory.
   const NAV = session.isSuperAdmin
-    ? [...BASE_NAV, { href: '/dashboard/users', label: 'Users' }]
+    ? [
+        ...BASE_NAV,
+        { href: '/dashboard/users', label: 'Users' },
+        { href: '/dashboard/pharmacies', label: 'Pharmacies' },
+      ]
     : BASE_NAV;
 
   return (
