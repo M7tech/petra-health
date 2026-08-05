@@ -328,6 +328,53 @@ export interface UpdatePharmacyDto {
   active?: boolean;
 }
 
+// ---- Reports (patient status, doctor rosters, pharmacy directory — all with dates/counts) ----
+export interface PatientReportRow {
+  id: string;
+  fullName: string;
+  email: string;
+  countryName: string | null;
+  cityName: string | null;
+  doctorName: string | null;
+  treatmentStatus: TreatmentStatus | null;
+  medicationCount: number;
+  doseCount: number;
+  lastDoseAt: string | null;
+  createdAt: string;
+}
+
+export interface DoctorReportPatient {
+  id: string;
+  fullName: string;
+  treatmentStatus: TreatmentStatus | null;
+  createdAt: string;
+}
+
+export interface DoctorReportRow {
+  id: string;
+  fullName: string;
+  specialty: string | null;
+  cityName: string | null;
+  countryName: string | null;
+  patientCount: number;
+  patients: DoctorReportPatient[];
+  createdAt: string;
+}
+
+export interface AdminReports {
+  generatedAt: string;
+  summary: {
+    totalPatients: number;
+    treatmentStatus: { ongoing: number; completed: number; discontinued: number; notAssessed: number };
+    totalDoctors: number;
+    totalPharmacies: number;
+    activePharmacies: number;
+  };
+  patients: PatientReportRow[];
+  doctors: DoctorReportRow[];
+  pharmacies: Pharmacy[];
+}
+
 export interface PatientLocation {
   id: string;
   fullName: string;

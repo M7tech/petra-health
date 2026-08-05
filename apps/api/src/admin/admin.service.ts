@@ -4,6 +4,7 @@ import { serializeAssessment } from '../doctor/doctor.service';
 import { PushService } from '../push/push.service';
 import { Principal } from '../auth/jwt.types';
 import type {
+  AdminReports,
   AdminStats,
   ManagerScope,
   MessageThreadSummary,
@@ -331,6 +332,101 @@ export class AdminService {
         doctorName: c.doctor?.fullName ?? null,
         weightEntryId: c.weightEntryId,
         createdAt: c.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  // Consolidated reports: patient status, doctor rosters, pharmacy directory —
+  // scoped the same way as listPatients (a manager only sees their cities).
+  async getReports(principal: Principal): Promise<AdminReports> {
+    const cityIds = await this.scopeCityIds(principal);
+
+    const [users, doctors, pharmacies] = await Promise.all([
+      this.prisma.user.findMany({
+        where: cityIds ? { cityId: { in: cityIds } } : undefined,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          city: { include: { country: true } },
+          doctor: true,
+          assessment: { select: { treatmentStatus: true } },
+          doseLogs: { orderBy: { takenAt: 'desc' }, take: 1, select: { takenAt: true } },
+          _count: { select: { medications: true, doseLogs: true } },
+        },
+      }),
+      this.prisma.doctor.findMany({
+        where: cityIds ? { cityId: { in: cityIds } } : undefined,
+        orderBy: { fullName: 'asc' },
+        include: {
+          city: { include: { country: true } },
+          patients: {
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              fullName: true,
+              createdAt: true,
+              assessment: { select: { treatmentStatus: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.pharmacy.findMany({ orderBy: { createdAt: 'desc' } }),
+    ]);
+
+    const treatmentStatus = { ongoing: 0, completed: 0, discontinued: 0, notAssessed: 0 };
+    for (const u of users) {
+      const status = u.assessment?.treatmentStatus;
+      if (status === 'ONGOING') treatmentStatus.ongoing++;
+      else if (status === 'COMPLETED') treatmentStatus.completed++;
+      else if (status === 'DISCONTINUED') treatmentStatus.discontinued++;
+      else treatmentStatus.notAssessed++;
+    }
+
+    return {
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalPatients: users.length,
+        treatmentStatus,
+        totalDoctors: doctors.length,
+        totalPharmacies: pharmacies.length,
+        activePharmacies: pharmacies.filter((p) => p.active).length,
+      },
+      patients: users.map((u) => ({
+        id: u.id,
+        fullName: u.fullName,
+        email: u.email,
+        countryName: u.city?.country.name ?? null,
+        cityName: u.city?.name ?? null,
+        doctorName: u.doctor?.fullName ?? null,
+        treatmentStatus: u.assessment?.treatmentStatus ?? null,
+        medicationCount: u._count.medications,
+        doseCount: u._count.doseLogs,
+        lastDoseAt: u.doseLogs[0]?.takenAt.toISOString() ?? null,
+        createdAt: u.createdAt.toISOString(),
+      })),
+      doctors: doctors.map((d) => ({
+        id: d.id,
+        fullName: d.fullName,
+        specialty: d.specialty,
+        cityName: d.city?.name ?? null,
+        countryName: d.city?.country.name ?? null,
+        patientCount: d.patients.length,
+        patients: d.patients.map((p) => ({
+          id: p.id,
+          fullName: p.fullName,
+          treatmentStatus: p.assessment?.treatmentStatus ?? null,
+          createdAt: p.createdAt.toISOString(),
+        })),
+        createdAt: d.createdAt.toISOString(),
+      })),
+      pharmacies: pharmacies.map((p) => ({
+        id: p.id,
+        name: p.name,
+        phone: p.phone,
+        address: p.address,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        active: p.active,
+        createdAt: p.createdAt.toISOString(),
       })),
     };
   }

@@ -42,6 +42,11 @@ export class AdminController {
     return this.admin.listPatients(p);
   }
 
+  @Get('reports')
+  reports(@CurrentPrincipal() p: Principal) {
+    return this.admin.getReports(p);
+  }
+
   @Get('patients-map')
   patientsMap(@CurrentPrincipal() p: Principal) {
     return this.admin.listPatientLocations(p);
