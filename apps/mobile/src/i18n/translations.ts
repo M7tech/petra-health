@@ -184,6 +184,7 @@ export const en = {
     none: 'No pharmacies added yet.',
     call: 'Call',
     directions: 'Directions',
+    nearest: 'Nearest',
   },
   profile: {
     title: 'Profile',
@@ -404,6 +405,7 @@ export const ar: Dict = {
     none: 'لا توجد صيدليات مضافة بعد.',
     call: 'اتصال',
     directions: 'الاتجاهات',
+    nearest: 'الأقرب',
   },
   profile: {
     title: 'الملف الشخصي',
@@ -622,6 +624,7 @@ export const ku: Dict = {
     none: 'هێشتا هیچ دەرمانخانەیەک زیاد نەکراوە.',
     call: 'پەیوەندی',
     directions: 'ئاڕاستە',
+    nearest: 'نزیکترین',
   },
   profile: {
     title: 'پڕۆفایل',

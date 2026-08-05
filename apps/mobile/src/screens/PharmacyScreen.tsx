@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { colors } from '../ui';
+import PharmacyMapView from '../components/PharmacyMapView';
 import type { Pharmacy } from '../types';
 
 // Haversine distance in km between two lat/lng points.
@@ -76,8 +77,11 @@ export default function PharmacyScreen() {
     Linking.openURL(`tel:${phone}`).catch(() => {});
   }
 
+  // Google's universal maps link — opens the Google Maps app if installed,
+  // otherwise falls back to maps.google.com in the browser. Works on both
+  // platforms without needing react-native-maps or a Google Maps API key.
   function openInMaps(p: Pharmacy) {
-    Linking.openURL(`https://www.openstreetmap.org/?mlat=${p.latitude}&mlon=${p.longitude}#map=17/${p.latitude}/${p.longitude}`).catch(() => {});
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}`).catch(() => {});
   }
 
   if (loading) {
@@ -101,14 +105,23 @@ export default function PharmacyScreen() {
         <Text style={[styles.note, align]}>{t('pharmacy.locationDenied')}</Text>
       )}
 
+      {sorted.length > 0 && <PharmacyMapView pharmacies={sorted} userCoords={coords} />}
+
       {sorted.length === 0 ? (
         <Text style={[styles.muted, align]}>{t('pharmacy.none')}</Text>
       ) : (
-        sorted.map((p) => (
+        sorted.map((p, i) => (
           <View key={p.id} style={styles.card}>
             <View style={[styles.row, isRTL && { flexDirection: 'row-reverse' }]}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.name, align]}>💊 {p.name}</Text>
+                <View style={[styles.nameRow, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <Text style={[styles.name, align]}>💊 {p.name}</Text>
+                  {i === 0 && coords && (
+                    <View style={styles.nearestBadge}>
+                      <Text style={styles.nearestText}>{t('pharmacy.nearest')}</Text>
+                    </View>
+                  )}
+                </View>
                 {p.address && <Text style={[styles.address, align]}>{p.address}</Text>}
               </View>
               {p.distance != null && (
@@ -159,7 +172,15 @@ const styles = StyleSheet.create({
   },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'flex-start' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   name: { fontWeight: '700', color: colors.text, fontSize: 15 },
+  nearestBadge: {
+    backgroundColor: '#16a34a',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  nearestText: { color: '#fff', fontWeight: '700', fontSize: 10 },
   address: { color: colors.muted, fontSize: 13, marginTop: 2 },
   distanceBadge: {
     backgroundColor: '#f1e2ea',
