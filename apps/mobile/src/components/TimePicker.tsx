@@ -1,13 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../ui';
+import WheelPicker from './WheelPicker';
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = Array.from({ length: 60 }, (_, i) => i);
-const pad = (n: number) => String(n).padStart(2, '0');
+const HOURS = Array.from({ length: 24 }, (_, i) => ({ label: String(i).padStart(2, '0'), value: i }));
+const MINUTES = Array.from({ length: 60 }, (_, i) => ({ label: String(i).padStart(2, '0'), value: i }));
 
-// Free-choice time picker (any hour:minute) — two scroll wheels, no presets.
+// Free-choice time picker (any hour:minute) — two rolling wheels, no presets.
 export default function TimePicker({
   hour,
   minute,
@@ -19,27 +18,9 @@ export default function TimePicker({
 }) {
   return (
     <View style={styles.row}>
-      <Picker
-        style={styles.picker}
-        itemStyle={styles.item}
-        selectedValue={hour}
-        onValueChange={(v) => onChange(Number(v), minute)}
-      >
-        {HOURS.map((h) => (
-          <Picker.Item key={h} label={pad(h)} value={h} />
-        ))}
-      </Picker>
+      <WheelPicker options={HOURS} selectedValue={hour} onChange={(h) => onChange(h, minute)} />
       <Text style={styles.colon}>:</Text>
-      <Picker
-        style={styles.picker}
-        itemStyle={styles.item}
-        selectedValue={minute}
-        onValueChange={(v) => onChange(hour, Number(v))}
-      >
-        {MINUTES.map((m) => (
-          <Picker.Item key={m} label={pad(m)} value={m} />
-        ))}
-      </Picker>
+      <WheelPicker options={MINUTES} selectedValue={minute} onChange={(m) => onChange(hour, m)} />
     </View>
   );
 }
@@ -48,13 +29,12 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    paddingHorizontal: 8,
   },
-  picker: { flex: 1, height: Platform.OS === 'ios' ? 130 : 46, color: colors.text },
-  item: { fontSize: 18, height: 130 }, // iOS wheel only
   colon: { fontSize: 18, fontWeight: '700', color: colors.text },
 });

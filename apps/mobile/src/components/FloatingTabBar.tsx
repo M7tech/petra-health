@@ -35,7 +35,9 @@ export default function FloatingTabBar<K extends string>({
               <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
                 <Text style={styles.icon}>{tb.icon}</Text>
               </View>
-              {isActive && <Text style={styles.label}>{tb.label}</Text>}
+              <Text style={[styles.label, isActive && styles.labelActive]} numberOfLines={1}>
+                {tb.label}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -47,19 +49,17 @@ export default function FloatingTabBar<K extends string>({
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 12,
+    right: 12,
     bottom: 28,
     alignItems: 'center',
   },
   pill: {
     flexDirection: 'row',
     backgroundColor: '#1e1b2e',
-    borderRadius: 32,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderRadius: 26,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
     width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -67,15 +67,18 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 10,
   },
-  tab: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row', paddingHorizontal: 8 },
+  // Every tab takes an equal share of the pill's width, so the row always
+  // fits exactly regardless of how many tabs there are — no overflow.
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconWrapActive: { backgroundColor: colors.petra },
-  icon: { fontSize: 18 },
-  label: { color: '#fff', fontWeight: '700', fontSize: 12, marginLeft: 6 },
+  icon: { fontSize: 15 },
+  label: { color: 'rgba(255,255,255,0.55)', fontWeight: '600', fontSize: 10 },
+  labelActive: { color: '#fff', fontWeight: '700' },
 });

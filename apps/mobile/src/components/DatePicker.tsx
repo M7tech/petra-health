@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, StyleSheet } from 'react-native';
 import { colors } from '../ui';
+import WheelPicker from './WheelPicker';
 
 const MIN_YEAR = 1920;
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -13,7 +13,7 @@ function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
 
-// Free-choice date picker (any year/month/day) — three scroll wheels.
+// Free-choice date picker (any year/month/day) — three rolling wheels.
 export default function DatePicker({
   year,
   month,
@@ -37,36 +37,21 @@ export default function DatePicker({
 
   return (
     <View style={styles.row}>
-      <Picker
-        style={styles.picker}
-        itemStyle={styles.item}
+      <WheelPicker
+        options={years.map((y) => ({ label: String(y), value: y }))}
         selectedValue={year}
-        onValueChange={(v) => onChange(Number(v), month, day)}
-      >
-        {years.map((y) => (
-          <Picker.Item key={y} label={String(y)} value={y} />
-        ))}
-      </Picker>
-      <Picker
-        style={styles.picker}
-        itemStyle={styles.item}
+        onChange={(y) => onChange(y, month, day)}
+      />
+      <WheelPicker
+        options={MONTHS.map((m) => ({ label: pad(m), value: m }))}
         selectedValue={month}
-        onValueChange={(v) => onChange(year, Number(v), day)}
-      >
-        {MONTHS.map((m) => (
-          <Picker.Item key={m} label={pad(m)} value={m} />
-        ))}
-      </Picker>
-      <Picker
-        style={styles.picker}
-        itemStyle={styles.item}
+        onChange={(m) => onChange(year, m, day)}
+      />
+      <WheelPicker
+        options={days.map((d) => ({ label: pad(d), value: d }))}
         selectedValue={day}
-        onValueChange={(v) => onChange(year, month, Number(v))}
-      >
-        {days.map((d) => (
-          <Picker.Item key={d} label={pad(d)} value={d} />
-        ))}
-      </Picker>
+        onChange={(d) => onChange(year, month, d)}
+      />
     </View>
   );
 }
@@ -75,12 +60,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    paddingHorizontal: 8,
   },
-  picker: { flex: 1, height: Platform.OS === 'ios' ? 130 : 46, color: colors.text },
-  item: { fontSize: 16, height: 130 }, // iOS wheel only
 });

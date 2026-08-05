@@ -14,7 +14,8 @@ import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DatePicker from '../components/DatePicker';
-import { CHRONIC_CONDITIONS, Gender, PatientProfile } from '../types';
+import WheelPicker from '../components/WheelPicker';
+import { CHRONIC_CONDITIONS, Gender, PatientProfile, Country, City } from '../types';
 
 const GENDERS: Gender[] = ['MALE', 'FEMALE', 'UNSPECIFIED'];
 
@@ -58,6 +59,10 @@ export default function ProfileScreen() {
   const [weight, setWeight] = useState('');
   const [conditions, setConditions] = useState<string[]>([]);
   const [otherConditions, setOtherConditions] = useState('');
+  const [countryId, setCountryId] = useState('');
+  const [cityId, setCityId] = useState('');
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
 
   useEffect(() => {
     api<PatientProfile>('/profile/me')
@@ -76,10 +81,28 @@ export default function ProfileScreen() {
         setWeight(p.latestWeightKg ? String(p.latestWeightKg) : '');
         setConditions(p.chronicConditions ?? []);
         setOtherConditions(p.otherConditions ?? '');
+        setCountryId(p.countryId ?? '');
+        setCityId(p.cityId ?? '');
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
       .finally(() => setLoading(false));
+    api<Country[]>('/directory/countries').then(setCountries).catch(() => {});
   }, []);
+
+  // Load cities for the selected country; keep the existing city selected
+  // if it's already in that country's list (avoid clobbering on first load).
+  useEffect(() => {
+    if (!countryId) {
+      setCities([]);
+      return;
+    }
+    api<City[]>(`/directory/cities?countryId=${countryId}`)
+      .then((list) => {
+        setCities(list);
+        setCityId((prev) => (list.some((c) => c.id === prev) ? prev : list[0]?.id ?? ''));
+      })
+      .catch(() => {});
+  }, [countryId]);
 
   const bmi = useMemo(
     () => bmiOf(parseFloat(height.replace(',', '.')), parseFloat(weight.replace(',', '.'))),
@@ -102,6 +125,8 @@ export default function ProfileScreen() {
       gender,
       chronicConditions: conditions,
       otherConditions: otherConditions.trim() || undefined,
+      countryId: countryId || undefined,
+      cityId: cityId || undefined,
     };
     const h = parseFloat(height.replace(',', '.'));
     const w = parseFloat(weight.replace(',', '.'));
@@ -175,6 +200,36 @@ export default function ProfileScreen() {
             onChangeText={setPhone}
             keyboardType="phone-pad"
           />,
+        )}
+        {labeled(
+          t('profile.country'),
+          countries.length === 0 ? (
+            <Text style={[styles.placeholder, align]}>{t('onboarding.selectCountry')}</Text>
+          ) : (
+            <View style={styles.pickerWrap}>
+              <WheelPicker
+                options={countries.map((c) => ({ label: c.name, value: c.id }))}
+                selectedValue={countryId}
+                onChange={setCountryId}
+              />
+            </View>
+          ),
+        )}
+        {labeled(
+          t('profile.city'),
+          cities.length === 0 ? (
+            <Text style={[styles.placeholder, align]}>
+              {countryId ? t('onboarding.selectCity') : t('onboarding.selectCountry')}
+            </Text>
+          ) : (
+            <View style={styles.pickerWrap}>
+              <WheelPicker
+                options={cities.map((c) => ({ label: c.name, value: c.id }))}
+                selectedValue={cityId}
+                onChange={setCityId}
+              />
+            </View>
+          ),
         )}
         {labeled(
           t('profile.birthday'),
@@ -294,6 +349,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   disabled: { backgroundColor: '#f1f5f9', color: colors.muted },
+  pickerWrap: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+  },
+  placeholder: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+    color: colors.muted,
+    padding: 12,
+    fontSize: 14,
+  },
   two: { flexDirection: 'row', gap: 12 },
   segment: { flexDirection: 'row', gap: 8 },
   segBtn: { flex: 1, borderRadius: 10, paddingVertical: 10, backgroundColor: '#f1f5f9', alignItems: 'center' },

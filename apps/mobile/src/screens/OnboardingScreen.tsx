@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
+import WheelPicker from '../components/WheelPicker';
 import type { City, Country, Doctor } from '../types';
 
 export default function OnboardingScreen() {
@@ -22,27 +22,39 @@ export default function OnboardingScreen() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Load countries once.
+  // Load countries once; a rolling wheel always shows a value, so default
+  // to the first option once loaded rather than an empty placeholder.
   useEffect(() => {
-    api<Country[]>('/directory/countries').then(setCountries).catch(() => {});
+    api<Country[]>('/directory/countries')
+      .then((list) => {
+        setCountries(list);
+        setCountryId((prev) => prev || list[0]?.id || '');
+      })
+      .catch(() => {});
   }, []);
 
-  // When country changes, fetch its cities and reset downstream selections.
+  // When country changes, fetch its cities and default to the first one.
   useEffect(() => {
-    setCityId('');
-    setDoctorId('');
     setCities([]);
-    setDoctors([]);
     if (!countryId) return;
-    api<City[]>(`/directory/cities?countryId=${countryId}`).then(setCities).catch(() => {});
+    api<City[]>(`/directory/cities?countryId=${countryId}`)
+      .then((list) => {
+        setCities(list);
+        setCityId((prev) => (list.some((c) => c.id === prev) ? prev : list[0]?.id ?? ''));
+      })
+      .catch(() => {});
   }, [countryId]);
 
-  // When city changes, fetch doctors in that city and reset doctor.
+  // When city changes, fetch doctors in that city and default to the first one.
   useEffect(() => {
-    setDoctorId('');
     setDoctors([]);
     if (!cityId) return;
-    api<Doctor[]>(`/directory/doctors?cityId=${cityId}`).then(setDoctors).catch(() => {});
+    api<Doctor[]>(`/directory/doctors?cityId=${cityId}`)
+      .then((list) => {
+        setDoctors(list);
+        setDoctorId((prev) => (list.some((d) => d.id === prev) ? prev : list[0]?.id ?? ''));
+      })
+      .catch(() => {});
   }, [cityId]);
 
   // Best-effort: captures the device's real location once, during this
@@ -87,46 +99,50 @@ export default function OnboardingScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Text style={styles.label}>{t('onboarding.country')}</Text>
-      <View style={styles.pickerWrap}>
-        <Picker selectedValue={countryId} onValueChange={(v) => setCountryId(String(v))}>
-          <Picker.Item label={t('onboarding.selectCountry')} value="" />
-          {countries.map((c) => (
-            <Picker.Item key={c.id} label={c.name} value={c.id} />
-          ))}
-        </Picker>
-      </View>
+      {countries.length === 0 ? (
+        <Text style={styles.placeholder}>{t('onboarding.selectCountry')}</Text>
+      ) : (
+        <View style={styles.wheelWrap}>
+          <WheelPicker
+            options={countries.map((c) => ({ label: c.name, value: c.id }))}
+            selectedValue={countryId}
+            onChange={setCountryId}
+          />
+        </View>
+      )}
 
       <Text style={styles.label}>{t('onboarding.city')}</Text>
-      <View style={[styles.pickerWrap, !countryId && styles.disabled]}>
-        <Picker
-          enabled={!!countryId}
-          selectedValue={cityId}
-          onValueChange={(v) => setCityId(String(v))}
-        >
-          <Picker.Item label={countryId ? t('onboarding.selectCity') : t('onboarding.selectCountry')} value="" />
-          {cities.map((c) => (
-            <Picker.Item key={c.id} label={c.name} value={c.id} />
-          ))}
-        </Picker>
-      </View>
+      {cities.length === 0 ? (
+        <Text style={styles.placeholder}>
+          {countryId ? t('onboarding.selectCity') : t('onboarding.selectCountry')}
+        </Text>
+      ) : (
+        <View style={styles.wheelWrap}>
+          <WheelPicker
+            options={cities.map((c) => ({ label: c.name, value: c.id }))}
+            selectedValue={cityId}
+            onChange={setCityId}
+          />
+        </View>
+      )}
 
       <Text style={styles.label}>{t('onboarding.doctor')}</Text>
-      <View style={[styles.pickerWrap, !cityId && styles.disabled]}>
-        <Picker
-          enabled={!!cityId}
-          selectedValue={doctorId}
-          onValueChange={(v) => setDoctorId(String(v))}
-        >
-          <Picker.Item label={cityId ? t('onboarding.selectDoctor') : t('onboarding.selectCity')} value="" />
-          {doctors.map((d) => (
-            <Picker.Item
-              key={d.id}
-              label={d.specialty ? `${d.fullName} — ${d.specialty}` : d.fullName}
-              value={d.id}
-            />
-          ))}
-        </Picker>
-      </View>
+      {doctors.length === 0 ? (
+        <Text style={styles.placeholder}>
+          {cityId ? t('onboarding.selectDoctor') : t('onboarding.selectCity')}
+        </Text>
+      ) : (
+        <View style={styles.wheelWrap}>
+          <WheelPicker
+            options={doctors.map((d) => ({
+              label: d.specialty ? `${d.fullName} — ${d.specialty}` : d.fullName,
+              value: d.id,
+            }))}
+            selectedValue={doctorId}
+            onChange={setDoctorId}
+          />
+        </View>
+      )}
 
       <Text style={styles.locationNote}>{t('onboarding.locationNote')}</Text>
 
@@ -147,15 +163,26 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '700', color: colors.text },
   subtitle: { color: colors.muted, marginBottom: 24, marginTop: 4 },
   label: { fontSize: 13, color: colors.muted, marginBottom: 6, fontWeight: '500' },
-  pickerWrap: {
+  wheelWrap: {
+    flexDirection: 'row',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
     marginBottom: 16,
     backgroundColor: '#fff',
     overflow: 'hidden',
+    paddingHorizontal: 8,
   },
-  disabled: { backgroundColor: '#f1f5f9' },
+  placeholder: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    marginBottom: 16,
+    backgroundColor: '#f1f5f9',
+    color: colors.muted,
+    padding: 12,
+    fontSize: 14,
+  },
   locationNote: { fontSize: 12, color: colors.muted, marginTop: 16, lineHeight: 17 },
   error: {
     backgroundColor: '#fef2f2',
