@@ -8,18 +8,38 @@ import { Card, PageHeader } from '@/components/ui';
 const inputCls =
   'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 
-const emptyForm = { name: '', phone: '', address: '', latitude: '', longitude: '' };
+const emptyForm = { name: '', phone: '', address: '', mapLink: '', latitude: '', longitude: '' };
 
 export default function PharmaciesPage() {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
+  const [detecting, setDetecting] = useState(false);
+  const [detectError, setDetectError] = useState<string | null>(null);
+  const [manualEntry, setManualEntry] = useState(false);
 
   function load() {
     api<Pharmacy[]>('/pharmacies').then(setPharmacies).catch((e) => setError(e.message));
   }
   useEffect(load, []);
+
+  async function detectLocation() {
+    if (!form.mapLink.trim()) return;
+    setDetecting(true);
+    setDetectError(null);
+    try {
+      const { latitude, longitude } = await api<{ latitude: number; longitude: number }>(
+        '/pharmacies/resolve-location',
+        { method: 'POST', body: JSON.stringify({ url: form.mapLink.trim() }) },
+      );
+      setForm((f) => ({ ...f, latitude: String(latitude), longitude: String(longitude) }));
+    } catch (err) {
+      setDetectError(err instanceof Error ? err.message : 'Could not detect location');
+    } finally {
+      setDetecting(false);
+    }
+  }
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -29,7 +49,9 @@ export default function PharmaciesPage() {
       const lat = parseFloat(form.latitude);
       const lng = parseFloat(form.longitude);
       if (Number.isNaN(lat) || Number.isNaN(lng)) {
-        throw new Error('Latitude/longitude must be numbers');
+        throw new Error(
+          manualEntry ? 'Latitude/longitude must be numbers' : 'Paste a Google Maps link and detect the location first',
+        );
       }
       await api<Pharmacy>('/pharmacies', {
         method: 'POST',
@@ -42,6 +64,7 @@ export default function PharmaciesPage() {
         }),
       });
       setForm(emptyForm);
+      setManualEntry(false);
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create');
@@ -60,6 +83,8 @@ export default function PharmaciesPage() {
     load();
   }
 
+  const hasCoords = form.latitude !== '' && form.longitude !== '';
+
   return (
     <>
       <PageHeader title="Pharmacies" />
@@ -76,10 +101,77 @@ export default function PharmaciesPage() {
             <input required placeholder="Name" className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <input placeholder="Phone" className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <input placeholder="Address" className={`sm:col-span-2 ${inputCls}`} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-            <input required placeholder="Latitude, e.g. 36.1911" className={inputCls} value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} />
-            <input required placeholder="Longitude, e.g. 44.0092" className={inputCls} value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} />
+
             <div className="sm:col-span-2">
-              <button type="submit" disabled={busy} className="rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600 disabled:opacity-60">
+              <p className="mb-1 text-sm font-medium text-slate-600">Location</p>
+              {!manualEntry ? (
+                <>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Paste a Google Maps share link (Share → Copy link)"
+                      className={inputCls}
+                      value={form.mapLink}
+                      onChange={(e) => {
+                        setForm({ ...form, mapLink: e.target.value, latitude: '', longitude: '' });
+                        setDetectError(null);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={detectLocation}
+                      disabled={detecting || !form.mapLink.trim()}
+                      className="whitespace-nowrap rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 disabled:opacity-60"
+                    >
+                      {detecting ? 'Detecting…' : 'Detect location'}
+                    </button>
+                  </div>
+                  {hasCoords && !detectError && (
+                    <p className="mt-1 text-xs text-green-600">
+                      📍 Detected: {form.latitude}, {form.longitude}
+                    </p>
+                  )}
+                  {detectError && <p className="mt-1 text-xs text-red-600">{detectError}</p>}
+                  <button
+                    type="button"
+                    onClick={() => setManualEntry(true)}
+                    className="mt-1 text-xs text-slate-400 hover:underline"
+                  >
+                    Or enter coordinates manually
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      placeholder="Latitude, e.g. 36.1911"
+                      className={inputCls}
+                      value={form.latitude}
+                      onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+                    />
+                    <input
+                      placeholder="Longitude, e.g. 44.0092"
+                      className={inputCls}
+                      value={form.longitude}
+                      onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setManualEntry(false)}
+                    className="mt-1 text-xs text-slate-400 hover:underline"
+                  >
+                    Use a Google Maps link instead
+                  </button>
+                </>
+              )}
+            </div>
+
+            <div className="sm:col-span-2">
+              <button
+                type="submit"
+                disabled={busy || !hasCoords}
+                className="rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600 disabled:opacity-60"
+              >
                 {busy ? 'Adding…' : 'Add pharmacy'}
               </button>
             </div>

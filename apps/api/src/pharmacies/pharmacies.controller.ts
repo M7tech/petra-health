@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PharmaciesService } from './pharmacies.service';
-import { CreatePharmacyRequest, UpdatePharmacyRequest } from './dto';
+import { CreatePharmacyRequest, ResolveLocationRequest, UpdatePharmacyRequest } from './dto';
 import { JwtAuthGuard, SuperAdminGuard, CurrentPrincipal } from '../auth/guards';
 import { Principal } from '../auth/jwt.types';
 
@@ -15,6 +15,12 @@ export class PharmaciesController {
   @Get()
   list(@CurrentPrincipal() p: Principal) {
     return this.pharmacies.list(p.type === 'admin');
+  }
+
+  @UseGuards(SuperAdminGuard)
+  @Post('resolve-location')
+  resolveLocation(@Body() dto: ResolveLocationRequest) {
+    return this.pharmacies.resolveLocation(dto.url);
   }
 
   @UseGuards(SuperAdminGuard)

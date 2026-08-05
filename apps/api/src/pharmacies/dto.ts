@@ -1,4 +1,8 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, Length, Max, Min } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, Length, Max, Min, MinLength } from 'class-validator';
+
+export class ResolveLocationRequest {
+  @IsString() @MinLength(8) url!: string;
+}
 
 export class CreatePharmacyRequest {
   @IsString() @Length(2, 150) name!: string;
