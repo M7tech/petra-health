@@ -68,11 +68,25 @@ export default function UsersPage() {
     load();
   }
 
+  async function saveDetails(m: ManagerUser, fullName: string, officeName: string, password: string) {
+    await api(`/admin/users/${m.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        fullName,
+        officeName: officeName.trim(),
+        ...(password.trim() ? { password: password.trim() } : {}),
+      }),
+    });
+    load();
+  }
+
   async function remove(m: ManagerUser) {
     if (!confirm(`Delete manager "${m.fullName}"?`)) return;
     await api(`/admin/users/${m.id}`, { method: 'DELETE' });
     load();
   }
+
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
     <>
@@ -116,10 +130,28 @@ export default function UsersPage() {
                   @{m.username} · {m.email} {m.officeName ? `· ${m.officeName}` : ''}
                 </p>
               </div>
-              <button onClick={() => remove(m)} className="text-sm text-red-600 hover:underline">
-                Delete
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setEditingId(editingId === m.id ? null : m.id)}
+                  className="text-sm text-petra-700 hover:underline"
+                >
+                  {editingId === m.id ? 'Cancel' : 'Edit'}
+                </button>
+                <button onClick={() => remove(m)} className="text-sm text-red-600 hover:underline">
+                  Delete
+                </button>
+              </div>
             </div>
+            {editingId === m.id && (
+              <ManagerEditForm
+                manager={m}
+                onSave={async (fullName, officeName, password) => {
+                  await saveDetails(m, fullName, officeName, password);
+                  setEditingId(null);
+                }}
+                onCancel={() => setEditingId(null)}
+              />
+            )}
             <div className="mb-2 flex gap-4 text-sm text-slate-600">
               <span>
                 <b className="tabular-nums">{m.doctorCount}</b> doctors
@@ -179,6 +211,62 @@ function CityPicker({
       })}
       {cities.length === 0 && <span className="text-xs text-slate-400">No cities yet.</span>}
     </div>
+  );
+}
+
+function ManagerEditForm({
+  manager,
+  onSave,
+  onCancel,
+}: {
+  manager: ManagerUser;
+  onSave: (fullName: string, officeName: string, password: string) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [fullName, setFullName] = useState(manager.fullName);
+  const [officeName, setOfficeName] = useState(manager.officeName ?? '');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    if (password.trim() && password.trim().length < 8) {
+      setError('New password must be at least 8 characters');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await onSave(fullName, officeName, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={save} className="mb-4 grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-2">
+      {error && <p className="text-xs text-red-600 sm:col-span-2">{error}</p>}
+      <input required placeholder="Full name" className={inputCls} value={fullName} onChange={(e) => setFullName(e.target.value)} />
+      <input placeholder="Office name" className={inputCls} value={officeName} onChange={(e) => setOfficeName(e.target.value)} />
+      <input
+        type="password"
+        placeholder="New password (leave blank to keep current)"
+        className={`sm:col-span-2 ${inputCls}`}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <div className="flex gap-2 sm:col-span-2">
+        <button type="submit" disabled={busy} className="rounded-lg bg-petra-500 px-3.5 py-2 text-sm font-medium text-white hover:bg-petra-600 disabled:opacity-60">
+          {busy ? 'Saving…' : 'Save changes'}
+        </button>
+        <button type="button" onClick={onCancel} className="rounded-lg bg-slate-100 px-3.5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200">
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 
