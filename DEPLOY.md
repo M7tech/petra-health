@@ -22,6 +22,13 @@ git branch -M main
 git push -u origin main
 ```
 
+> **Repo is private.** Render and Vercel both connect via a GitHub App with
+> per-repo access grants (not anonymous cloning), so a private repo works
+> the same as public — auto-deploy on push keeps working as long as the
+> app's access to this repo wasn't revoked. If a push ever stops
+> triggering a deploy, check each platform's GitHub integration settings
+> to confirm the repo is still listed as connected.
+
 ---
 
 ## 1. Render — PostgreSQL + API (do this first, it mints the API URL)
