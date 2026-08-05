@@ -13,6 +13,7 @@ type ManagerRow = {
   email: string;
   fullName: string;
   officeName: string | null;
+  whatsappPhone: string | null;
   role: string;
   managedCities: { id: string; name: string; countryId: string; country: { name: string } }[];
 };
@@ -46,6 +47,7 @@ export class UsersService {
         passwordHash,
         fullName: dto.fullName,
         officeName: dto.officeName,
+        whatsappPhone: dto.whatsappPhone,
         role: 'EDITOR',
         managedCities: dto.cityIds?.length ? { connect: dto.cityIds.map((id) => ({ id })) } : undefined,
       },
@@ -62,6 +64,7 @@ export class UsersService {
       data: {
         fullName: dto.fullName,
         officeName: dto.officeName,
+        whatsappPhone: dto.whatsappPhone,
         ...(dto.password ? { passwordHash: await bcrypt.hash(dto.password, 12) } : {}),
         // `set` replaces the manager's whole city assignment with this list.
         ...(dto.cityIds ? { managedCities: { set: dto.cityIds.map((cid) => ({ id: cid })) } } : {}),
@@ -98,6 +101,7 @@ export class UsersService {
       email: m.email,
       fullName: m.fullName,
       officeName: m.officeName,
+      whatsappPhone: m.whatsappPhone,
       role: m.role as ManagerUser['role'],
       cities: m.managedCities.map((c) => ({
         id: c.id,

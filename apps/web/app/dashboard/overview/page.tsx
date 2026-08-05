@@ -1,26 +1,54 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { AdminStats, ManagerScope } from '@petra/shared';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { BarList, Card, PageHeader, StatTile } from '@/components/ui';
 
+const WHATSAPP_PATTERN = /^\+\d{6,15}$/;
+
 export default function OverviewPage() {
   const { session } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [scope, setScope] = useState<ManagerScope | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [whatsapp, setWhatsapp] = useState('');
+  const [whatsappBusy, setWhatsappBusy] = useState(false);
+  const [whatsappSaved, setWhatsappSaved] = useState(false);
+  const [whatsappError, setWhatsappError] = useState<string | null>(null);
 
   useEffect(() => {
     api<AdminStats>('/admin/stats')
       .then(setStats)
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'));
-    if (!session?.isSuperAdmin) {
-      api<ManagerScope>('/admin/me').then(setScope).catch(() => {});
-    }
+    api<ManagerScope>('/admin/me')
+      .then((s) => {
+        setScope(s);
+        setWhatsapp(s.whatsappPhone ?? '');
+      })
+      .catch(() => {});
   }, [session]);
+
+  async function saveWhatsapp(e: FormEvent) {
+    e.preventDefault();
+    setWhatsappError(null);
+    if (!WHATSAPP_PATTERN.test(whatsapp)) {
+      setWhatsappError('Enter a full international number, e.g. +9647500000000');
+      return;
+    }
+    setWhatsappBusy(true);
+    try {
+      await api('/admin/me', { method: 'PUT', body: JSON.stringify({ whatsappPhone: whatsapp }) });
+      setWhatsappSaved(true);
+      setTimeout(() => setWhatsappSaved(false), 2500);
+    } catch (err) {
+      setWhatsappError(err instanceof Error ? err.message : 'Could not save');
+    } finally {
+      setWhatsappBusy(false);
+    }
+  }
 
   if (error) {
     return (
@@ -42,6 +70,32 @@ export default function OverviewPage() {
   return (
     <>
       <PageHeader title="Overview" />
+
+      <div className="mb-6">
+        <Card>
+          <h2 className="mb-1 font-semibold text-slate-700">Your WhatsApp number</h2>
+          <p className="mb-3 text-sm text-slate-500">
+            Login codes and password-reset links are sent here via WhatsApp.
+          </p>
+          <form onSubmit={saveWhatsapp} className="flex flex-wrap items-center gap-2">
+            <input
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="+9647500000000"
+              className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20"
+            />
+            <button
+              type="submit"
+              disabled={whatsappBusy}
+              className="rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600 disabled:opacity-60"
+            >
+              {whatsappBusy ? 'Saving…' : 'Save'}
+            </button>
+            {whatsappSaved && <span className="text-sm text-green-600">Saved ✓</span>}
+          </form>
+          {whatsappError && <p className="mt-2 text-sm text-red-600">{whatsappError}</p>}
+        </Card>
+      </div>
 
       {scope && !scope.isSuperAdmin && (
         <div className="mb-6">

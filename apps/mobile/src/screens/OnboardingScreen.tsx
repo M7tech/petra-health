@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import * as Location from 'expo-location';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { useI18n } from '../i18n';
@@ -44,6 +45,23 @@ export default function OnboardingScreen() {
     api<Doctor[]>(`/directory/doctors?cityId=${cityId}`).then(setDoctors).catch(() => {});
   }, [cityId]);
 
+  // Best-effort: captures the device's real location once, during this
+  // first-time setup. Never blocks onboarding — a denied/failed permission
+  // just means this patient won't show up on the admin map.
+  async function captureLocation() {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      await api('/profile/location', {
+        method: 'PUT',
+        body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      });
+    } catch {
+      /* non-fatal */
+    }
+  }
+
   async function save() {
     setBusy(true);
     setError(null);
@@ -52,6 +70,7 @@ export default function OnboardingScreen() {
         method: 'PUT',
         body: JSON.stringify({ countryId, cityId, doctorId }),
       });
+      await captureLocation();
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save');
@@ -109,7 +128,9 @@ export default function OnboardingScreen() {
         </Picker>
       </View>
 
-      <View style={{ marginTop: 20 }}>
+      <Text style={styles.locationNote}>{t('onboarding.locationNote')}</Text>
+
+      <View style={{ marginTop: 12 }}>
         <PrimaryButton
           title={t('onboarding.finish')}
           onPress={save}
@@ -135,6 +156,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   disabled: { backgroundColor: '#f1f5f9' },
+  locationNote: { fontSize: 12, color: colors.muted, marginTop: 16, lineHeight: 17 },
   error: {
     backgroundColor: '#fef2f2',
     color: colors.danger,

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { UpdateProfileRequest } from './dto';
+import { UpdateProfileRequest, UpdateLocationRequest } from './dto';
 import { JwtAuthGuard, CurrentPrincipal } from '../auth/guards';
 import { Principal } from '../auth/jwt.types';
 
@@ -17,5 +17,10 @@ export class ProfileController {
   @Put()
   update(@CurrentPrincipal() principal: Principal, @Body() dto: UpdateProfileRequest) {
     return this.profile.update(principal.id, dto);
+  }
+
+  @Put('location')
+  updateLocation(@CurrentPrincipal() principal: Principal, @Body() dto: UpdateLocationRequest) {
+    return this.profile.updateLocation(principal.id, dto);
   }
 }

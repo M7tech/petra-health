@@ -263,6 +263,7 @@ export interface ManagerUser {
   email: string;
   fullName: string;
   officeName: string | null;
+  whatsappPhone: string | null;
   role: AdminRole;
   cities: ManagerCity[];
   doctorCount: number;
@@ -274,11 +275,13 @@ export interface CreateManagerDto {
   password: string;
   fullName: string;
   officeName?: string;
+  whatsappPhone?: string;
   cityIds?: string[];
 }
 export interface UpdateManagerDto {
   fullName?: string;
   officeName?: string;
+  whatsappPhone?: string;
   password?: string;
   cityIds?: string[];
 }
@@ -288,9 +291,24 @@ export interface UpdateManagerDto {
 export interface ManagerScope {
   isSuperAdmin: boolean;
   officeName: string | null;
+  whatsappPhone: string | null;
   cities: ManagerCity[];
   doctors: Doctor[];
   patientCount: number;
+}
+
+export interface UpdateSelfDto {
+  whatsappPhone?: string;
+}
+
+export interface PatientLocation {
+  id: string;
+  fullName: string;
+  latitude: number;
+  longitude: number;
+  cityName: string | null;
+  countryName: string | null;
+  capturedAt: string;
 }
 
 // ---- Profile ----

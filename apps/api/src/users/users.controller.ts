@@ -5,9 +5,13 @@ import {
   IsOptional,
   IsString,
   Length,
+  Matches,
   MinLength,
   MaxLength,
 } from 'class-validator';
+
+// E.164-ish: leading + and 6-15 digits.
+const WHATSAPP_PATTERN = /^\+\d{6,15}$/;
 import { UsersService } from './users.service';
 import { JwtAuthGuard, SuperAdminGuard } from '../auth/guards';
 
@@ -17,12 +21,14 @@ class CreateManagerRequest {
   @IsString() @MinLength(8) @MaxLength(72) password!: string;
   @IsString() @Length(2, 120) fullName!: string;
   @IsOptional() @IsString() @Length(0, 120) officeName?: string;
+  @IsOptional() @Matches(WHATSAPP_PATTERN, { message: 'whatsappPhone must be E.164, e.g. +9647500000000' }) whatsappPhone?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) cityIds?: string[];
 }
 
 class UpdateManagerRequest {
   @IsOptional() @IsString() @Length(2, 120) fullName?: string;
   @IsOptional() @IsString() @Length(0, 120) officeName?: string;
+  @IsOptional() @Matches(WHATSAPP_PATTERN, { message: 'whatsappPhone must be E.164, e.g. +9647500000000' }) whatsappPhone?: string;
   @IsOptional() @IsString() @MinLength(8) @MaxLength(72) password?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) cityIds?: string[];
 }

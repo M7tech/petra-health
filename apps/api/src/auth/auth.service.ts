@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { MailService } from '../mail/mail.service';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { JwtPayload } from './jwt.types';
 import {
   AdminLoginRequest,
@@ -24,10 +24,9 @@ import type {
 
 const BCRYPT_ROUNDS = 12;
 
-function maskEmail(email: string): string {
-  const [name, domain] = email.split('@');
-  const shown = name.slice(0, 1);
-  return `${shown}${'*'.repeat(Math.max(1, name.length - 1))}@${domain}`;
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, '');
+  return digits.length <= 4 ? digits : `${digits.slice(0, -4).replace(/\d/g, '*')}${digits.slice(-4)}`;
 }
 
 @Injectable()
@@ -35,7 +34,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
-    private readonly mail: MailService,
+    private readonly whatsapp: WhatsAppService,
     private readonly config: ConfigService,
   ) {}
 
@@ -77,11 +76,12 @@ export class AuthService {
       where: { id: admin.id },
       data: { otpHash, otpExpiresAt: new Date(Date.now() + 5 * 60 * 1000) },
     });
-    const sent = await this.mail.sendOtp(admin.email, otp);
+    const sent = await this.whatsapp.sendOtp(admin.whatsappPhone, otp);
     return {
       otpRequired: true,
-      sentTo: maskEmail(admin.email),
-      // Only exposed when email delivery isn't configured, so the flow is testable.
+      sentTo: admin.whatsappPhone ? maskPhone(admin.whatsappPhone) : 'not set',
+      // Only exposed when WhatsApp delivery isn't configured (or this admin
+      // has no number on file yet), so the flow stays testable either way.
       devOtp: sent ? undefined : otp,
     };
   }
@@ -130,7 +130,7 @@ export class AuthService {
     });
     const token = `${admin.id}.${raw}`;
     const webUrl = this.config.get<string>('WEB_URL') ?? 'https://petra-health-web.vercel.app';
-    const sent = await this.mail.sendReset(admin.email, `${webUrl}/reset?token=${token}`);
+    const sent = await this.whatsapp.sendReset(admin.whatsappPhone, `${webUrl}/reset?token=${token}`);
     return { ok: true, devToken: sent ? undefined : token };
   }
 

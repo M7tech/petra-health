@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateProfileRequest } from './dto';
+import { UpdateProfileRequest, UpdateLocationRequest } from './dto';
 import { toAuthUser, computeAge } from '../common/user-mapper';
 import { bmiCategory, computeBmi, type PatientProfile } from '@petra/shared';
 
@@ -53,6 +53,16 @@ export class ProfileService {
     }
 
     return this.buildProfile(userId);
+  }
+
+  // Captured once during first-login onboarding (real device GPS, not the
+  // hierarchical Country/City picker) — used for the admin patient map.
+  async updateLocation(userId: string, dto: UpdateLocationRequest): Promise<{ ok: true }> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { latitude: dto.latitude, longitude: dto.longitude, locationCapturedAt: new Date() },
+    });
+    return { ok: true };
   }
 
   private async buildProfile(userId: string): Promise<PatientProfile> {

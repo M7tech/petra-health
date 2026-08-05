@@ -13,6 +13,7 @@ import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 import { PushModule } from './push/push.module';
 import { ContentModule } from './content/content.module';
+import { WhatsAppModule } from './whatsapp/whatsapp.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ContentModule } from './content/content.module';
     UsersModule,
     PushModule,
     ContentModule,
+    WhatsAppModule,
   ],
 })
 export class AppModule {}

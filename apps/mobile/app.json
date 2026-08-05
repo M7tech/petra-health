@@ -22,7 +22,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#a4225f"
+        "backgroundColor": "#ffffff"
       }
     },
     "plugins": [
@@ -40,6 +40,12 @@
           "image": "./assets/splash-icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#a4225f"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Petra Health uses your location once, during setup, so your care team knows your area."
         }
       ]
     ],

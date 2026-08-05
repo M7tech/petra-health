@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 const BASE_NAV = [
   { href: '/dashboard/overview', label: 'Overview' },
   { href: '/dashboard/patients', label: 'Patients' },
+  { href: '/dashboard/map', label: 'Map' },
   { href: '/dashboard/messages', label: 'Messages' },
   { href: '/dashboard/content', label: 'Training & News' },
   { href: '/dashboard/countries', label: 'Countries' },

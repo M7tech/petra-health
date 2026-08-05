@@ -41,6 +41,7 @@ export const en = {
     selectCity: 'Select a city',
     selectDoctor: 'Select a doctor',
     finish: 'Finish',
+    locationNote: "We'll ask for your location once, to help your care team know your area.",
   },
   tabs: { home: 'Home', semetra: 'Semetra', weight: 'Weight', profile: 'Profile', care: 'Care', learn: 'Learn' },
   care: {
@@ -245,6 +246,7 @@ export const ar: Dict = {
     selectCity: 'اختر مدينة',
     selectDoctor: 'اختر طبيبًا',
     finish: 'إنهاء',
+    locationNote: 'سنطلب موقعك مرة واحدة لمساعدة فريق رعايتك على معرفة منطقتك.',
   },
   tabs: { home: 'الرئيسية', semetra: 'سيميترا', weight: 'الوزن', profile: 'الملف', care: 'الرعاية', learn: 'تعلّم' },
   care: {
@@ -446,6 +448,7 @@ export const ku: Dict = {
     selectCity: 'شارێک هەڵبژێرە',
     selectDoctor: 'پزیشکێک هەڵبژێرە',
     finish: 'تەواوکردن',
+    locationNote: 'یەک جار داوای شوێنت دەکەین بۆ ئەوەی تیمی چاودێریت ناوچەکەت بزانێت.',
   },
   tabs: { home: 'ماڵەوە', semetra: 'سیمێترا', weight: 'کێش', profile: 'پڕۆفایل', care: 'چاودێری', learn: 'فێربوون' },
   care: {

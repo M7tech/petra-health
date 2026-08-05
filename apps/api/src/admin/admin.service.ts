@@ -8,6 +8,7 @@ import type {
   ManagerScope,
   MessageThreadSummary,
   PatientDetail,
+  PatientLocation,
   PatientSummary,
   RegionCount,
   SupportMessage,
@@ -33,14 +34,22 @@ export class AdminService {
 
   // What the logged-in admin/manager is scoped to (their region summary).
   async myScope(principal: Principal): Promise<ManagerScope> {
-    if (principal.role === 'SUPERADMIN') {
-      return { isSuperAdmin: true, officeName: null, cities: [], doctors: [], patientCount: 0 };
-    }
     const admin = await this.prisma.admin.findUnique({
       where: { id: principal.id },
       include: { managedCities: { include: { country: true } } },
     });
     if (!admin) throw new NotFoundException('Admin not found');
+
+    if (principal.role === 'SUPERADMIN') {
+      return {
+        isSuperAdmin: true,
+        officeName: null,
+        whatsappPhone: admin.whatsappPhone,
+        cities: [],
+        doctors: [],
+        patientCount: 0,
+      };
+    }
 
     const cityIds = admin.managedCities.map((c) => c.id);
     const [doctors, patientCount] = cityIds.length
@@ -66,6 +75,7 @@ export class AdminService {
     return {
       isSuperAdmin: false,
       officeName: admin.officeName,
+      whatsappPhone: admin.whatsappPhone,
       cities: admin.managedCities.map((c) => ({
         id: c.id,
         name: c.name,
@@ -75,6 +85,14 @@ export class AdminService {
       doctors,
       patientCount,
     };
+  }
+
+  async updateSelf(principal: Principal, whatsappPhone: string | undefined): Promise<{ ok: true }> {
+    await this.prisma.admin.update({
+      where: { id: principal.id },
+      data: { whatsappPhone },
+    });
+    return { ok: true };
   }
 
   async getStats(): Promise<AdminStats> {
@@ -207,6 +225,29 @@ export class AdminService {
       medicationCount: u._count.medications,
       doseCount: u._count.doseLogs,
       createdAt: u.createdAt.toISOString(),
+    }));
+  }
+
+  // Real-device GPS locations captured during patient onboarding — for the
+  // admin map. Scoped the same way as the patient list.
+  async listPatientLocations(principal: Principal): Promise<PatientLocation[]> {
+    const cityIds = await this.scopeCityIds(principal);
+    const users = await this.prisma.user.findMany({
+      where: {
+        latitude: { not: null },
+        longitude: { not: null },
+        ...(cityIds ? { cityId: { in: cityIds } } : {}),
+      },
+      include: { city: { include: { country: true } } },
+    });
+    return users.map((u) => ({
+      id: u.id,
+      fullName: u.fullName,
+      latitude: u.latitude as number,
+      longitude: u.longitude as number,
+      cityName: u.city?.name ?? null,
+      countryName: u.city?.country.name ?? null,
+      capturedAt: (u.locationCapturedAt ?? u.createdAt).toISOString(),
     }));
   }
 

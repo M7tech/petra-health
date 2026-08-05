@@ -92,6 +92,10 @@ model User {
   chronicConditions String[] @default([]) // condition keys, e.g. ["diabetes"]
   otherConditions  String?
   pushToken        String? // Expo push token, registered from a dev/production build (not Expo Go)
+  // Real device GPS location, captured once during first-login onboarding.
+  latitude           Float?
+  longitude          Float?
+  locationCapturedAt DateTime?
   // Chosen during hierarchical onboarding.
   countryId    String?
   cityId       String?
@@ -214,6 +218,9 @@ model Admin {
   fullName     String
   officeName   String?
   role         AdminRole @default(EDITOR)
+  // WhatsApp number (E.164, e.g. +9647500000000) — OTP/reset codes are sent
+  // here via the WhatsApp Business Cloud API instead of email.
+  whatsappPhone String?
   // OTP (2FA) + password reset
   otpHash        String?
   otpExpiresAt   DateTime?
