@@ -27,7 +27,8 @@ git push -u origin main
 > the same as public — auto-deploy on push keeps working as long as the
 > app's access to this repo wasn't revoked. If a push ever stops
 > triggering a deploy, check each platform's GitHub integration settings
-> to confirm the repo is still listed as connected.
+> to confirm the repo is still listed as connected. (Reconnected on Vercel
+> after the repo went private — confirmed working.)
 
 ---
 
