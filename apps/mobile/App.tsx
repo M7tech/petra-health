@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/auth';
 import { LanguageProvider, useI18n } from './src/i18n';
@@ -15,7 +15,7 @@ import LearnScreen from './src/screens/LearnScreen';
 import PharmacyScreen from './src/screens/PharmacyScreen';
 import BiometricGate from './src/BiometricGate';
 import FloatingTabBar, { TabDef } from './src/components/FloatingTabBar';
-import QuickActionSheet from './src/components/QuickActionSheet';
+import QuickAddFab from './src/components/QuickAddFab';
 import { useMessageNotifications } from './src/messageAlerts';
 import { registerForPushNotificationsAsync } from './src/notifications';
 import { api } from './src/api';
@@ -28,7 +28,6 @@ function MainTabs() {
   const { t, isRTL } = useI18n();
   const [tab, setTab] = useState<TabKey>('home');
   const [homeRefreshKey, setHomeRefreshKey] = useState(0);
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const TABS: TabDef<TabKey>[] = [
     { key: 'home', label: t('tabs.home'), icon: '🏠' },
@@ -79,22 +78,9 @@ function MainTabs() {
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setSheetOpen(true)}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
-
       <FloatingTabBar tabs={TABS} active={tab} onSelect={setTab} isRTL={isRTL} />
 
-      <QuickActionSheet
-        visible={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        onNavigate={(t) => setTab(t)}
-        onLogged={bumpHome}
-      />
+      <QuickAddFab onNavigate={(t) => setTab(t)} onLogged={bumpHome} />
     </View>
   );
 }
@@ -145,23 +131,4 @@ export default function App() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  fab: {
-    position: 'absolute',
-    alignSelf: 'center',
-    bottom: 78,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: colors.petra,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.petra,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 12,
-    borderWidth: 4,
-    borderColor: colors.bg,
-  },
-  fabIcon: { color: '#fff', fontSize: 28, fontWeight: '700', marginTop: -2 },
 });
