@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Falls back to the live Render API (not a local-only address) so a build
+// Falls back to the live self-hosted API (not a local-only address) so a build
 // still works even if EXPO_PUBLIC_API_URL isn't injected — EAS cloud builds
 // clone fresh from git and never see a local, gitignored .env file, so this
 // fallback needs to be safe for a real device, not just local `expo start`.
-const BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://petra-health-api.onrender.com';
+const BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://api.m7tech.info';
 const TOKEN_KEY = 'petra_token';
 
 export async function getToken() {
