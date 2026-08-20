@@ -11,7 +11,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.petrapharma.health",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Petra Health uses Face ID to unlock the app."
+        "NSFaceIDUsageDescription": "Petra Health uses Face ID to unlock the app.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
