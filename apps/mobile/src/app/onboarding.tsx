@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import * as Location from 'expo-location';
 import { api } from '@/api';
 import { useAuth } from '@/auth';
+import { useConfig } from '@/config';
 import { useI18n } from '@/i18n';
 import { notifyError } from '@/lib/errors';
 import { spacing } from '@/theme';
@@ -13,6 +14,7 @@ import type { City, Country, Doctor } from '@/types';
 export default function OnboardingScreen() {
   const { user, refresh, logout } = useAuth();
   const { t } = useI18n();
+  const { doctorFeatures } = useConfig();
   const { colors } = useTheme();
   const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -47,14 +49,14 @@ export default function OnboardingScreen() {
 
   useEffect(() => {
     setDoctors([]);
-    if (!cityId) return;
+    if (!cityId || !doctorFeatures) return;
     api<Doctor[]>(`/directory/doctors?cityId=${cityId}`)
       .then((list) => {
         setDoctors(list);
         setDoctorId((prev) => (list.some((d) => d.id === prev) ? prev : list.length === 1 ? list[0].id : ''));
       })
       .catch(() => {});
-  }, [cityId]);
+  }, [cityId, doctorFeatures]);
 
   // Best-effort: captures the device's real location once, during this
   // first-time setup. A denied permission never blocks onboarding.
@@ -73,7 +75,7 @@ export default function OnboardingScreen() {
     setBusy(true);
     setError(null);
     try {
-      await api('/profile', { method: 'PUT', body: JSON.stringify({ countryId, cityId, doctorId }) });
+      await api('/profile', { method: 'PUT', body: JSON.stringify(doctorFeatures ? { countryId, cityId, doctorId } : { countryId, cityId }) });
       await captureLocation();
       haptics.success();
       await refresh();
@@ -89,13 +91,14 @@ export default function OnboardingScreen() {
       <View style={{ gap: spacing.sm }}>
         <AppText variant="largeTitle">{t('onboarding.title')}</AppText>
         <AppText variant="body" tone="secondary">
-          {t('onboarding.subtitle')}
+          {doctorFeatures ? t('onboarding.subtitle') : t('ui.chooseCityOnly')}
         </AppText>
       </View>
       {error ? <Banner message={error} /> : null}
       <Section footer={t('onboarding.locationNote')}>
         <SelectRow icon="globe" title={t('onboarding.country')} placeholder={t('onboarding.selectCountry')} value={countryId || null} options={countries.map((c) => ({ value: c.id, label: c.name }))} onChange={setCountryId} />
         <SelectRow icon="pin" title={t('onboarding.city')} placeholder={t('onboarding.selectCity')} value={cityId || null} options={cities.map((c) => ({ value: c.id, label: c.name }))} onChange={setCityId} disabled={!countryId} />
+        {doctorFeatures ? (
         <SelectRow
           icon="stethoscope"
           title={t('onboarding.doctor')}
@@ -105,8 +108,9 @@ export default function OnboardingScreen() {
           onChange={setDoctorId}
           disabled={!cityId}
         />
+        ) : null}
       </Section>
-      <Button title={t('onboarding.finish')} onPress={save} loading={busy} disabled={!countryId || !cityId || !doctorId} />
+      <Button title={t('onboarding.finish')} onPress={save} loading={busy} disabled={!countryId || !cityId || (doctorFeatures && !doctorId)} />
       <Button title={t('common.signOut')} variant="plain" size="md" onPress={logout} />
     </Screen>
   );

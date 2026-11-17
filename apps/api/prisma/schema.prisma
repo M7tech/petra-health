@@ -401,3 +401,9 @@ model Pharmacy {
 
   @@map("pharmacies")
 }
+
+// Runtime switches an admin can flip without a redeploy (e.g. doctorFeatures).
+model AppSetting {
+  key   String @id
+  value String
+}

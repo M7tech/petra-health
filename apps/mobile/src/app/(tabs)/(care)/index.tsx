@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { api } from '@/api';
 import { useI18n, currentLocale } from '@/i18n';
+import { useConfig } from '@/config';
 import { useFocusLoad } from '@/lib/hooks';
 import { notifyError } from '@/lib/errors';
 import { useTheme } from '@/theme';
@@ -15,6 +16,7 @@ const SEV_TONE: Record<AdverseSeverity, BadgeTone> = { MILD: 'success', MODERATE
 
 export default function CareScreen() {
   const { t } = useI18n();
+  const { doctorFeatures } = useConfig();
   const { colors } = useTheme();
   const [comments, setComments] = useState<PatientComment[]>([]);
   const [events, setEvents] = useState<AdverseEvent[]>([]);
@@ -79,6 +81,7 @@ export default function CareScreen() {
       {add}
       {error ? <Banner message={error} onRetry={state.reload} retryLabel={t('ui.retry')} /> : null}
 
+      {doctorFeatures ? (
       <Section title={t('contact.title')} footer={t('contact.desc')}>
         <Row
           icon="message"
@@ -89,6 +92,7 @@ export default function CareScreen() {
           onPress={() => router.push('/(tabs)/(care)/messages')}
         />
       </Section>
+      ) : null}
 
       <Section title={t('care.treatment')}>
         <Row icon="heart" iconColor={colors.success} title={t('care.treatment')} right={<Badge tone={statusTone} label={statusLabel} />} />
@@ -103,12 +107,13 @@ export default function CareScreen() {
         </>
       ) : null}
 
-      {assessment?.physicianComments ? (
+      {doctorFeatures && assessment?.physicianComments ? (
         <Section title={t('care.physicianNotes')}>
           <Row icon="stethoscope" title={assessment.physicianComments} />
         </Section>
       ) : null}
 
+      {doctorFeatures ? (
       <Section title={t('care.comments')}>
         {comments.length === 0 ? (
           <Row title={t('care.noComments')} tone="secondary" />
@@ -116,6 +121,7 @@ export default function CareScreen() {
           comments.map((c) => <Row key={c.id} icon="message" iconColor={colors.violet} title={c.body} subtitle={`${c.doctorName ?? 'Doctor'} · ${new Date(c.createdAt).toLocaleDateString()}`} />)
         )}
       </Section>
+      ) : null}
 
       <Section title={t('care.adverseEvents')}>
         {events.length === 0 ? (

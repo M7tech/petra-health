@@ -12,6 +12,7 @@ import { LoadingState } from '@/components/ui';
 import { useMessageNotifications } from '@/messageAlerts';
 import { registerForPushNotificationsAsync } from '@/notifications';
 import { api } from '@/api';
+import { ConfigProvider, useConfig } from '@/config';
 import { darkPalette, lightPalette, useTheme } from '@/theme';
 
 function NavTheme({ children }: { children: React.ReactNode }) {
@@ -44,16 +45,20 @@ function Routes() {
   const { user, loading } = useAuth();
   const { ready, t } = useI18n();
   const { colors } = useTheme();
-  useMessageNotifications(!!user?.doctorId);
+  const { doctorFeatures } = useConfig();
+  const hasDoctor = doctorFeatures && !!user?.doctorId;
+  // First-run setup needs a city, and a doctor only while doctor features are on.
+  const needsSetup = !!user && (!user.cityId || (doctorFeatures && !user.doctorId));
+  useMessageNotifications(hasDoctor);
 
   React.useEffect(() => {
-    if (!user?.doctorId) return;
+    if (!hasDoctor) return;
     // No-op in Expo Go; registers a real push token in an EAS build.
     (async () => {
       const token = await registerForPushNotificationsAsync();
       if (token) api('/me/push-token', { method: 'POST', body: JSON.stringify({ token }) }).catch(() => {});
     })();
-  }, [user?.doctorId]);
+  }, [hasDoctor]);
 
   if (loading || !ready) return <LoadingState />;
 
@@ -65,10 +70,10 @@ function Routes() {
         <Stack.Protected guard={!user}>
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
-        <Stack.Protected guard={!!user && !user.doctorId}>
+        <Stack.Protected guard={needsSetup}>
           <Stack.Screen name="onboarding" />
         </Stack.Protected>
-        <Stack.Protected guard={!!user && !!user.doctorId}>
+        <Stack.Protected guard={!!user && !needsSetup}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="profile" options={sheet({ title: t('ui.profile'), sheetAllowedDetents: [1], ...sheetBg })} />
           <Stack.Screen name="guide" options={sheet({ title: t('guide.title'), sheetAllowedDetents: [1], ...sheetBg })} />
@@ -88,12 +93,14 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
         <LanguageProvider>
+          <ConfigProvider>
           <AuthProvider>
             <NavTheme>
               <StatusBar style="auto" />
               <Routes />
             </NavTheme>
           </AuthProvider>
+          </ConfigProvider>
         </LanguageProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
