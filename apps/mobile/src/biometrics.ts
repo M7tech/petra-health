@@ -19,7 +19,7 @@ export async function setBiometricEnabled(enabled: boolean): Promise<void> {
 
 export async function authenticate(): Promise<boolean> {
   const res = await LocalAuthentication.authenticateAsync({
-    promptMessage: 'Unlock Petra Health',
+    promptMessage: 'Unlock Sematra',
     fallbackLabel: 'Use passcode',
     disableDeviceFallback: false,
   });
