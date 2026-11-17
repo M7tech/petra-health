@@ -3,10 +3,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { City, Country, ManagerUser } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, Field, PageHeader } from '@/components/ui';
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
+  'min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 
 export default function UsersPage() {
   const [managers, setManagers] = useState<ManagerUser[]>([]);
@@ -101,12 +101,12 @@ export default function UsersPage() {
         <Card>
           <h2 className="mb-3 font-semibold text-slate-700">Create a manager</h2>
           <form onSubmit={create} className="grid gap-3 sm:grid-cols-2">
-            <input required placeholder="Username" className={inputCls} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
-            <input required type="email" placeholder="Email" className={inputCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <input required placeholder="Full name" className={inputCls} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
-            <input placeholder="Office name" className={inputCls} value={form.officeName} onChange={(e) => setForm({ ...form, officeName: e.target.value })} />
-            <input placeholder="WhatsApp number, e.g. +9647500000000" className={inputCls} value={form.whatsappPhone} onChange={(e) => setForm({ ...form, whatsappPhone: e.target.value })} />
-            <input required type="password" placeholder="Password (min 8)" className={inputCls} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <Field label="Username"><input required placeholder="Username" className={inputCls} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></Field>
+            <Field label="Email"><input required type="email" placeholder="Email" className={inputCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+            <Field label="Full name"><input required placeholder="Full name" className={inputCls} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></Field>
+            <Field label="Office name"><input placeholder="Office name" className={inputCls} value={form.officeName} onChange={(e) => setForm({ ...form, officeName: e.target.value })} /></Field>
+            <Field label="WhatsApp number"><input placeholder="WhatsApp number, e.g. +9647500000000" className={inputCls} value={form.whatsappPhone} onChange={(e) => setForm({ ...form, whatsappPhone: e.target.value })} /></Field>
+            <Field label="Password"><input required type="password" placeholder="Password (min 8)" className={inputCls} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>
             <div className="sm:col-span-2">
               <p className="mb-1 text-sm font-medium text-slate-600">Cities assigned</p>
               <CityPicker cities={cities} countryName={countryName} selected={newCityIds} onChange={setNewCityIds} />
@@ -249,8 +249,8 @@ function ManagerEditForm({
   return (
     <form onSubmit={save} className="mb-4 grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-2">
       {error && <p className="text-xs text-red-600 sm:col-span-2">{error}</p>}
-      <input required placeholder="Full name" className={inputCls} value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      <input placeholder="Office name" className={inputCls} value={officeName} onChange={(e) => setOfficeName(e.target.value)} />
+      <Field label="Full name"><input required placeholder="Full name" className={inputCls} value={fullName} onChange={(e) => setFullName(e.target.value)} /></Field>
+      <Field label="Office name"><input placeholder="Office name" className={inputCls} value={officeName} onChange={(e) => setOfficeName(e.target.value)} /></Field>
       <input
         type="password"
         placeholder="New password (leave blank to keep current)"

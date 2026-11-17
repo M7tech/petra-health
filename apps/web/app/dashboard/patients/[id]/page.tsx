@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import type { PatientDetail } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader, StatTile } from '@/components/ui';
+import { Card, EmptyState, ErrorBanner, PageHeader, StatTile, StatusBadge, TableSkeleton } from '@/components/ui';
 import { WeightChart } from '@/components/WeightChart';
 import { MetricChart } from '@/components/MetricChart';
 
@@ -23,6 +24,7 @@ export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
   const [p, setP] = useState<PatientDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<'overview' | 'clinical' | 'treatment'>('overview');
 
   useEffect(() => {
     if (!params.id) return;
@@ -31,26 +33,44 @@ export default function PatientDetailPage() {
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'));
   }, [params.id]);
 
-  if (error) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>;
-  if (!p) return <p className="text-slate-400">Loading…</p>;
+  if (error) return <ErrorBanner message={error} />;
+  if (!p) return <TableSkeleton />;
+
+  const status = p.assessment?.treatmentStatus;
+  const statusTone = status === 'ONGOING' ? 'success' : status === 'DISCONTINUED' ? 'danger' : 'neutral';
 
   return (
     <>
-      <Link href="/dashboard/patients" className="text-sm text-petra-600 hover:underline">
-        ← All patients
+      <Link href="/dashboard/patients" className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-petra-600 hover:underline">
+        <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden /> All patients
       </Link>
-      <PageHeader title={p.fullName} />
-      <p className="-mt-4 mb-6 text-slate-500">
-        {p.email} · {[p.cityName, p.countryName].filter(Boolean).join(', ') || 'No location'} ·
-        Doctor: {p.doctorName ?? '—'}
-      </p>
+      <PageHeader
+        title={p.fullName}
+        subtitle={`${p.email} · ${[p.cityName, p.countryName].filter(Boolean).join(', ') || 'No location'} · Doctor: ${p.doctorName ?? '—'}`}
+        action={status ? <StatusBadge tone={statusTone}>{status.toLowerCase()}</StatusBadge> : undefined}
+      />
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-3 gap-3 sm:gap-4">
         <StatTile label="Medications" value={p.medicationCount} />
         <StatTile label="Doses logged" value={p.doseCount} />
         <StatTile label="Weight entries" value={p.weightEntries.length} />
       </div>
 
+      <div role="tablist" aria-label="Patient sections" className="mb-6 flex gap-1 border-b border-slate-200">
+        {([['overview', 'Overview'], ['clinical', 'Clinical'], ['treatment', 'Treatment']] as const).map(([k, label]) => (
+          <button
+            key={k}
+            role="tab"
+            aria-selected={tab === k}
+            onClick={() => setTab(k)}
+            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${tab === k ? 'border-petra-500 text-petra-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'overview' && (
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-3 font-semibold text-slate-700">Weight trend (kg)</h2>
@@ -61,8 +81,12 @@ export default function PatientDetailPage() {
           <MetricChart data={p.hba1cEntries} color="#0284c7" unit="%" empty="No HbA1c readings yet." />
         </Card>
       </div>
+      )}
 
-      {(p.assessment || p.adverseEvents.length > 0 || p.comments.length > 0) && (
+      {tab === 'clinical' && !(p.assessment || p.adverseEvents.length > 0 || p.comments.length > 0) && (
+        <Card><EmptyState title="No clinical follow-up yet" hint="Assessments, adverse events and doctor comments appear here once recorded." /></Card>
+      )}
+      {tab === 'clinical' && (p.assessment || p.adverseEvents.length > 0 || p.comments.length > 0) && (
         <div className="mb-6 grid gap-6 lg:grid-cols-2">
           <Card>
             <h2 className="mb-3 font-semibold text-slate-700">Clinical follow-up</h2>
@@ -104,6 +128,7 @@ export default function PatientDetailPage() {
         </div>
       )}
 
+      {tab === 'treatment' && (
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-3 font-semibold text-slate-700">Medications</h2>
@@ -152,6 +177,7 @@ export default function PatientDetailPage() {
           )}
         </Card>
       </div>
+      )}
     </>
   );
 }

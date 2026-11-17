@@ -8,7 +8,7 @@ import { Card, PageHeader } from '@/components/ui';
 import ContentPostCard from '@/components/ContentPostCard';
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
+  'min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 const textareaCls = inputCls + ' min-h-[70px]';
 
 const EMPTY_FORM: CreateContentDto = {
@@ -178,9 +178,10 @@ export default function ContentPage() {
                 const label = lang === 'En' ? 'English' : lang === 'Ar' ? 'Arabic' : 'Kurdish';
                 return (
                   <div key={lang} className="rounded-lg border border-slate-200 p-3">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mb-2 text-sm font-medium text-slate-700">{label}</p>
                     <div className="space-y-2">
                       <input
+                        aria-label={`Title (${label})`}
                         placeholder={`Title (${label})${lang === 'En' ? ' — required' : ''}`}
                         required={lang === 'En'}
                         className={inputCls}
@@ -188,12 +189,14 @@ export default function ContentPage() {
                         onChange={(e) => setForm({ ...form, [titleKey]: e.target.value })}
                       />
                       <textarea
+                        aria-label={`Body (${label})`}
                         placeholder={`Body (${label})`}
                         className={textareaCls}
                         value={form[bodyKey] ?? ''}
                         onChange={(e) => setForm({ ...form, [bodyKey]: e.target.value })}
                       />
                       <input
+                        aria-label={`YouTube link (${label})`}
                         placeholder={`YouTube link (${label})`}
                         className={inputCls}
                         value={form[videoKey] ?? ''}
@@ -208,6 +211,7 @@ export default function ContentPage() {
                 <p className="mb-1 text-sm font-medium text-slate-600">Photos (image URLs)</p>
                 <div className="mb-2 flex gap-2">
                   <input
+                    aria-label="Photo URL"
                     placeholder="https://…"
                     className={inputCls}
                     value={photoInput}

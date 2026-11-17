@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import type { City, Country, Doctor, UpsertDoctorDto } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Button, Card, Input, PageHeader, Select } from '@/components/ui';
+import { Button, Card, Input, PageHeader, Select, Field } from '@/components/ui';
 
 const EMPTY: UpsertDoctorDto = {
   fullName: '',
@@ -138,9 +138,7 @@ export default function DoctorsPage() {
           </h2>
           <form onSubmit={onSubmit} className="space-y-3">
             {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Country</label>
-              <Select
+            <Field label="Country"><Select
                 required
                 value={form.countryId}
                 onChange={(e) =>
@@ -154,11 +152,8 @@ export default function DoctorsPage() {
                     {c.name}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">City</label>
-              <Select
+              </Select></Field>
+            <Field label="City"><Select
                 required
                 disabled={!form.countryId}
                 value={form.cityId}
@@ -172,32 +167,22 @@ export default function DoctorsPage() {
                     {c.name}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Full name</label>
-              <Input
+              </Select></Field>
+            <Field label="Full name"><Input
                 required
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Specialty</label>
-              <Input
+              /></Field>
+            <Field label="Specialty"><Input
                 value={form.specialty}
                 onChange={(e) => setForm({ ...form, specialty: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Phone</label>
-              <Input
+              /></Field>
+            <Field label="Phone"><Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-            </div>
+              /></Field>
             <div className="border-t pt-3">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+              <p className="mb-2 text-sm font-medium text-slate-700">
                 Portal login (optional)
               </p>
               <label className="mb-1 block text-sm text-slate-600">Login email</label>

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { Country, UpsertCountryDto } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Button, Card, Input, PageHeader, TableSkeleton } from '@/components/ui';
+import { Button, Card, Input, PageHeader, TableSkeleton, Field } from '@/components/ui';
 
 const EMPTY: UpsertCountryDto = { name: '', isoCode: '' };
 
@@ -105,23 +105,17 @@ export default function CountriesPage() {
           </h2>
           <form onSubmit={onSubmit} className="space-y-3">
             {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Name</label>
-              <Input
+            <Field label="Name"><Input
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">ISO code (2 letters)</label>
-              <Input
+              /></Field>
+            <Field label="ISO code (2 letters)"><Input
                 required
                 maxLength={2}
                 value={form.isoCode}
                 onChange={(e) => setForm({ ...form, isoCode: e.target.value.toUpperCase() })}
-              />
-            </div>
+              /></Field>
             <div className="flex gap-2">
               <Button type="submit">{editingId ? 'Save' : 'Add'}</Button>
               {editingId && (

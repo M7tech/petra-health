@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { City, Country, UpsertCityDto } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Button, Card, Input, PageHeader, Select } from '@/components/ui';
+import { Button, Card, Input, PageHeader, Select, Field } from '@/components/ui';
 
 const EMPTY: UpsertCityDto = { name: '', countryId: '' };
 
@@ -104,9 +104,7 @@ export default function CitiesPage() {
           </h2>
           <form onSubmit={onSubmit} className="space-y-3">
             {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">Country</label>
-              <Select
+            <Field label="Country"><Select
                 required
                 value={form.countryId}
                 onChange={(e) => setForm({ ...form, countryId: e.target.value })}
@@ -117,16 +115,12 @@ export default function CitiesPage() {
                     {c.name}
                   </option>
                 ))}
-              </Select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-slate-600">City name</label>
-              <Input
+              </Select></Field>
+            <Field label="City name"><Input
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
+              /></Field>
             <div className="flex gap-2">
               <Button type="submit">{editingId ? 'Save' : 'Add'}</Button>
               {editingId && (

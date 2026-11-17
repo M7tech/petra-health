@@ -3,10 +3,10 @@
 import { Fragment, FormEvent, useEffect, useState } from 'react';
 import type { Pharmacy } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, Field, PageHeader } from '@/components/ui';
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
+  'min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 
 const emptyForm = { name: '', phone: '', address: '', mapLink: '', latitude: '', longitude: '' };
 
@@ -59,8 +59,8 @@ function LocationFields({
 
   return (
     <>
-      <input required placeholder="Name" className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      <input placeholder="Phone" className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+      <Field label="Name"><input required placeholder="Name" className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+      <Field label="Phone"><input placeholder="Phone" className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
       <input placeholder="Address" className={`sm:col-span-2 ${inputCls}`} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
 
       <div className="sm:col-span-2">
