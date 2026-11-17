@@ -134,7 +134,7 @@ export default function PatientDetailPage() {
           {p.recentDoses.length === 0 ? (
             <p className="text-sm text-slate-400">No doses logged.</p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <tbody>
                 {p.recentDoses.map((d) => (
                   <tr key={d.id} className="border-b last:border-0">
@@ -148,7 +148,7 @@ export default function PatientDetailPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Card>
       </div>

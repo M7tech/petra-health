@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { Country, UpsertCountryDto } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Button, Card, Input, PageHeader } from '@/components/ui';
+import { Button, Card, Input, PageHeader, TableSkeleton } from '@/components/ui';
 
 const EMPTY: UpsertCountryDto = { name: '', isoCode: '' };
 
@@ -59,9 +59,9 @@ export default function CountriesPage() {
         <div className="lg:col-span-2">
           <Card>
             {loading ? (
-              <p className="text-slate-400">Loading…</p>
+              <TableSkeleton />
             ) : (
-              <table className="w-full text-sm">
+              <div className="table-wrap"><table>
                 <thead>
                   <tr className="border-b text-left text-slate-500">
                     <th className="pb-2">Name</th>
@@ -94,7 +94,7 @@ export default function CountriesPage() {
                     </tr>
                   )}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </Card>
         </div>

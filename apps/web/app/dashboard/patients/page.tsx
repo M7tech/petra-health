@@ -1,15 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import type { PatientSummary } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, EmptyState, ErrorBanner, Input, PageHeader, TableSkeleton } from '@/components/ui';
+
+// Case/script-agnostic match so Latin, Arabic and Kurdish names all work.
+const norm = (s: string) => s.normalize('NFKC').toLowerCase();
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<PatientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     api<PatientSummary[]>('/admin/patients')
@@ -18,51 +23,75 @@ export default function PatientsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const shown = useMemo(() => {
+    const q = norm(query.trim());
+    if (!q) return patients;
+    return patients.filter((p) =>
+      [p.fullName, p.email, p.cityName, p.countryName, p.doctorName].some((v) => v && norm(v).includes(q)),
+    );
+  }, [patients, query]);
+
   return (
     <>
-      <PageHeader title={`Patients${patients.length ? ` (${patients.length})` : ''}`} />
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      <Card>
+      <PageHeader
+        title="Patients"
+        subtitle={patients.length ? `${shown.length} of ${patients.length} shown` : undefined}
+        action={
+          <div className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden />
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search name, email, city or doctor"
+              aria-label="Search patients"
+              className="ps-9"
+            />
+          </div>
+        }
+      />
+      {error && <ErrorBanner message={error} />}
+      <Card className="!p-0">
         {loading ? (
-          <p className="text-slate-400">Loading…</p>
+          <div className="p-5">
+            <TableSkeleton />
+          </div>
+        ) : shown.length === 0 ? (
+          <EmptyState
+            title={patients.length === 0 ? 'No patients yet' : 'No patients match your search'}
+            hint={patients.length === 0 ? 'Patients appear here once they sign up in the app.' : 'Try a different name, city or doctor.'}
+          />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-slate-500">
-                <th className="pb-2">Name</th>
-                <th className="pb-2">Email</th>
-                <th className="pb-2">Location</th>
-                <th className="pb-2">Doctor</th>
-                <th className="pb-2 text-right">Meds</th>
-                <th className="pb-2 text-right">Doses</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patients.map((p) => (
-                <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="py-2 font-medium text-petra-700">
-                    <Link href={`/dashboard/patients/${p.id}`} className="hover:underline">
-                      {p.fullName}
-                    </Link>
-                  </td>
-                  <td className="py-2 text-slate-500">{p.email}</td>
-                  <td className="py-2 text-slate-500">
-                    {[p.cityName, p.countryName].filter(Boolean).join(', ') || '—'}
-                  </td>
-                  <td className="py-2 text-slate-500">{p.doctorName ?? '—'}</td>
-                  <td className="py-2 text-right tabular-nums text-slate-600">{p.medicationCount}</td>
-                  <td className="py-2 text-right tabular-nums text-slate-600">{p.doseCount}</td>
-                </tr>
-              ))}
-              {patients.length === 0 && (
+          <div className="table-wrap">
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-slate-400">
-                    No patients have signed up yet.
-                  </td>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Location</th>
+                  <th>Doctor</th>
+                  <th className="text-right">Meds</th>
+                  <th className="text-right">Doses</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {shown.map((p) => (
+                  <tr key={p.id}>
+                    <td className="font-medium">
+                      <Link href={`/dashboard/patients/${p.id}`} className="text-petra-700 hover:underline">
+                        {p.fullName}
+                      </Link>
+                    </td>
+                    <td className="text-slate-500">{p.email}</td>
+                    <td className="text-slate-500">{[p.cityName, p.countryName].filter(Boolean).join(', ') || '—'}</td>
+                    <td className="text-slate-500">{p.doctorName ?? '—'}</td>
+                    <td className="text-right text-slate-600">{p.medicationCount}</td>
+                    <td className="text-right text-slate-600">{p.doseCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </>

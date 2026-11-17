@@ -255,7 +255,7 @@ export default function PharmaciesPage() {
         {pharmacies.length === 0 ? (
           <p className="text-sm text-slate-400">No pharmacies added yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="table-wrap"><table>
             <thead>
               <tr className="border-b text-left text-slate-500">
                 <th className="pb-2">Name</th>
@@ -318,7 +318,7 @@ export default function PharmaciesPage() {
                 </Fragment>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </Card>
     </>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { AdminStats, ManagerScope } from '@petra/shared';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { BarList, Card, PageHeader, StatTile } from '@/components/ui';
+import { BarList, Card, PageHeader, StatTile, TableSkeleton } from '@/components/ui';
 
 const WHATSAPP_PATTERN = /^\+\d{6,15}$/;
 
@@ -62,7 +62,7 @@ export default function OverviewPage() {
     return (
       <>
         <PageHeader title="Overview" />
-        <p className="text-slate-400">Loading…</p>
+        <TableSkeleton />
       </>
     );
   }
@@ -174,7 +174,7 @@ export default function OverviewPage() {
         {stats.recentPatients.length === 0 ? (
           <p className="text-sm text-slate-400">No patients yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="table-wrap"><table>
             <tbody>
               {stats.recentPatients.map((p) => (
                 <tr key={p.id} className="border-b last:border-0">
@@ -186,7 +186,7 @@ export default function OverviewPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </Card>
     </>

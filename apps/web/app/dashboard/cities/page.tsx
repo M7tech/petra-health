@@ -55,7 +55,7 @@ export default function CitiesPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <thead>
                 <tr className="border-b text-left text-slate-500">
                   <th className="pb-2">City</th>
@@ -94,7 +94,7 @@ export default function CitiesPage() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </div>
 

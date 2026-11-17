@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { DoctorPatientSummary } from '@petra/shared';
 import { api } from '@/lib/api';
+import { TableSkeleton } from '@/components/ui';
 
 const STATUS_STYLE: Record<string, string> = {
   ONGOING: 'bg-green-100 text-green-700',
@@ -51,9 +52,9 @@ export default function DoctorPatientsPage() {
           className="mb-4 w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-petra-500 focus:outline-none"
         />
         {loading ? (
-          <p className="text-slate-400">Loading…</p>
+          <TableSkeleton />
         ) : (
-          <table className="w-full text-sm">
+          <div className="table-wrap"><table>
             <thead>
               <tr className="border-b text-left text-slate-500">
                 <th className="pb-2">Name</th>
@@ -109,7 +110,7 @@ export default function DoctorPatientsPage() {
                 </tr>
               )}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </>

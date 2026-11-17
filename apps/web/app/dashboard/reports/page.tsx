@@ -124,7 +124,7 @@ export default function ReportsPage() {
         </div>
         <Card>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <thead>
                 <tr className="border-b text-left text-slate-500">
                   <th className="pb-2">Name</th>
@@ -166,7 +166,7 @@ export default function ReportsPage() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </div>
@@ -199,7 +199,7 @@ export default function ReportsPage() {
         </div>
         <Card>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <thead>
                 <tr className="border-b text-left text-slate-500">
                   <th className="pb-2">Doctor</th>
@@ -253,7 +253,7 @@ export default function ReportsPage() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </div>
@@ -285,7 +285,7 @@ export default function ReportsPage() {
         </div>
         <Card>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <thead>
                 <tr className="border-b text-left text-slate-500">
                   <th className="pb-2">Name</th>
@@ -321,7 +321,7 @@ export default function ReportsPage() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </div>

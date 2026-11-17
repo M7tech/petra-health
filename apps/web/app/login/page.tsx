@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, Role } from '@/lib/auth';
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
+  'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 
 export default function LoginPage() {
   const { doctorLogin, adminRequestOtp, adminVerifyOtp } = useAuth();
@@ -14,8 +14,8 @@ export default function LoginPage() {
   const [role, setRole] = useState<Role>('admin');
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
 
-  const [username, setUsername] = useState('superadmin');
-  const [email, setEmail] = useState('sara@petrapharma.com');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [otp, setOtp] = useState('');
@@ -68,23 +68,36 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-sm space-y-5 rounded-2xl bg-white p-8 shadow-lg">
-        <div className="text-center">
-          <img src="/logo-mark.png" alt="Petra Pharma" className="mx-auto mb-3 h-14 w-14" />
-          <h1 className="text-xl font-semibold text-slate-800">Petra Health Portal</h1>
-          <p className="text-sm text-slate-500">Sign in to continue</p>
+    <main className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+      <section className="relative hidden flex-col justify-between overflow-hidden bg-ink-900 p-12 text-white lg:flex">
+        <div className="flex items-center gap-3">
+          <img src="/logo-mark.png" alt="" className="h-9 w-9 rounded bg-white p-1" />
+          <span className="font-semibold">Petra Health</span>
+        </div>
+        <div className="max-w-md">
+          <h2 className="text-4xl font-semibold leading-tight tracking-tight">Every patient, every dose, in one place.</h2>
+          <p className="mt-4 text-slate-300">Track Semetra treatment, weight and HbA1c progress, and stay in touch with your care team.</p>
+        </div>
+        <p className="text-sm text-slate-400">Petra Pharma</p>
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 -end-32 h-96 w-96 rounded-full bg-petra-500/30 blur-3xl" />
+      </section>
+      <section className="flex items-center justify-center bg-white px-5 py-10">
+      <div className="w-full max-w-sm space-y-5">
+        <div>
+          <img src="/logo-mark.png" alt="Petra Pharma" className="mb-5 h-10 w-10 lg:hidden" />
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Sign in</h1>
+          <p className="mt-1 text-sm text-slate-500">Use your Petra Health portal account.</p>
         </div>
 
         {step === 'credentials' && (
-          <div className="flex rounded-lg bg-slate-100 p-1">
+          <div className="flex rounded-lg bg-slate-100 p-1" role="tablist">
             {(['admin', 'doctor'] as Role[]).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => pickRole(r)}
                 className={`flex-1 rounded-md py-1.5 text-sm font-medium capitalize transition ${
-                  role === r ? 'bg-white text-petra-600 shadow' : 'text-slate-500'
+                  role === r ? 'bg-white text-petra-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 {r}
@@ -130,15 +143,10 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-petra-500 py-2.5 font-medium text-white transition hover:bg-petra-600 disabled:opacity-60"
+              className="min-h-11 w-full rounded-lg bg-petra-500 py-2.5 font-medium text-white transition hover:bg-petra-600 disabled:opacity-60"
             >
               {busy ? 'Please wait…' : role === 'admin' ? 'Continue' : 'Sign in'}
             </button>
-            <p className="text-center text-xs text-slate-400">
-              {role === 'admin'
-                ? 'Super-admin: superadmin / Admin123! · Manager: manager1 / Manager123!'
-                : 'Doctor: sara@petrapharma.com / Doctor123!'}
-            </p>
           </form>
         ) : (
           <form onSubmit={submitOtp} className="space-y-4">
@@ -161,7 +169,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-petra-500 py-2.5 font-medium text-white transition hover:bg-petra-600 disabled:opacity-60"
+              className="min-h-11 w-full rounded-lg bg-petra-500 py-2.5 font-medium text-white transition hover:bg-petra-600 disabled:opacity-60"
             >
               {busy ? 'Verifying…' : 'Verify & sign in'}
             </button>
@@ -175,6 +183,7 @@ export default function LoginPage() {
           </form>
         )}
       </div>
+      </section>
     </main>
   );
 }

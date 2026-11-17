@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { DoctorStats } from '@petra/shared';
 import { api } from '@/lib/api';
-import { BarList, Card, PageHeader, StatTile } from '@/components/ui';
+import { BarList, Card, PageHeader, StatTile, TableSkeleton } from '@/components/ui';
 
 export default function DoctorOverviewPage() {
   const [stats, setStats] = useState<DoctorStats | null>(null);
@@ -28,7 +28,7 @@ export default function DoctorOverviewPage() {
     return (
       <>
         <PageHeader title="Overview" />
-        <p className="text-slate-400">Loading…</p>
+        <TableSkeleton />
       </>
     );
   }
@@ -78,7 +78,7 @@ export default function DoctorOverviewPage() {
           {stats.recentPatients.length === 0 ? (
             <p className="text-sm text-slate-400">No patients yet.</p>
           ) : (
-            <table className="w-full text-sm">
+            <div className="table-wrap"><table>
               <tbody>
                 {stats.recentPatients.map((p) => (
                   <tr key={p.id} className="border-b last:border-0">
@@ -94,7 +94,7 @@ export default function DoctorOverviewPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Card>
       </div>
