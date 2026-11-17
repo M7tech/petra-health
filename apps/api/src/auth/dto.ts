@@ -44,3 +44,10 @@ export class SignupRequest {
   @MaxLength(120)
   fullName!: string;
 }
+
+export class GoogleLoginRequest {
+  @IsString()
+  @MinLength(20)
+  @MaxLength(4096)
+  idToken!: string;
+}

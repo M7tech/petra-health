@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Image, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/auth';
 import { useI18n } from '@/i18n';
@@ -7,6 +7,7 @@ import { notifyError } from '@/lib/errors';
 import { spacing } from '@/theme';
 import { AppText, Banner, Button, FieldRow, Screen, Section, haptics } from '@/components/ui';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { authenticate, clearCredentials, isBiometricAvailable, loadCredentials, saveCredentials } from '@/biometrics';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -15,12 +16,44 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  useEffect(() => {
+    loadCredentials().then((c) => setHasSaved(!!c));
+  }, []);
+
+  async function fingerprintSignIn() {
+    const saved = await loadCredentials();
+    if (!saved || !(await authenticate())) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await login(saved.email, saved.password);
+    } catch {
+      // Password changed elsewhere — drop the stale saved login.
+      await clearCredentials();
+      setHasSaved(false);
+      haptics.error();
+      setError(t('ui.fpFailed'));
+      setBusy(false);
+    }
+  }
+
+  // Offered once, right after a successful password sign-in.
+  async function offerFingerprint(e: string, p: string) {
+    if ((await loadCredentials()) || !(await isBiometricAvailable())) return;
+    Alert.alert(t('ui.fpOfferTitle'), t('ui.fpOfferBody'), [
+      { text: t('ui.fpNotNow'), style: 'cancel' },
+      { text: t('ui.fpYes'), onPress: () => saveCredentials(e, p) },
+    ]);
+  }
 
   async function submit() {
     setBusy(true);
     setError(null);
     try {
       await login(email.trim(), password);
+      offerFingerprint(email.trim(), password);
     } catch (e) {
       haptics.error();
       setError(notifyError(e, t('ui.loginFailed')));
@@ -48,6 +81,7 @@ export default function LoginScreen() {
       </Section>
 
       <Button title={t('auth.loginCta')} onPress={submit} loading={busy} disabled={!email || !password} />
+      {hasSaved ? <Button title={t('ui.fpSignIn')} icon="lock" variant="tinted" onPress={fingerprintSignIn} disabled={busy} /> : null}
       <Button title={t('auth.noAccount')} variant="plain" size="md" onPress={() => router.push('/signup')} />
 
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>

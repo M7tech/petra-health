@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import {
   AdminLoginRequest,
   ForgotPasswordRequest,
+  GoogleLoginRequest,
   LoginRequest,
   ResetPasswordRequest,
   SignupRequest,
@@ -22,6 +23,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginRequest) {
     return this.auth.loginUser(dto);
+  }
+
+  // Patients: sign in (or sign up) with a Google account.
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  google(@Body() dto: GoogleLoginRequest) {
+    return this.auth.loginWithGoogle(dto.idToken);
   }
 
   // Admin/manager: step 1 (username+password -> OTP), step 2 (verify OTP)

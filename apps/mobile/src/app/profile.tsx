@@ -3,7 +3,7 @@ import { Alert, Switch, View } from 'react-native';
 import { api } from '@/api';
 import { useAuth } from '@/auth';
 import { useI18n } from '@/i18n';
-import { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, authenticate } from '@/biometrics';
+import { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, authenticate, loadCredentials, clearCredentials } from '@/biometrics';
 import { notifyError } from '@/lib/errors';
 import { parseLocaleNumber } from '@/lib/numbers';
 import { spacing, useTheme } from '@/theme';
@@ -54,6 +54,7 @@ export default function ProfileSheet() {
   const [cities, setCities] = useState<City[]>([]);
   const [bioAvailable, setBioAvailable] = useState(false);
   const [bioOn, setBioOn] = useState(false);
+  const [fpSaved, setFpSaved] = useState(false);
 
   useEffect(() => {
     api<PatientProfile>('/profile/me')
@@ -79,6 +80,7 @@ export default function ProfileSheet() {
     (async () => {
       setBioAvailable(await isBiometricAvailable());
       setBioOn(await isBiometricEnabled());
+      setFpSaved(!!(await loadCredentials()));
     })();
   }, [t]);
 
@@ -197,6 +199,9 @@ export default function ProfileSheet() {
 
       <Section title={t('home.security')} footer={bioAvailable ? t('home.biometricDesc') : t('home.noBiometric')}>
         <Row icon="lock" iconColor={colors.violet} title={t('home.biometric')} right={<Switch accessibilityLabel={t('home.biometric')} value={bioOn} disabled={!bioAvailable} onValueChange={toggleBio} trackColor={{ true: colors.tint }} />} />
+        {fpSaved ? (
+          <Row icon="lock" iconColor={colors.violet} title={t('ui.fpSaved')} subtitle={t('ui.fpSavedHint')} right={<Switch accessibilityLabel={t('ui.fpSaved')} value={fpSaved} onValueChange={async (v) => { if (!v) { await clearCredentials(); setFpSaved(false); } }} trackColor={{ true: colors.tint }} />} />
+        ) : null}
       </Section>
 
       <Section title={t('lang.language')}>

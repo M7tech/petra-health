@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, ServiceUnavailableException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -58,6 +58,39 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+    const accessToken = this.sign({ sub: user.id, email: user.email, type: 'user' });
+    return { accessToken, user: toAuthUser(user) };
+  }
+
+  // Google sign-in: the app sends the ID token Google issued; we check it with
+  // Google, then match by verified email (or create the account).
+  async loginWithGoogle(idToken: string): Promise<UserLoginResponse> {
+    const allowed = (this.config.get<string>('GOOGLE_CLIENT_IDS') ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (allowed.length === 0) throw new ServiceUnavailableException('Google sign-in is not configured');
+
+    let info: { aud?: string; email?: string; email_verified?: string | boolean; name?: string; exp?: string };
+    try {
+      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+      if (!res.ok) throw new Error('rejected');
+      info = await res.json();
+    } catch {
+      throw new UnauthorizedException('Google sign-in failed');
+    }
+    const verified = info.email_verified === true || info.email_verified === 'true';
+    if (!info.aud || !allowed.includes(info.aud) || !info.email || !verified) {
+      throw new UnauthorizedException('Google sign-in failed');
+    }
+
+    const email = info.email.toLowerCase().trim();
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Password is unusable (random) — this account signs in with Google, or resets by email.
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
+      user = await this.prisma.user.create({ data: { email, passwordHash, fullName: info.name || email.split('@')[0] } });
     }
     const accessToken = this.sign({ sub: user.id, email: user.email, type: 'user' });
     return { accessToken, user: toAuthUser(user) };
