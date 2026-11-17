@@ -48,7 +48,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Petra Health uses your location once, during setup, so your care team knows your area."
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "extra": {
       "eas": {

@@ -166,7 +166,7 @@ export default function QuickAddFab({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.35)' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(15, 23, 42, 0.35)' },
   fab: {
     position: 'absolute',
     alignSelf: 'center',
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   labelText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-  dialogBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.45)' },
+  dialogBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(15, 23, 42, 0.45)' },
   dialogWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   dialog: {
     width: '100%',
