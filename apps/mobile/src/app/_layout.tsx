@@ -13,6 +13,7 @@ import { useMessageNotifications } from '@/messageAlerts';
 import { registerForPushNotificationsAsync } from '@/notifications';
 import { api } from '@/api';
 import { ConfigProvider, useConfig } from '@/config';
+import { useGate } from '@/lib/gate';
 import { darkPalette, lightPalette, useTheme } from '@/theme';
 
 function NavTheme({ children }: { children: React.ReactNode }) {
@@ -47,8 +48,9 @@ function Routes() {
   const { colors } = useTheme();
   const { doctorFeatures } = useConfig();
   const hasDoctor = doctorFeatures && !!user?.doctorId;
+  const gate = useGate();
   // First-run setup needs a city, and a doctor only while doctor features are on.
-  const needsSetup = !!user && (!user.cityId || (doctorFeatures && !user.doctorId));
+  const needsSetup = gate === 'setup';
   useMessageNotifications(hasDoctor);
 
   React.useEffect(() => {
