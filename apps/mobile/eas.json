@@ -21,7 +21,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.m7tech.info"
-      }
+      },
+      "autoIncrement": true
     },
     "production": {
       "autoIncrement": true,
