@@ -22,7 +22,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <AppShell nav={DOCTOR_NAV} session={session} logout={logout}>
+    <AppShell nav={DOCTOR_NAV} session={session} logout={logout} patientsPath="/doctor/patients" patientHref={(id) => `/doctor/patients/${id}`}>
       {children}
     </AppShell>
   );

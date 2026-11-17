@@ -156,7 +156,7 @@ export default function OverviewPage() {
                     <tr key={p.id}>
                       <td className="font-medium text-slate-800">{p.fullName}</td>
                       <td className="text-slate-500">{p.email}</td>
-                      <td className="text-right text-slate-500">{new Date(p.createdAt).toLocaleDateString()}</td>
+                      <td className="text-end text-slate-500">{new Date(p.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>

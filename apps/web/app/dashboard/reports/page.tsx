@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { AdminReports, DoctorReportPatient, DoctorReportRow, TreatmentStatus } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader, StatTile, Button } from '@/components/ui';
+import { Card, ErrorBanner, PageHeader, StatTile, Button, TableSkeleton } from '@/components/ui';
 
 const STATUS_STYLES: Record<string, string> = {
   ONGOING: 'bg-green-100 text-green-700',
@@ -57,8 +57,8 @@ export default function ReportsPage() {
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'));
   }, []);
 
-  if (error) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>;
-  if (!data) return <p className="text-slate-400">Loading…</p>;
+  if (error) return <ErrorBanner message={error} />;
+  if (!data) return <TableSkeleton />;
 
   const { summary } = data;
 
@@ -126,13 +126,13 @@ export default function ReportsPage() {
           <div className="overflow-x-auto">
             <div className="table-wrap"><table>
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b text-start text-slate-500">
                   <th className="pb-2">Name</th>
                   <th className="pb-2">Location</th>
                   <th className="pb-2">Doctor</th>
                   <th className="pb-2">Status</th>
-                  <th className="pb-2 text-right">Meds</th>
-                  <th className="pb-2 text-right">Doses</th>
+                  <th className="pb-2 text-end">Meds</th>
+                  <th className="pb-2 text-end">Doses</th>
                   <th className="pb-2">Last dose</th>
                   <th className="pb-2">Registered</th>
                 </tr>
@@ -152,8 +152,8 @@ export default function ReportsPage() {
                     <td className="py-2">
                       <StatusBadge status={p.treatmentStatus} />
                     </td>
-                    <td className="py-2 text-right tabular-nums text-slate-600">{p.medicationCount}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-600">{p.doseCount}</td>
+                    <td className="py-2 text-end tabular-nums text-slate-600">{p.medicationCount}</td>
+                    <td className="py-2 text-end tabular-nums text-slate-600">{p.doseCount}</td>
                     <td className="py-2 text-slate-500">{fmtDate(p.lastDoseAt)}</td>
                     <td className="py-2 text-slate-500">{fmtDate(p.createdAt)}</td>
                   </tr>
@@ -201,10 +201,10 @@ export default function ReportsPage() {
           <div className="overflow-x-auto">
             <div className="table-wrap"><table>
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b text-start text-slate-500">
                   <th className="pb-2">Doctor</th>
                   <th className="pb-2">Location</th>
-                  <th className="pb-2 text-right">Patients</th>
+                  <th className="pb-2 text-end">Patients</th>
                   <th className="pb-2">Patient</th>
                   <th className="pb-2">Status</th>
                   <th className="pb-2">Registered</th>
@@ -219,7 +219,7 @@ export default function ReportsPage() {
                         {firstOfDoctor ? (
                           <>
                             {doctor.fullName}
-                            {doctor.specialty && <span className="ml-1 text-xs font-normal text-slate-400">({doctor.specialty})</span>}
+                            {doctor.specialty && <span className="ms-1 text-xs font-normal text-slate-400">({doctor.specialty})</span>}
                           </>
                         ) : (
                           ''
@@ -228,7 +228,7 @@ export default function ReportsPage() {
                       <td className="py-2 text-slate-500">
                         {firstOfDoctor ? [doctor.cityName, doctor.countryName].filter(Boolean).join(', ') || '—' : ''}
                       </td>
-                      <td className="py-2 text-right tabular-nums text-slate-600">
+                      <td className="py-2 text-end tabular-nums text-slate-600">
                         {firstOfDoctor ? doctor.patientCount : ''}
                       </td>
                       <td className="py-2 text-slate-600">
@@ -287,7 +287,7 @@ export default function ReportsPage() {
           <div className="overflow-x-auto">
             <div className="table-wrap"><table>
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b text-start text-slate-500">
                   <th className="pb-2">Name</th>
                   <th className="pb-2">Address</th>
                   <th className="pb-2">Phone</th>

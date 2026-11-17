@@ -79,11 +79,11 @@ export default function DoctorsPage() {
           <Card>
             <div className="table-wrap"><table>
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b text-start text-slate-500">
                   <th className="pb-2">Name</th>
                   <th className="pb-2">Specialty</th>
                   <th className="pb-2">City</th>
-                  <th className="pb-2 text-right">Actions</th>
+                  <th className="pb-2 text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,7 +94,7 @@ export default function DoctorsPage() {
                     <td className="py-2 text-slate-500">
                       {cityName(d.cityId)}, {countryName(d.countryId)}
                     </td>
-                    <td className="py-2 text-right">
+                    <td className="py-2 text-end">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"

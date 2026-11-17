@@ -149,7 +149,7 @@ export function BarList({
                   aria-label={`${d.label}: ${d.count}`}
                 />
               </div>
-              <span className="w-8 shrink-0 text-right font-medium tabular-nums text-slate-700">{d.count}</span>
+              <span className="w-8 shrink-0 text-end font-medium tabular-nums text-slate-700">{d.count}</span>
             </div>
           ))}
         </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { DoctorStats } from '@petra/shared';
 import { api } from '@/lib/api';
-import { BarList, Card, PageHeader, StatTile, TableSkeleton } from '@/components/ui';
+import { BarList, Card, PageHeader, StatTile, TableSkeleton, ErrorBanner } from '@/components/ui';
 
 export default function DoctorOverviewPage() {
   const [stats, setStats] = useState<DoctorStats | null>(null);
@@ -20,7 +20,7 @@ export default function DoctorOverviewPage() {
     return (
       <>
         <PageHeader title="Overview" />
-        <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        <ErrorBanner message={error} />
       </>
     );
   }
@@ -88,7 +88,7 @@ export default function DoctorOverviewPage() {
                       </Link>
                     </td>
                     <td className="py-2 text-slate-500">{p.email}</td>
-                    <td className="py-2 text-right text-slate-400">
+                    <td className="py-2 text-end text-slate-400">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

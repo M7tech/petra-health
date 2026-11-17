@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const nav = session.isSuperAdmin ? [...ADMIN_NAV, SUPER_ADMIN_NAV] : ADMIN_NAV;
 
   return (
-    <AppShell nav={nav} session={session} logout={logout}>
+    <AppShell nav={nav} session={session} logout={logout} patientsPath="/admin/patients" patientHref={(id) => `/dashboard/patients/${id}`}>
       {children}
     </AppShell>
   );

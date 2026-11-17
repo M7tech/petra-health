@@ -15,7 +15,7 @@ function Row({ k, v }: { k: string; v: string | null | undefined }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-slate-500">{k}</dt>
-      <dd className="text-right font-medium text-slate-700">{v}</dd>
+      <dd className="text-end font-medium text-slate-700">{v}</dd>
     </div>
   );
 }
@@ -167,7 +167,7 @@ export default function PatientDetailPage() {
                     <td className="py-1.5 text-slate-500">
                       {d.doseMg != null ? `${d.doseMg} mg` : '—'}
                     </td>
-                    <td className="py-1.5 text-right text-slate-400">
+                    <td className="py-1.5 text-end text-slate-400">
                       {new Date(d.takenAt).toLocaleDateString()}
                     </td>
                   </tr>

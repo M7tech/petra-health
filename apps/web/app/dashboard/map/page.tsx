@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { PatientLocation, Pharmacy } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, EmptyState, ErrorBanner, PageHeader, TableSkeleton } from '@/components/ui';
 
 // Leaflet touches `window` at module load — must never render during SSR.
 const PatientMap = dynamic(() => import('@/components/PatientMap'), {
   ssr: false,
-  loading: () => <p className="text-slate-400">Loading map…</p>,
+  loading: () => <TableSkeleton rows={4} />,
 });
 
 export default function MapPage() {
@@ -26,17 +26,16 @@ export default function MapPage() {
 
   return (
     <>
-      <PageHeader title="Map" />
-      <p className="-mt-4 mb-6 text-sm text-slate-500">
-        Blue pins are patient locations, captured from their device on first login. 💊 pins are
-        your pharmacy directory (manage them from Pharmacies).
-      </p>
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      <PageHeader
+        title="Map"
+        subtitle="Blue pins are patient locations, captured from their device on first login. Pharmacy pins come from your pharmacy directory."
+      />
+      {error && <ErrorBanner message={error} />}
       <Card>
         {locations == null ? (
-          <p className="text-slate-400">Loading…</p>
+          <TableSkeleton rows={4} />
         ) : locations.length === 0 && pharmacies.length === 0 ? (
-          <p className="text-sm text-slate-400">Nothing to show on the map yet.</p>
+          <EmptyState title="Nothing on the map yet" hint="Patient locations appear after their first login; add pharmacies under Pharmacies." />
         ) : (
           <PatientMap locations={locations} pharmacies={pharmacies} />
         )}

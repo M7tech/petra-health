@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search } from 'lucide-react';
 import type { PatientSummary } from '@petra/shared';
 import { api } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 import { Card, EmptyState, ErrorBanner, Input, PageHeader, TableSkeleton } from '@/components/ui';
 
 // Case/script-agnostic match so Latin, Arabic and Kurdish names all work.
@@ -15,6 +16,7 @@ export default function PatientsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const { t } = useI18n();
 
   useEffect(() => {
     api<PatientSummary[]>('/admin/patients')
@@ -34,7 +36,7 @@ export default function PatientsPage() {
   return (
     <>
       <PageHeader
-        title="Patients"
+        title={t('patients.title')}
         subtitle={patients.length ? `${shown.length} of ${patients.length} shown` : undefined}
         action={
           <div className="relative w-full sm:w-72">
@@ -43,8 +45,8 @@ export default function PatientsPage() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name, email, city or doctor"
-              aria-label="Search patients"
+              placeholder={t('patients.searchPh')}
+              aria-label={t('patients.searchPh')}
               className="ps-9"
             />
           </div>
@@ -58,7 +60,7 @@ export default function PatientsPage() {
           </div>
         ) : shown.length === 0 ? (
           <EmptyState
-            title={patients.length === 0 ? 'No patients yet' : 'No patients match your search'}
+            title={patients.length === 0 ? t('patients.none') : t('patients.noMatch')}
             hint={patients.length === 0 ? 'Patients appear here once they sign up in the app.' : 'Try a different name, city or doctor.'}
           />
         ) : (
@@ -66,12 +68,12 @@ export default function PatientsPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Location</th>
-                  <th>Doctor</th>
-                  <th className="text-right">Meds</th>
-                  <th className="text-right">Doses</th>
+                  <th>{t('patients.name')}</th>
+                  <th>{t('patients.email')}</th>
+                  <th>{t('patients.location')}</th>
+                  <th>{t('patients.doctor')}</th>
+                  <th className="text-end">{t('patients.meds')}</th>
+                  <th className="text-end">{t('patients.doses')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,8 +87,8 @@ export default function PatientsPage() {
                     <td className="text-slate-500">{p.email}</td>
                     <td className="text-slate-500">{[p.cityName, p.countryName].filter(Boolean).join(', ') || '—'}</td>
                     <td className="text-slate-500">{p.doctorName ?? '—'}</td>
-                    <td className="text-right text-slate-600">{p.medicationCount}</td>
-                    <td className="text-right text-slate-600">{p.doseCount}</td>
+                    <td className="text-end text-slate-600">{p.medicationCount}</td>
+                    <td className="text-end text-slate-600">{p.doseCount}</td>
                   </tr>
                 ))}
               </tbody>

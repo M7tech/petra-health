@@ -11,7 +11,7 @@ import type {
   UpsertAssessmentDto,
 } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, StatTile } from '@/components/ui';
+import { Card, StatTile, ErrorBanner, TableSkeleton } from '@/components/ui';
 import { WeightChart } from '@/components/WeightChart';
 import { MetricChart } from '@/components/MetricChart';
 
@@ -31,7 +31,7 @@ function Labeled({ label, children }: { label: string; children: React.ReactNode
 }
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
+  'min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
 
 export default function DoctorPatientDetailPage() {
   const params = useParams<{ id: string }>();
@@ -109,8 +109,8 @@ export default function DoctorPatientDetailPage() {
     }
   }
 
-  if (error) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>;
-  if (!p) return <p className="text-slate-400">Loading…</p>;
+  if (error) return <ErrorBanner message={error} />;
+  if (!p) return <TableSkeleton />;
 
   const ended = form.treatmentStatus && form.treatmentStatus !== 'ONGOING';
 
@@ -247,7 +247,7 @@ export default function DoctorPatientDetailPage() {
                 <li key={e.id} className="flex items-start justify-between gap-2 border-b pb-2 last:border-0">
                   <div>
                     <span
-                      className={`mr-2 rounded-full px-2 py-0.5 text-xs font-medium ${SEVERITY_STYLE[e.severity]}`}
+                      className={`me-2 rounded-full px-2 py-0.5 text-xs font-medium ${SEVERITY_STYLE[e.severity]}`}
                     >
                       {e.severity.toLowerCase()}
                     </span>

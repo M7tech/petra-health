@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { ContentPost, ContentType } from '@petra/shared';
 import { api } from '@/lib/api';
+import { ErrorBanner } from '@/components/ui';
 import ContentPostCard from '@/components/ContentPostCard';
 
 export default function DoctorContentPage() {
@@ -22,7 +23,7 @@ export default function DoctorContentPage() {
     <>
       <h1 className="mb-1 text-2xl font-semibold text-slate-800">Training & News</h1>
       <p className="mb-6 text-sm text-slate-500">Shared by Petra Health, in English, Arabic, and Kurdish.</p>
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {error && <ErrorBanner message={error} />}
 
       <div className="mb-6 flex gap-2">
         {(['ALL', 'TRAINING', 'NEWS'] as const).map((f) => (

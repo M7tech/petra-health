@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { MessageThreadSummary, SupportMessage } from '@petra/shared';
 import { api } from '@/lib/api';
-import { Card, PageHeader } from '@/components/ui';
+import { Card, EmptyState, ErrorBanner, PageHeader } from '@/components/ui';
 
 export default function MessagesPage() {
   const [threads, setThreads] = useState<MessageThreadSummary[]>([]);
@@ -43,20 +43,21 @@ export default function MessagesPage() {
   return (
     <>
       <PageHeader title="Messages" />
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {error && <ErrorBanner message={error} />}
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* Threads */}
-        <Card>
-          <h2 className="mb-3 font-semibold text-slate-700">Patient messages</h2>
+        <Card className="!p-3">
+          <h2 className="mb-3 px-2 pt-2 font-semibold text-slate-800">Patient messages</h2>
           {threads.length === 0 ? (
-            <p className="text-sm text-slate-400">No messages yet.</p>
+            <EmptyState title="No messages yet" hint="Conversations start when a patient writes from the app." />
           ) : (
             <ul className="space-y-1">
               {threads.map((t) => (
                 <li key={t.userId}>
                   <button
                     onClick={() => openThread(t)}
-                    className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                    aria-current={active?.userId === t.userId ? 'true' : undefined}
+                    className={`w-full rounded-lg px-3 py-2 text-start text-sm transition ${
                       active?.userId === t.userId ? 'bg-petra-50' : 'hover:bg-slate-100'
                     }`}
                   >
@@ -79,19 +80,19 @@ export default function MessagesPage() {
         {/* Thread */}
         <Card>
           {!active ? (
-            <p className="text-sm text-slate-400">Select a conversation.</p>
+            <EmptyState title="Select a conversation" hint="Pick a patient on the left to read and reply." />
           ) : (
             <div className="flex h-[60vh] flex-col">
               <h2 className="mb-3 font-semibold text-slate-700">
                 {active.patientName} <span className="text-xs text-slate-400">{active.patientEmail}</span>
               </h2>
-              <div className="flex-1 space-y-2 overflow-y-auto pr-1">
+              <div className="flex-1 space-y-2 overflow-y-auto pe-1">
                 {msgs.map((m) => (
                   <div
                     key={m.id}
                     className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
                       m.sender === 'ADMIN'
-                        ? 'ml-auto bg-petra-500 text-white'
+                        ? 'ms-auto bg-petra-500 text-white'
                         : 'bg-slate-100 text-slate-700'
                     }`}
                   >
@@ -107,11 +108,12 @@ export default function MessagesPage() {
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Reply as Petra Health…"
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500"
+                  aria-label="Reply"
+                  className="min-h-10 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600"
+                  className="min-h-10 rounded-lg bg-petra-500 px-4 py-2 text-sm font-medium text-white hover:bg-petra-600"
                 >
                   Send
                 </button>

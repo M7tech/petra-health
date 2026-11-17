@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, Role } from '@/lib/auth';
+import { useI18n, LANGS } from '@/lib/i18n';
 
 const inputCls =
   'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-petra-500 focus:ring-2 focus:ring-petra-500/20';
@@ -11,6 +12,7 @@ const inputCls =
 export default function LoginPage() {
   const { doctorLogin, adminRequestOtp, adminVerifyOtp } = useAuth();
   const router = useRouter();
+  const { t, lang, setLang } = useI18n();
   const [role, setRole] = useState<Role>('admin');
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
 
@@ -81,12 +83,24 @@ export default function LoginPage() {
         <p className="text-sm text-slate-400">Petra Pharma</p>
         <div aria-hidden className="pointer-events-none absolute -bottom-32 -end-32 h-96 w-96 rounded-full bg-petra-500/30 blur-3xl" />
       </section>
-      <section className="flex items-center justify-center bg-white px-5 py-10">
+      <section className="relative flex items-center justify-center bg-white px-5 py-10">
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value as typeof lang)}
+          aria-label={t('shell.language')}
+          className="absolute end-4 top-4 h-9 rounded-lg border border-slate-200 bg-transparent px-2 text-sm text-slate-600"
+        >
+          {LANGS.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
       <div className="w-full max-w-sm space-y-5">
         <div>
           <img src="/logo-mark.png" alt="Petra Pharma" className="mb-5 h-10 w-10 lg:hidden" />
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Sign in</h1>
-          <p className="mt-1 text-sm text-slate-500">Use your Petra Health portal account.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('login.title')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t('login.subtitle')}</p>
         </div>
 
         {step === 'credentials' && (
@@ -100,7 +114,7 @@ export default function LoginPage() {
                   role === r ? 'bg-white text-petra-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                {r}
+                {t(r === 'admin' ? 'login.admin' : 'login.doctor')}
               </button>
             ))}
           </div>
@@ -116,27 +130,27 @@ export default function LoginPage() {
           <form onSubmit={submitCredentials} className="space-y-4">
             {role === 'admin' ? (
               <label className="block text-sm">
-                <span className="mb-1 block font-medium text-slate-600">Username</span>
+                <span className="mb-1 block font-medium text-slate-600">{t('login.username')}</span>
                 <input required value={username} onChange={(e) => setUsername(e.target.value)} className={inputCls} />
               </label>
             ) : (
               <label className="block text-sm">
-                <span className="mb-1 block font-medium text-slate-600">Email</span>
+                <span className="mb-1 block font-medium text-slate-600">{t('login.email')}</span>
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
               </label>
             )}
             <label className="block text-sm">
-              <span className="mb-1 block font-medium text-slate-600">Password</span>
+              <span className="mb-1 block font-medium text-slate-600">{t('login.password')}</span>
               <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
             </label>
             {role === 'admin' && (
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 text-slate-600">
                   <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-                  Remember me
+                  {t('login.remember')}
                 </label>
                 <Link href="/forgot" className="text-petra-600 hover:underline">
-                  Forgot password?
+                  {t('login.forgot')}
                 </Link>
               </div>
             )}
@@ -145,7 +159,7 @@ export default function LoginPage() {
               disabled={busy}
               className="min-h-11 w-full rounded-lg bg-petra-500 py-2.5 font-medium text-white transition hover:bg-petra-600 disabled:opacity-60"
             >
-              {busy ? 'Please wait…' : role === 'admin' ? 'Continue' : 'Sign in'}
+              {busy ? t('login.wait') : role === 'admin' ? t('login.continue') : t('login.signIn')}
             </button>
           </form>
         ) : (

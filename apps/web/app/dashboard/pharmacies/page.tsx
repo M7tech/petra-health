@@ -257,12 +257,12 @@ export default function PharmaciesPage() {
         ) : (
           <div className="table-wrap"><table>
             <thead>
-              <tr className="border-b text-left text-slate-500">
+              <tr className="border-b text-start text-slate-500">
                 <th className="pb-2">Name</th>
                 <th className="pb-2">Address</th>
                 <th className="pb-2">Phone</th>
                 <th className="pb-2 text-center">Active</th>
-                <th className="pb-2 text-right">Actions</th>
+                <th className="pb-2 text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -282,10 +282,10 @@ export default function PharmaciesPage() {
                         {p.active ? 'Active' : 'Disabled'}
                       </button>
                     </td>
-                    <td className="py-2.5 text-right">
+                    <td className="py-2.5 text-end">
                       <button
                         onClick={() => (editingId === p.id ? cancelEdit() : startEdit(p))}
-                        className="mr-3 text-xs text-petra-700 hover:underline"
+                        className="me-3 text-xs text-petra-700 hover:underline"
                       >
                         {editingId === p.id ? 'Cancel' : 'Edit'}
                       </button>

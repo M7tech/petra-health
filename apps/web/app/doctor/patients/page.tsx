@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { DoctorPatientSummary } from '@petra/shared';
 import { api } from '@/lib/api';
-import { TableSkeleton } from '@/components/ui';
+import { TableSkeleton, ErrorBanner } from '@/components/ui';
 
 const STATUS_STYLE: Record<string, string> = {
   ONGOING: 'bg-green-100 text-green-700',
@@ -40,7 +40,7 @@ export default function DoctorPatientsPage() {
       <h1 className="mb-1 text-2xl font-semibold text-slate-800">My patients</h1>
       <p className="mb-6 text-sm text-slate-500">Patients who selected you as their treating doctor.</p>
 
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {error && <ErrorBanner message={error} />}
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
         <input
@@ -56,12 +56,12 @@ export default function DoctorPatientsPage() {
         ) : (
           <div className="table-wrap"><table>
             <thead>
-              <tr className="border-b text-left text-slate-500">
+              <tr className="border-b text-start text-slate-500">
                 <th className="pb-2">Name</th>
                 <th className="pb-2">Age / Sex</th>
-                <th className="pb-2 text-right">Weight</th>
-                <th className="pb-2 text-right">BMI</th>
-                <th className="pb-2 text-right">Events</th>
+                <th className="pb-2 text-end">Weight</th>
+                <th className="pb-2 text-end">BMI</th>
+                <th className="pb-2 text-end">Events</th>
                 <th className="pb-2 text-center">Treatment</th>
               </tr>
             </thead>
@@ -76,13 +76,13 @@ export default function DoctorPatientsPage() {
                   <td className="py-2.5 text-slate-500">
                     {p.age ?? '—'} · {p.gender ? p.gender[0] : '—'}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums text-slate-600">
+                  <td className="py-2.5 text-end tabular-nums text-slate-600">
                     {p.latestWeightKg != null ? `${p.latestWeightKg} kg` : '—'}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums text-slate-600">
+                  <td className="py-2.5 text-end tabular-nums text-slate-600">
                     {p.bmi ?? '—'}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums text-slate-600">
+                  <td className="py-2.5 text-end tabular-nums text-slate-600">
                     {p.adverseEventCount}
                   </td>
                   <td className="py-2.5 text-center">
