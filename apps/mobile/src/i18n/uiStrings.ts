@@ -2,6 +2,11 @@
 // NOTE: Kurdish (Sorani) strings should be reviewed by a native speaker.
 
 export const uiEn = {
+  confirmDoseTitle: 'Log this dose?',
+  confirmDoseBody: 'This records your Semetra injection. It can\'t be undone from the app.',
+  logIt: 'Log dose',
+  close: 'Close',
+  futureWeek: 'Not due yet',
   couldNotSave: "Couldn't save. Please try again.",
   describeFirst: 'Describe the side effect first.',
   done: 'Done',
@@ -33,6 +38,11 @@ export const uiEn = {
 };
 
 export const uiAr: typeof uiEn = {
+  confirmDoseTitle: 'تسجيل هذه الجرعة؟',
+  confirmDoseBody: 'سيتم تسجيل حقنة سيميترا الخاصة بك. لا يمكن التراجع عن ذلك من التطبيق.',
+  logIt: 'سجّل الجرعة',
+  close: 'إغلاق',
+  futureWeek: 'لم يحن موعدها بعد',
   couldNotSave: 'تعذّر الحفظ. حاول مرة أخرى.',
   describeFirst: 'صف العرَض الجانبي أولاً.',
   done: 'تم',
@@ -64,6 +74,11 @@ export const uiAr: typeof uiEn = {
 };
 
 export const uiKu: typeof uiEn = {
+  confirmDoseTitle: 'ئەم دۆزە تۆمار بکرێت؟',
+  confirmDoseBody: 'دەرزییەکەی سیمێترات تۆمار دەکرێت. لە ئەپەکەوە ناتوانرێت پاشگەز ببیتەوە.',
+  logIt: 'دۆزەکە تۆمار بکە',
+  close: 'داخستن',
+  futureWeek: 'هێشتا کاتی نەهاتووە',
   couldNotSave: 'هەڵگرتن سەرکەوتوو نەبوو. دووبارە هەوڵبدەرەوە.',
   describeFirst: 'سەرەتا کاریگەرییە لاوەکییەکە وەسف بکە.',
   done: 'تەواو',

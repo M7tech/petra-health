@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import SheetDone from '@/components/SheetDone';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { api } from '@/api';
 import { useI18n } from '@/i18n';
 import { notifyError } from '@/lib/errors';
+import { parseLocaleNumber } from '@/lib/numbers';
 import { spacing } from '@/theme';
 import { AppText, Banner, Button, InputField, Screen, haptics } from '@/components/ui';
 
@@ -33,7 +35,7 @@ export default function LogValueSheet({
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    const v = parseFloat(value.replace(',', '.'));
+    const v = parseLocaleNumber(value);
     if (Number.isNaN(v) || v < min || v > max) {
       setError(invalidMessage);
       haptics.warning();
@@ -54,6 +56,7 @@ export default function LogValueSheet({
 
   return (
     <Screen keyboard>
+      <SheetDone />
       {error ? <Banner message={error} /> : null}
       <View style={{ gap: spacing.sm }}>
         <AppText variant="footnote" tone="secondary" weight="600" style={{ textTransform: 'uppercase', letterSpacing: 0.3 }}>

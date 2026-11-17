@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Switch } from 'react-native';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { cancelReminder, getReminder, scheduleWeeklyReminder, ReminderState } from '@/notifications';
 import { useTheme } from '@/theme';
 import { Banner, Button, DateRow, DayPicker, Row, Section, haptics } from '@/components/ui';
@@ -46,7 +46,7 @@ export default function WeeklyReminder() {
     setBusy(false);
   }
 
-  const fmtTime = (h: number, m: number) => timeOf(h, m).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  const fmtTime = (h: number, m: number) => timeOf(h, m).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' });
 
   if (reminder) {
     return (
@@ -55,7 +55,7 @@ export default function WeeklyReminder() {
           icon="bell"
           title={t('semetra.reminderOn')}
           subtitle={`${letters[reminder.weekday - 1]} · ${fmtTime(reminder.hour, reminder.minute)}`}
-          right={<Switch value onValueChange={disable} disabled={busy} trackColor={{ true: colors.tint }} />}
+          right={<Switch accessibilityLabel={t('semetra.weeklyReminder')} value onValueChange={disable} disabled={busy} trackColor={{ true: colors.tint }} />}
         />
       </Section>
     );

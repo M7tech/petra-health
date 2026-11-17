@@ -2,9 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useAuth } from '@/auth';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { useMetrics, useSemetra } from '@/lib/hooks';
 import { dayKey } from '@/lib/semetra';
+import { confirmDose } from '@/lib/confirm-dose';
 import { spacing, useTheme } from '@/theme';
 import {
   AppText, Badge, Banner, Button, Card, Icon, IconButton, LoadingState, Row, Screen, Section, haptics,
@@ -81,7 +82,7 @@ export default function TodayScreen() {
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
   }, [metrics.weights, metrics.hba1c, doses, t, colors]);
 
-  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' });
   const fmtDays = (d: Date) => {
     const diff = Math.round((d.getTime() - now) / 86400000);
     if (diff <= 0) return t('home.dueToday');
@@ -184,12 +185,12 @@ export default function TodayScreen() {
             </View>
           </View>
           {dueNow ? (
-            <Button title={t('ui.logDoseNow')} icon="check" onPress={logNextDose} loading={logging} />
+            <Button title={t('ui.logDoseNow')} icon="check" onPress={() => confirmDose(t, logNextDose)} loading={logging} />
           ) : (
             <Button title={t('ui.openSchedule')} variant="tinted" onPress={() => router.navigate('/(tabs)/(treatment)')} />
           )}
         </Card>
-      ) : !semetra.mine ? (
+      ) : !semetra.mine && !semetra.error ? (
         <Card style={{ gap: spacing.md }}>
           <AppText variant="headline">{t('home.yourCourse')}</AppText>
           <AppText variant="subhead" tone="secondary">

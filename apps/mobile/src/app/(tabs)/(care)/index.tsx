@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { api } from '@/api';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { useFocusLoad } from '@/lib/hooks';
 import { notifyError } from '@/lib/errors';
 import { useTheme } from '@/theme';
@@ -125,7 +125,7 @@ export default function CareScreen() {
             <Row
               key={e.id}
               title={e.description}
-              subtitle={new Date(e.onsetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+              subtitle={new Date(e.onsetDate).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric', year: 'numeric' })}
               right={<Badge tone={SEV_TONE[e.severity]} label={t(`severity.${e.severity}`)} />}
             />
           ))

@@ -18,6 +18,7 @@ export function DayPicker({ value, onChange, labels }: { value: number; onChange
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             haptic={false}
+            hitSlop={4}
             onPress={() => {
               haptics.select();
               onChange(i + 1);

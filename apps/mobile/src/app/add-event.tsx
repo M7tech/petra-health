@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SheetDone from '@/components/SheetDone';
 import { router } from 'expo-router';
 import { api } from '@/api';
 import { useI18n } from '@/i18n';
@@ -34,6 +35,7 @@ export default function AddEventSheet() {
 
   return (
     <Screen keyboard>
+      <SheetDone />
       {error ? <Banner message={error} /> : null}
       <Section>
         <FieldRow label={t('care.adverseEvents')} value={desc} onChangeText={setDesc} placeholder={t('care.eventDesc')} multiline autoFocus />

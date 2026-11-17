@@ -27,6 +27,9 @@ function deviceLang(): Lang {
 
 const wantsRTL = (l: Lang) => RTL_LANGS.includes(l);
 
+/** BCP-47 locale for the in-app language (not the device's), for dates and numbers. */
+export const currentLocale = () => ({ en: 'en', ar: 'ar', ku: 'ckb' })[i18n.locale as Lang] ?? 'en';
+
 /** Reload the JS runtime so a changed layout direction takes effect. */
 export async function restartApp(): Promise<boolean> {
   try {

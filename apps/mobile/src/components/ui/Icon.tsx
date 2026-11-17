@@ -45,6 +45,7 @@ const ICONS = {
   calendar: { sf: 'calendar', md: 'event' },
   message: { sf: 'message.fill', md: 'chat' },
   send: { sf: 'arrow.up.circle.fill', md: 'send' },
+  arrowUp: { sf: 'arrow.up', md: 'arrow-upward' },
   gear: { sf: 'gearshape.fill', md: 'settings' },
   globe: { sf: 'globe', md: 'language' },
   lock: { sf: 'lock.fill', md: 'lock' },

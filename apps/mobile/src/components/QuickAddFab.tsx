@@ -32,6 +32,7 @@ export function useQuickActions(): QuickAction[] {
 export default function QuickAddFab() {
   const { colors } = useTheme();
   const actions = useQuickActions();
+  const { t } = useI18n();
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -48,7 +49,7 @@ export default function QuickAddFab() {
   return (
     <>
       <Animated.View pointerEvents={open ? 'auto' : 'none'} style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrim]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => set(false)} accessibilityLabel="Close" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => set(false)} accessibilityRole="button" accessibilityLabel={t('ui.close')} />
       </Animated.View>
 
       {actions.map((a, i) => (
@@ -57,7 +58,7 @@ export default function QuickAddFab() {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Quick add"
+        accessibilityLabel={t('quickAdd.title')}
         accessibilityState={{ expanded: open }}
         onPress={() => set(!open)}
         style={{
@@ -107,6 +108,8 @@ function FabItem({
   return (
     <Animated.View
       pointerEvents={open ? 'auto' : 'none'}
+      importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}
+      accessibilityElementsHidden={!open}
       style={[{ position: 'absolute', end: spacing.lg + 4, bottom: spacing.lg + 4, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, style]}
     >
       <GlassSurface borderRadius={radius.pill} style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.sm }}>

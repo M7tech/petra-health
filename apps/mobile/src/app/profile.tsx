@@ -5,6 +5,7 @@ import { useAuth } from '@/auth';
 import { useI18n } from '@/i18n';
 import { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, authenticate } from '@/biometrics';
 import { notifyError } from '@/lib/errors';
+import { parseLocaleNumber } from '@/lib/numbers';
 import { spacing, useTheme } from '@/theme';
 import {
   AppText, Badge, BadgeTone, Banner, Button, DateRow, FieldRow, LoadingState, Row, Screen, SegmentedControl, SelectRow, Section, haptics,
@@ -92,7 +93,7 @@ export default function ProfileSheet() {
       .catch(() => {});
   }, [countryId]);
 
-  const bmi = useMemo(() => bmiOf(parseFloat(height.replace(',', '.')), parseFloat(weight.replace(',', '.'))), [height, weight]);
+  const bmi = useMemo(() => bmiOf(parseLocaleNumber(height), parseLocaleNumber(weight)), [height, weight]);
   const category = categoryOf(bmi);
 
   async function save() {
@@ -109,8 +110,8 @@ export default function ProfileSheet() {
       countryId: countryId || undefined,
       cityId: cityId || undefined,
     };
-    const h = parseFloat(height.replace(',', '.'));
-    const w = parseFloat(weight.replace(',', '.'));
+    const h = parseLocaleNumber(height);
+    const w = parseLocaleNumber(weight);
     if (!Number.isNaN(h)) body.heightCm = h;
     if (!Number.isNaN(w)) body.currentWeightKg = w;
     try {
@@ -181,9 +182,9 @@ export default function ProfileSheet() {
             title={t(`conditions.${key}`)}
             right={
               <Switch
+                accessibilityLabel={t(`conditions.${key}`)}
                 value={conditions.includes(key)}
                 onValueChange={(on) => {
-                  haptics.select();
                   setConditions((p) => (on ? [...p, key] : p.filter((k) => k !== key)));
                 }}
                 trackColor={{ true: colors.tint }}
@@ -195,7 +196,7 @@ export default function ProfileSheet() {
       </Section>
 
       <Section title={t('home.security')} footer={bioAvailable ? t('home.biometricDesc') : t('home.noBiometric')}>
-        <Row icon="lock" iconColor={colors.violet} title={t('home.biometric')} right={<Switch value={bioOn} disabled={!bioAvailable} onValueChange={toggleBio} trackColor={{ true: colors.tint }} />} />
+        <Row icon="lock" iconColor={colors.violet} title={t('home.biometric')} right={<Switch accessibilityLabel={t('home.biometric')} value={bioOn} disabled={!bioAvailable} onValueChange={toggleBio} trackColor={{ true: colors.tint }} />} />
       </Section>
 
       <Section title={t('lang.language')}>

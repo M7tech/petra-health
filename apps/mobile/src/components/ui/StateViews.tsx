@@ -10,9 +10,14 @@ export function LoadingState() {
   const { colors } = useTheme();
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background, padding: spacing.xl }}>
-      <ActivityIndicator size="large" color={colors.tint} />
+      <ActivityIndicator size="large" color={colors.tint} accessibilityLabel="Loading" accessibilityLiveRegion="polite" />
     </View>
   );
+}
+
+/** Full-screen failure — distinct from "no data yet", with a retry. */
+export function ErrorState({ message, onRetry, retryLabel }: { message: string; onRetry: () => void; retryLabel: string }) {
+  return <EmptyState icon="alert" title={message} actionLabel={retryLabel} onAction={onRetry} />;
 }
 
 export function EmptyState({

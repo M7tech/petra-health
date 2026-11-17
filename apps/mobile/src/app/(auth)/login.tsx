@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image, View } from 'react-native';
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useAuth } from '@/auth';
 import { useI18n } from '@/i18n';
 import { notifyError } from '@/lib/errors';
@@ -48,9 +48,7 @@ export default function LoginScreen() {
       </Section>
 
       <Button title={t('auth.loginCta')} onPress={submit} loading={busy} disabled={!email || !password} />
-      <Link href="/signup" asChild>
-        <Button title={t('auth.noAccount')} variant="plain" size="md" />
-      </Link>
+      <Button title={t('auth.noAccount')} variant="plain" size="md" onPress={() => router.push('/signup')} />
 
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
         <LanguageSwitcher />

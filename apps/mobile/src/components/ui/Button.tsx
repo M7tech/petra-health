@@ -48,6 +48,8 @@ export function Button({
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       disabled={inactive}
       onPress={onPress}
+      haptic={variant !== 'plain'}
+      hitSlop={size === 'sm' ? 8 : 0}
       style={[fullWidth ? { alignSelf: 'stretch' } : { alignSelf: 'flex-start' }, style]}
       innerStyle={{
         height,

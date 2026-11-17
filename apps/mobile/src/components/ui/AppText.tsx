@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, TextProps, TextStyle } from 'react-native';
 import { type, TypeVariant, useTheme, Palette } from '@/theme';
+import { useI18n } from '@/i18n';
 
 export type TextTone = 'label' | 'secondary' | 'tertiary' | 'tint' | 'danger' | 'success' | 'warning' | 'onTint' | 'violet';
 
@@ -43,11 +44,14 @@ export function AppText({
   weight?: TextStyle['fontWeight'];
 }) {
   const { colors } = useTheme();
+  const { lang } = useI18n();
   return (
     <Text
       {...props}
       style={[
         type[variant],
+        // Arabic-script text joins cursively — any tracking breaks the letterforms.
+        lang !== 'en' && { letterSpacing: 0 },
         { color: toneColor(colors, tone) },
         numeric && { fontVariant: ['tabular-nums'] },
         weight ? { fontWeight: weight } : null,

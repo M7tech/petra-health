@@ -149,7 +149,7 @@ export function Row({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       android_ripple={{ color: colors.fill }}
     >

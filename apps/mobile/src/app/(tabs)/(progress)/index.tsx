@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Platform, View } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { useMetrics } from '@/lib/hooks';
 import { spacing, useTheme } from '@/theme';
 import { AppText, Banner, Card, EmptyState, IconButton, LoadingState, Row, Screen, SegmentedControl, Section } from '@/components/ui';
@@ -51,7 +51,7 @@ export default function ProgressScreen() {
       />
       {m.error ? <Banner message={m.error} onRetry={m.reload} retryLabel={t('ui.retry')} /> : null}
 
-      {sorted.length === 0 ? (
+      {sorted.length === 0 && m.error ? null : sorted.length === 0 ? (
         <EmptyState
           icon={isWeight ? 'scale' : 'drop'}
           title={isWeight ? t('weight.noEntries') : t('health.noA1c')}
@@ -94,7 +94,7 @@ export default function ProgressScreen() {
                 return (
                   <Row
                     key={e.id}
-                    title={new Date(e.recordedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                    title={new Date(e.recordedAt).toLocaleDateString(currentLocale(), { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                     subtitle={delta != null ? `${delta <= 0 ? '−' : '+'}${Math.abs(delta).toFixed(1)} ${unit}` : undefined}
                     value={`${e.value.toFixed(1)} ${unit}`}
                   />

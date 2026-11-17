@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import SheetDone from '@/components/SheetDone';
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { addMedReminder, MedFrequency, TimeOfDay } from '@/notifications';
 import { spacing, useTheme } from '@/theme';
 import {
@@ -15,7 +16,7 @@ const at = (h: number, m: number) => {
   d.setHours(h, m, 0, 0);
   return d;
 };
-const fmt = (tm: TimeOfDay) => at(tm.hour, tm.minute).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+const fmt = (tm: TimeOfDay) => at(tm.hour, tm.minute).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' });
 
 export default function AddReminderSheet() {
   const { t } = useI18n();
@@ -66,6 +67,7 @@ export default function AddReminderSheet() {
 
   return (
     <Screen keyboard>
+      <SheetDone />
       {error ? <Banner message={error} /> : null}
       <Section>
         <FieldRow label={t('ui.medName')} value={name} onChangeText={setName} placeholder={t('meds.name')} autoFocus />

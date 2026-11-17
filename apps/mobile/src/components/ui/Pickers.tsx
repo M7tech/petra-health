@@ -1,4 +1,5 @@
 import React from 'react';
+import { currentLocale } from '@/i18n';
 import { Platform, View } from 'react-native';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { openSelect, SelectOption } from '@/lib/select';
@@ -77,8 +78,8 @@ export function DateRow({
 
   const label =
     mode === 'date'
-      ? value.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-      : value.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      ? value.toLocaleDateString(currentLocale(), { year: 'numeric', month: 'long', day: 'numeric' })
+      : value.toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' });
   return (
     <Row
       icon={icon}

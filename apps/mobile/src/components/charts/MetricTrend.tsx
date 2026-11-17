@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { currentLocale } from '@/i18n';
 import { View } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/theme';
@@ -50,7 +51,7 @@ export default function MetricTrend({ data, color, decimals = 1, height = 200 }:
   const line = smoothPath(coords);
   const last = coords[coords.length - 1];
   const area = pts.length > 1 ? `${line} L ${last.x} ${pad.t + innerH} L ${coords[0].x} ${pad.t + innerH} Z` : '';
-  const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' });
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ height }}>

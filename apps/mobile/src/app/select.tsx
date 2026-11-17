@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import SheetDone from '@/components/SheetDone';
 import { FlatList, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useI18n } from '@/i18n';
@@ -21,12 +22,13 @@ export default function SelectSheet() {
     return request ? request.options.filter((o) => !q || o.label.toLowerCase().includes(q) || o.subtitle?.toLowerCase().includes(q)) : [];
   }, [request, query]);
 
-  if (!request) return null;
+  if (!request) return <EmptyState icon="search" title={t('ui.noResults')} />;
   const searchable = request.options.length > 7;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ title: request.title }} />
+      <SheetDone />
       {searchable ? (
         <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
           <InputField value={query} onChangeText={setQuery} placeholder={t('ui.search')} autoCorrect={false} clearButtonMode="while-editing" />

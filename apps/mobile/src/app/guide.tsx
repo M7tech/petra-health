@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SheetDone from '@/components/SheetDone';
 import { Image, ScrollView, View } from 'react-native';
 import { useI18n } from '@/i18n';
 import { radius, spacing, useTheme } from '@/theme';
@@ -282,6 +283,7 @@ export default function GuideSheet() {
         </ScrollView>
       </View>
       <Screen gap={spacing.lg} contentContainerStyle={{ paddingTop: spacing.xs }}>
+        <SheetDone />
         {render()}
       </Screen>
     </View>

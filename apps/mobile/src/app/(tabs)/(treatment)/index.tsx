@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { api } from '@/api';
-import { useI18n } from '@/i18n';
+import { useI18n, currentLocale } from '@/i18n';
 import { useSemetra } from '@/lib/hooks';
 import { dayKey } from '@/lib/semetra';
 import { notifyError } from '@/lib/errors';
+import { confirmDose } from '@/lib/confirm-dose';
 import { scheduleWeeklyReminder } from '@/notifications';
 import { useTheme } from '@/theme';
 import {
@@ -134,15 +135,16 @@ export default function TreatmentScreen() {
               <Section title={pen.label}>
                 {weeks.map(({ week, date, courseWeek }) => {
                   const taken = s.takenKeys.has(dayKey(date.toISOString()));
+                  // A week can't be logged before it's due (a day's grace for early injections).
+                  const future = date.getTime() > Date.now() + 86400000;
                   return (
                     <Row
                       key={week.id}
                       leading={<Icon name={taken ? 'checkCircle' : 'circle'} size={26} color={taken ? colors.success : colors.tertiaryLabel} weight="regular" />}
                       title={`${t('semetra.week')} ${courseWeek}`}
-                      subtitle={date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                      subtitle={`${date.toLocaleDateString(currentLocale(), { weekday: 'short', month: 'short', day: 'numeric' })}${future ? ` · ${t('ui.futureWeek')}` : ''}`}
                       value={`${week.doseMg.toFixed(2)} mg`}
-                      onPress={taken || busy ? undefined : () => log(date, week.doseMg)}
-                      accessibilityLabel={`${t('semetra.week')} ${courseWeek}, ${week.doseMg} mg${taken ? ', ✓' : ''}`}
+                      onPress={taken || busy || future ? undefined : () => confirmDose(t, () => log(date, week.doseMg))}
                     />
                   );
                 })}

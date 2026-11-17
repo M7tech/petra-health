@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useTheme } from '@/theme';
 
 // One header language for every tab stack.
@@ -13,7 +14,8 @@ export function useStackOptions() {
       headerLargeTitleEnabled: true,
       headerLargeTitleShadowVisible: false,
       headerLargeStyle: { backgroundColor: 'transparent' },
-      headerBlurEffect: 'none',
+      // iOS 26 supplies a scroll-edge effect; earlier iOS needs a real blur or content shows through the title.
+      headerBlurEffect: isLiquidGlassAvailable() && isGlassEffectAPIAvailable() ? 'none' : 'systemMaterial',
       headerTintColor: colors.tint,
       headerTitleStyle: { color: colors.label },
       headerLargeTitleStyle: { color: colors.label },

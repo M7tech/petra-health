@@ -23,7 +23,13 @@ export default function LanguageSwitcher() {
         if (!needsRestart) return;
         Alert.alert(t('ui.restartTitle'), t('ui.restartBody'), [
           { text: t('ui.later'), style: 'cancel' },
-          { text: t('ui.restartNow'), onPress: () => restartApp() },
+          {
+            text: t('ui.restartNow'),
+            // If an automatic reload isn't possible, ask for a manual restart.
+            onPress: async () => {
+              if (!(await restartApp())) Alert.alert(t('ui.restartTitle'), t('ui.restartBody'));
+            },
+          },
         ]);
       }}
     />
