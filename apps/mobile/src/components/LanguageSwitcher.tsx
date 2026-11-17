@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useI18n, Lang } from '../i18n';
-import { colors } from '../ui';
+import { Alert } from 'react-native';
+import { useI18n, restartApp, Lang } from '@/i18n';
+import { SegmentedControl } from '@/components/ui';
 
 const OPTIONS: { key: Lang; label: string }[] = [
   { key: 'en', label: 'English' },
@@ -9,40 +9,23 @@ const OPTIONS: { key: Lang; label: string }[] = [
   { key: 'ku', label: 'کوردی' },
 ];
 
-export default function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
-  const { lang, setLang } = useI18n();
+// Switching between LTR (English) and RTL (Arabic / Kurdish) changes the
+// layout direction, which the OS applies on the next launch — so we offer an
+// immediate restart. Arabic <-> Kurdish needs none.
+export default function LanguageSwitcher() {
+  const { lang, setLang, t } = useI18n();
   return (
-    <View style={[styles.row, compact && styles.compact]}>
-      {OPTIONS.map((o) => {
-        const active = o.key === lang;
-        return (
-          <TouchableOpacity
-            key={o.key}
-            onPress={() => setLang(o.key)}
-            style={[styles.chip, active && styles.chipActive]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-          >
-            <Text style={[styles.text, active && styles.textActive]}>{o.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+    <SegmentedControl
+      value={lang}
+      options={OPTIONS}
+      onChange={async (key) => {
+        const needsRestart = await setLang(key);
+        if (!needsRestart) return;
+        Alert.alert(t('ui.restartTitle'), t('ui.restartBody'), [
+          { text: t('ui.later'), style: 'cancel' },
+          { text: t('ui.restartNow'), onPress: () => restartApp() },
+        ]);
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
-  compact: { gap: 6 },
-  chip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  chipActive: { backgroundColor: '#fff', borderColor: colors.petra },
-  text: { color: colors.muted, fontWeight: '600' },
-  textActive: { color: colors.petra },
-});

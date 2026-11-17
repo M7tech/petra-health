@@ -1,69 +1,44 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { authenticate, isBiometricEnabled } from './biometrics';
-import { colors } from './ui';
+import { useI18n } from './i18n';
+import { AppText, Button } from '@/components/ui';
+import { spacing, useTheme } from '@/theme';
 
-// Gates its children behind a device biometric check when the user has opted in.
+// Overlays a lock screen over its children when the user has opted into a
+// biometric check. Children stay mounted underneath, so navigation state is
+// never lost.
 export default function BiometricGate({ children }: { children: React.ReactNode }) {
-  const [checking, setChecking] = useState(true);
+  const { colors } = useTheme();
+  const { t } = useI18n();
   const [locked, setLocked] = useState(false);
 
   const attempt = useCallback(async () => {
-    const ok = await authenticate();
-    if (ok) setLocked(false);
+    if (await authenticate()) setLocked(false);
   }, []);
 
   useEffect(() => {
     (async () => {
       if (await isBiometricEnabled()) {
         setLocked(true);
-        setChecking(false);
         await attempt(); // prompt immediately on open
-      } else {
-        setChecking(false);
       }
     })();
   }, [attempt]);
 
-  if (checking) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.petra} size="large" />
-      </View>
-    );
-  }
-
-  if (locked) {
-    return (
-      <View style={styles.center}>
-        <Image source={require('../assets/logo-mark.png')} style={styles.logo} />
-        <Text style={styles.title}>Petra Health is locked</Text>
-        <Text style={styles.subtitle}>Unlock with Face ID or fingerprint to continue.</Text>
-        <TouchableOpacity style={styles.button} onPress={attempt}>
-          <Text style={styles.buttonText}>Unlock</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return <>{children}</>;
+  return (
+    <View style={{ flex: 1 }}>
+      {children}
+      {locked ? (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }]}>
+          <Image source={require('../assets/logo-mark.png')} style={{ width: 64, height: 64, marginBottom: spacing.sm }} />
+          <AppText variant="title2">{t('ui.lockedTitle')}</AppText>
+          <AppText variant="subhead" tone="secondary" style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+            {t('ui.lockedBody')}
+          </AppText>
+          <Button title={t('ui.unlock')} onPress={attempt} fullWidth={false} />
+        </View>
+      ) : null}
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.bg,
-    padding: 24,
-  },
-  logo: {
-    width: 64,
-    height: 64,
-    marginBottom: 16,
-  },
-  title: { fontSize: 20, fontWeight: '700', color: colors.text },
-  subtitle: { color: colors.muted, textAlign: 'center', marginTop: 6, marginBottom: 24 },
-  button: { backgroundColor: colors.petra, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 40 },
-  buttonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-});

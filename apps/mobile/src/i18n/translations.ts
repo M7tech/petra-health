@@ -1,6 +1,7 @@
 // EN / AR / KU dictionaries. Arabic and Kurdish (Sorani) are RTL.
 // NOTE: Kurdish (Sorani) strings should be reviewed by a native speaker.
 import { guideAr, guideEn, guideKu } from './guideStrings';
+import { uiAr, uiEn, uiKu } from './uiStrings';
 
 export const en = {
   common: {
@@ -68,7 +69,7 @@ export const en = {
     hi: 'Hi',
     allSet: "You're all set up.",
     semetraCard:
-      'Open the Semetra tab to start your titration and log doses. Track your weight in the Weight tab.',
+      'Open the Treatment tab to start your titration and log doses. Track your weight in the Progress tab.',
     yourCourse: 'Your Semetra course',
     security: 'Security',
     biometric: 'Require biometric unlock',
@@ -290,7 +291,7 @@ export const ar: Dict = {
     hi: 'مرحبًا',
     allSet: 'كل شيء جاهز.',
     semetraCard:
-      'افتح تبويب سيميترا لبدء الجرعات وتسجيلها. تابع وزنك في تبويب الوزن.',
+      'افتح تبويب العلاج لبدء الجرعات وتسجيلها. تابع وزنك في تبويب التقدّم.',
     yourCourse: 'دورة سيميترا الخاصة بك',
     security: 'الأمان',
     biometric: 'طلب الفتح بالبصمة',
@@ -509,7 +510,7 @@ export const ku: Dict = {
     hi: 'سڵاو',
     allSet: 'هەموو شتێک ئامادەیە.',
     semetraCard:
-      'تابی سیمێترا بکەرەوە بۆ دەستپێکردنی چارەسەر و تۆمارکردنی دۆزەکان. کێشەکەت لە تابی کێش بپارێزە.',
+      'تابی چارەسەر بکەرەوە بۆ دەستپێکردنی چارەسەر و تۆمارکردنی دۆزەکان. کێشەکەت لە تابی پێشکەوتن بپارێزە.',
     yourCourse: 'خولی سیمێتراکەت',
     security: 'ئاسایش',
     biometric: 'داواکردنی کردنەوە بە بایۆمەتریک',
@@ -663,7 +664,7 @@ export const ku: Dict = {
 };
 
 export const translations = {
-  en: { ...en, guide: guideEn },
-  ar: { ...ar, guide: guideAr },
-  ku: { ...ku, guide: guideKu },
+  en: { ...en, guide: guideEn, ui: uiEn },
+  ar: { ...ar, guide: guideAr, ui: uiAr },
+  ku: { ...ku, guide: guideKu, ui: uiKu },
 };

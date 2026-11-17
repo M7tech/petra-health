@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { colors } from '../ui';
-import type { Pharmacy } from '../types';
+import { radius, useTheme } from '@/theme';
+import type { Pharmacy } from '@/types';
 
 // Free OpenStreetMap + Leaflet map rendered inside a WebView — same
 // approach as the web admin's map, so no Google Maps API key/billing is
@@ -15,10 +15,11 @@ export default function PharmacyMapView({
   pharmacies: Pharmacy[];
   userCoords: { lat: number; lng: number } | null;
 }) {
+  const { colors } = useTheme();
   const html = useMemo(() => buildHtml(pharmacies, userCoords), [pharmacies, userCoords]);
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { borderColor: colors.separator, backgroundColor: colors.surface }]}>
       <WebView
         source={{ html }}
         style={styles.webview}
@@ -57,10 +58,10 @@ function buildHtml(pharmacies: Pharmacy[], userCoords: { lat: number; lng: numbe
     }).addTo(map);
 
     const pharmacyIcon = L.divIcon({
-      html: '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4))">💊</div>',
+      html: '<div style="width:26px;height:26px;border-radius:13px;background:#A4225F;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>',
       className: '',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconSize: [26, 26],
+      iconAnchor: [13, 13],
     });
     const userIcon = L.divIcon({
       html: '<div style="width:14px;height:14px;border-radius:7px;background:#2563eb;border:2px solid #fff;box-shadow:0 0 0 2px #2563eb"></div>',
@@ -91,12 +92,11 @@ function buildHtml(pharmacies: Pharmacy[], userCoords: { lat: number; lng: numbe
 
 const styles = StyleSheet.create({
   wrap: {
-    height: 220,
-    borderRadius: 16,
+    height: 240,
+    borderRadius: radius.xl,
+    borderCurve: 'continuous',
     overflow: 'hidden',
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 0.5,
   },
   webview: { flex: 1 },
 });

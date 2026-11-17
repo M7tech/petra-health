@@ -1,242 +1,130 @@
-import React, { useRef, useState } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { api } from '../api';
-import { useI18n } from '../i18n';
-import { Field, PrimaryButton, colors } from '../ui';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import Animated, { SharedValue, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import { AppText, Icon, IconName, GlassSurface, haptics } from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { radius, spacing, springs, useTheme } from '@/theme';
 
-type CaptureKind = 'weight' | 'a1c' | null;
+const ITEM = 52;
+const GAP = 14;
 
-const ITEM_SPACING = 66;
-const FAB_BOTTOM = 78;
+export interface QuickAction {
+  key: string;
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+}
 
-export default function QuickAddFab({
-  onNavigate,
-  onLogged,
-}: {
-  onNavigate: (tab: 'meds' | 'weight') => void;
-  onLogged: () => void;
-}) {
-  const { t, isRTL } = useI18n();
-  const align = { textAlign: isRTL ? 'right' : 'left' } as const;
-  const [open, setOpen] = useState(false);
-  const anim = useRef(new Animated.Value(0)).current;
-
-  const [capture, setCapture] = useState<CaptureKind>(null);
-  const [value, setValue] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function toggle() {
-    const next = !open;
-    setOpen(next);
-    Animated.spring(anim, { toValue: next ? 1 : 0, useNativeDriver: true, friction: 7, tension: 70 }).start();
-  }
-
-  function close() {
-    setOpen(false);
-    Animated.spring(anim, { toValue: 0, useNativeDriver: true, friction: 7, tension: 70 }).start();
-  }
-
-  function resetCapture() {
-    setCapture(null);
-    setValue('');
-    setError(null);
-    setBusy(false);
-  }
-
-  function pick(action: { key: 'weight' | 'dose' | 'a1c' | 'other' }) {
-    close();
-    if (action.key === 'weight') setCapture('weight');
-    else if (action.key === 'a1c') setCapture('a1c');
-    else onNavigate('meds');
-  }
-
-  async function submitCapture() {
-    if (!capture) return;
-    const v = parseFloat(value.replace(',', '.'));
-    if (capture === 'weight') {
-      if (Number.isNaN(v) || v < 20 || v > 500) {
-        setError(t('weight.invalid'));
-        return;
-      }
-    } else if (Number.isNaN(v) || v < 3 || v > 20) {
-      setError(t('health.a1cInvalid'));
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      if (capture === 'weight') {
-        await api('/me/weights', { method: 'POST', body: JSON.stringify({ weightKg: v }) });
-      } else {
-        await api('/me/hba1c', { method: 'POST', body: JSON.stringify({ value: v }) });
-      }
-      onLogged();
-      resetCapture();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const actions: { key: 'weight' | 'dose' | 'a1c' | 'other'; icon: string; label: string }[] = [
-    { key: 'dose', icon: '💉', label: t('quickAdd.logDose') },
-    { key: 'weight', icon: '⚖️', label: t('quickAdd.logWeight') },
-    { key: 'a1c', icon: '🩸', label: t('quickAdd.logA1c') },
-    { key: 'other', icon: '💊', label: t('quickAdd.logOther') },
+/** The routes the quick-add actions open — shared with the iOS toolbar menu. */
+export function useQuickActions(): QuickAction[] {
+  const { t } = useI18n();
+  return [
+    { key: 'dose', icon: 'syringe', label: t('quickAdd.logDose'), onPress: () => router.navigate('/(tabs)/(treatment)') },
+    { key: 'weight', icon: 'scale', label: t('quickAdd.logWeight'), onPress: () => router.push('/log-weight') },
+    { key: 'a1c', icon: 'drop', label: t('quickAdd.logA1c'), onPress: () => router.push('/log-a1c') },
+    { key: 'other', icon: 'pill', label: t('quickAdd.logOther'), onPress: () => router.navigate('/(tabs)/(treatment)') },
   ];
+}
 
-  const rotate = anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] });
-  const backdropOpacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+// Material speed-dial FAB for Android (iOS uses a native "+" menu in the header
+// instead — no FAB in iOS layouts). Items fan upward with a staggered spring.
+export default function QuickAddFab() {
+  const { colors } = useTheme();
+  const actions = useQuickActions();
+  const reduce = useReducedMotion();
+  const [open, setOpen] = useState(false);
+  const progress = useSharedValue(0);
+
+  const set = (next: boolean) => {
+    setOpen(next);
+    progress.value = reduce ? (next ? 1 : 0) : withSpring(next ? 1 : 0, springs.snappy);
+    haptics.tap();
+  };
+
+  const rotate = useAnimatedStyle(() => ({ transform: [{ rotate: `${interpolate(progress.value, [0, 1], [0, 45])}deg` }] }));
+  const scrim = useAnimatedStyle(() => ({ opacity: progress.value }));
 
   return (
     <>
-      {open && <Pressable style={StyleSheet.absoluteFill} onPress={close} />}
-      <Animated.View pointerEvents={open ? 'auto' : 'none'} style={[styles.backdrop, { opacity: backdropOpacity }]} />
+      <Animated.View pointerEvents={open ? 'auto' : 'none'} style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }, scrim]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => set(false)} accessibilityLabel="Close" />
+      </Animated.View>
 
-      {actions.map((a, i) => {
-        // Each item interpolates off the same driver value but with its own
-        // input-range offset, so they pop out in a staggered cascade rather
-        // than moving in lockstep — a fan of floating buttons, not a sheet.
-        const delay = i * 0.12;
-        const itemAnim = anim.interpolate({
-          inputRange: [0, Math.min(delay, 0.6), 1],
-          outputRange: [0, 0, 1],
-        });
-        const translateY = itemAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -(ITEM_SPACING * (i + 1))] });
-        const scale = itemAnim;
-        return (
-          <Animated.View
-            key={a.key}
-            pointerEvents={open ? 'auto' : 'none'}
-            style={[
-              styles.miniRow,
-              isRTL && { flexDirection: 'row-reverse' },
-              { bottom: FAB_BOTTOM, opacity: itemAnim, transform: [{ translateY }, { scale }] },
-            ]}
-          >
-            {!isRTL && (
-              <View style={styles.labelPill}>
-                <Text style={styles.labelText}>{a.label}</Text>
-              </View>
-            )}
-            <TouchableOpacity style={styles.miniFab} activeOpacity={0.8} onPress={() => pick(a)}>
-              <Text style={styles.miniIcon}>{a.icon}</Text>
-            </TouchableOpacity>
-            {isRTL && (
-              <View style={styles.labelPill}>
-                <Text style={styles.labelText}>{a.label}</Text>
-              </View>
-            )}
-          </Animated.View>
-        );
-      })}
+      {actions.map((a, i) => (
+        <FabItem key={a.key} index={i} progress={progress} open={open} action={a} onDone={() => set(false)} />
+      ))}
 
-      <TouchableOpacity style={styles.fab} onPress={toggle} activeOpacity={0.85}>
-        <Animated.Text style={[styles.fabIcon, { transform: [{ rotate }] }]}>+</Animated.Text>
-      </TouchableOpacity>
-
-      <Modal visible={!!capture} transparent animationType="fade" onRequestClose={resetCapture}>
-        <Pressable style={styles.dialogBackdrop} onPress={resetCapture} />
-        <View style={styles.dialogWrap}>
-          <View style={styles.dialog}>
-            <Text style={[styles.dialogTitle, align]}>
-              {capture === 'weight' ? t('quickAdd.logWeight') : t('quickAdd.logA1c')}
-            </Text>
-            {error && <Text style={[styles.error, align]}>{error}</Text>}
-            <Field
-              label={capture === 'weight' ? t('weight.todaysWeight') : t('health.a1cLabel')}
-              value={value}
-              onChangeText={setValue}
-              keyboardType="decimal-pad"
-              placeholder={capture === 'weight' ? '82.5' : '7.4'}
-              autoFocus
-              textAlign={isRTL ? 'right' : 'left'}
-            />
-            <PrimaryButton title={t('common.save')} onPress={submitCapture} loading={busy} />
-            <TouchableOpacity onPress={resetCapture} style={{ marginTop: 14 }}>
-              <Text style={[styles.back, align]}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Quick add"
+        accessibilityState={{ expanded: open }}
+        onPress={() => set(!open)}
+        style={{
+          position: 'absolute',
+          end: spacing.lg,
+          bottom: spacing.lg,
+          width: 60,
+          height: 60,
+          borderRadius: radius.xl,
+          borderCurve: 'continuous',
+          backgroundColor: colors.tint,
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.28)',
+        }}
+      >
+        <Animated.View style={rotate}>
+          <Icon name="plus" size={28} color={colors.onTint} weight="bold" />
+        </Animated.View>
+      </Pressable>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(15, 23, 42, 0.35)' },
-  fab: {
-    position: 'absolute',
-    alignSelf: 'center',
-    bottom: FAB_BOTTOM,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: colors.petra,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.petra,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 12,
-    borderWidth: 4,
-    borderColor: colors.bg,
-  },
-  fabIcon: { color: '#fff', fontSize: 28, fontWeight: '700', marginTop: -2 },
-  miniRow: {
-    position: 'absolute',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  miniFab: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  miniIcon: { fontSize: 21 },
-  labelPill: {
-    backgroundColor: colors.text,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  labelText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-  dialogBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(15, 23, 42, 0.45)' },
-  dialogWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  dialog: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 22,
-  },
-  dialogTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 16 },
-  error: {
-    backgroundColor: '#fef2f2',
-    color: colors.danger,
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  back: { color: colors.muted, textAlign: 'center', fontWeight: '600' },
-});
+function FabItem({
+  index,
+  progress,
+  open,
+  action,
+  onDone,
+}: {
+  index: number;
+  progress: SharedValue<number>;
+  open: boolean;
+  action: QuickAction;
+  onDone: () => void;
+}) {
+  const { colors } = useTheme();
+  const style = useAnimatedStyle(() => {
+    // Staggered: later items start moving slightly after earlier ones.
+    const p = interpolate(progress.value, [index * 0.1, 1], [0, 1], 'clamp');
+    return {
+      opacity: p,
+      transform: [{ translateY: -(60 + GAP + (ITEM + GAP) * index) * p + 0 }, { scale: 0.6 + 0.4 * p }],
+    };
+  });
+  return (
+    <Animated.View
+      pointerEvents={open ? 'auto' : 'none'}
+      style={[{ position: 'absolute', end: spacing.lg + 4, bottom: spacing.lg + 4, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, style]}
+    >
+      <GlassSurface borderRadius={radius.pill} style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.sm }}>
+        <AppText variant="subhead" weight="600">
+          {action.label}
+        </AppText>
+      </GlassSurface>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={action.label}
+        onPress={() => {
+          onDone();
+          action.onPress();
+        }}
+        style={{ width: ITEM, height: ITEM, borderRadius: ITEM / 2, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 10px rgba(0,0,0,0.22)' }}
+      >
+        <Icon name={action.icon} size={22} color={colors.tint} />
+      </Pressable>
+    </Animated.View>
+  );
+}

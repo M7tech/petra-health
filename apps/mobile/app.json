@@ -4,7 +4,7 @@
     "slug": "petra-health",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "scheme": "petrahealth",
     "icon": "./assets/icon.png",
     "ios": {
@@ -23,8 +23,9 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#a4225f"
+      },
+      "softwareKeyboardLayoutMode": "resize"
     },
     "plugins": [
       "expo-notifications",
@@ -34,7 +35,23 @@
           "faceIDPermission": "Petra Health uses Face ID to unlock the app."
         }
       ],
-      "expo-localization",
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": [
+              "en",
+              "ar",
+              "ckb"
+            ],
+            "android": [
+              "en",
+              "ar",
+              "ckb"
+            ]
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -49,13 +66,23 @@
           "locationAlwaysAndWhenInUsePermission": "Petra Health uses your location once, during setup, so your care team knows your area."
         }
       ],
-      "expo-status-bar"
+      "expo-router",
+      "expo-image",
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-updates"
     ],
     "extra": {
       "eas": {
         "projectId": "43e3843e-a614-4a66-bc53-f7772185640f"
       }
     },
-    "owner": "mohammedshukur"
+    "owner": "mohammedshukur",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": false
+    }
   }
 }
