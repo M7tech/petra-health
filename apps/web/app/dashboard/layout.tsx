@@ -36,6 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ...BASE_NAV,
         { href: '/dashboard/users', label: 'Users' },
         { href: '/dashboard/pharmacies', label: 'Pharmacies' },
+        { href: '/dashboard/settings', label: 'Settings' },
       ]
     : BASE_NAV;
 

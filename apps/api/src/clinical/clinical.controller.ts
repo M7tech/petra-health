@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { SettingsService } from '../settings/settings.service';
 import { IsIn, IsOptional, IsString, IsDateString, IsNumber, Length, Min, Max } from 'class-validator';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard, CurrentPrincipal } from '../auth/guards';
@@ -34,7 +35,10 @@ class PatientTreatmentRequest {
 @UseGuards(JwtAuthGuard)
 @Controller('me')
 export class ClinicalController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settings: SettingsService,
+  ) {}
 
   @Get('adverse-events')
   listAdverseEvents(@CurrentPrincipal() p: Principal) {
@@ -93,7 +97,8 @@ export class ClinicalController {
   }
 
   @Get('messages')
-  messages(@CurrentPrincipal() p: Principal) {
+  async messages(@CurrentPrincipal() p: Principal) {
+    if (!(await this.settings.doctorFeaturesEnabled())) return [];
     return this.prisma.supportMessage.findMany({
       where: { userId: p.id },
       orderBy: { createdAt: 'asc' },
@@ -101,7 +106,8 @@ export class ClinicalController {
   }
 
   @Post('messages')
-  sendMessage(@CurrentPrincipal() p: Principal, @Body() dto: CreateMessageRequest) {
+  async sendMessage(@CurrentPrincipal() p: Principal, @Body() dto: CreateMessageRequest) {
+    if (!(await this.settings.doctorFeaturesEnabled())) throw new ForbiddenException('Doctor chat is turned off');
     return this.prisma.supportMessage.create({
       data: { userId: p.id, sender: 'PATIENT', body: dto.body },
     });

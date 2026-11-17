@@ -15,6 +15,7 @@ import { PushModule } from './push/push.module';
 import { ContentModule } from './content/content.module';
 import { WhatsAppModule } from './whatsapp/whatsapp.module';
 import { PharmaciesModule } from './pharmacies/pharmacies.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PharmaciesModule } from './pharmacies/pharmacies.module';
     ContentModule,
     WhatsAppModule,
     PharmaciesModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}
