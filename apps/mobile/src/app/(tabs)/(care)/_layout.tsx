@@ -8,7 +8,7 @@ export default function StackLayout() {
   const { t } = useI18n();
   return (
     <Stack screenOptions={options}>
-      <Stack.Screen name="index" options={{ title: t('ui.tabCare') }} />
+      <Stack.Screen name="care" options={{ title: t('ui.tabCare') }} />
       <Stack.Screen name="messages" options={{ title: t('contact.title'), headerLargeTitleEnabled: false }} />
     </Stack>
   );

@@ -187,7 +187,7 @@ export default function TodayScreen() {
           {dueNow ? (
             <Button title={t('ui.logDoseNow')} icon="check" onPress={() => confirmDose(t, logNextDose)} loading={logging} />
           ) : (
-            <Button title={t('ui.openSchedule')} variant="tinted" onPress={() => router.navigate('/(tabs)/(treatment)')} />
+            <Button title={t('ui.openSchedule')} variant="tinted" onPress={() => router.navigate('/treatment')} />
           )}
         </Card>
       ) : !semetra.mine && !semetra.error ? (
@@ -196,7 +196,7 @@ export default function TodayScreen() {
           <AppText variant="subhead" tone="secondary">
             {t('home.semetraCard')}
           </AppText>
-          <Button title={t('ui.startCourse')} onPress={() => router.navigate('/(tabs)/(treatment)')} size="md" />
+          <Button title={t('ui.startCourse')} onPress={() => router.navigate('/treatment')} size="md" />
         </Card>
       ) : null}
 
@@ -205,7 +205,7 @@ export default function TodayScreen() {
       </Card>
 
       {startWeight != null && latestWeight != null ? (
-        <Pressable accessibilityRole="button" onPress={() => router.navigate('/(tabs)/(progress)')}>
+        <Pressable accessibilityRole="button" onPress={() => router.navigate('/progress')}>
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
             <ProgressRing progress={ringProgress} size={96} strokeWidth={9}>
               <AppText variant="title3" numeric>

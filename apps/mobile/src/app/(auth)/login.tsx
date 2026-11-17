@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, View } from 'react-native';
 import { router } from 'expo-router';
@@ -86,6 +87,9 @@ export default function LoginScreen() {
 
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
         <LanguageSwitcher />
+        <AppText variant="footnote" tone="tertiary" style={{ textAlign: 'center', marginTop: spacing.lg }}>
+          Sematra {Constants.expoConfig?.version ?? ''}
+        </AppText>
       </View>
     </Screen>
   );

@@ -20,10 +20,10 @@ export interface QuickAction {
 export function useQuickActions(): QuickAction[] {
   const { t } = useI18n();
   return [
-    { key: 'dose', icon: 'syringe', label: t('quickAdd.logDose'), onPress: () => router.navigate('/(tabs)/(treatment)') },
+    { key: 'dose', icon: 'syringe', label: t('quickAdd.logDose'), onPress: () => router.navigate('/treatment') },
     { key: 'weight', icon: 'scale', label: t('quickAdd.logWeight'), onPress: () => router.push('/log-weight') },
     { key: 'a1c', icon: 'drop', label: t('quickAdd.logA1c'), onPress: () => router.push('/log-a1c') },
-    { key: 'other', icon: 'pill', label: t('quickAdd.logOther'), onPress: () => router.navigate('/(tabs)/(treatment)') },
+    { key: 'other', icon: 'pill', label: t('quickAdd.logOther'), onPress: () => router.navigate('/treatment') },
   ];
 }
 

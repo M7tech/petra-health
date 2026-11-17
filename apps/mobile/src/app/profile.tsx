@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Switch, View } from 'react-native';
 import { api } from '@/api';
@@ -212,6 +213,9 @@ export default function ProfileSheet() {
 
       <Button title={t('profile.save')} onPress={save} loading={busy} />
       <Button title={t('common.signOut')} variant="destructive" icon="logout" onPress={confirmSignOut} />
+      <AppText variant="footnote" tone="tertiary" style={{ textAlign: 'center' }}>
+        Sematra {Constants.expoConfig?.version ?? ''}
+      </AppText>
     </Screen>
   );
 }
