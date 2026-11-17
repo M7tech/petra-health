@@ -1,5 +1,6 @@
 // EN / AR / KU dictionaries. Arabic and Kurdish (Sorani) are RTL.
 // NOTE: Kurdish (Sorani) strings should be reviewed by a native speaker.
+import { guideAr, guideEn, guideKu } from './guideStrings';
 
 export const en = {
   common: {
@@ -661,4 +662,8 @@ export const ku: Dict = {
   bmi: { underweight: 'کێمکێش', normal: 'ئاسایی', overweight: 'زیادکێش', obese: 'قەڵەوی' },
 };
 
-export const translations = { en, ar, ku };
+export const translations = {
+  en: { ...en, guide: guideEn },
+  ar: { ...ar, guide: guideAr },
+  ku: { ...ku, guide: guideKu },
+};

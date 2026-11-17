@@ -97,8 +97,12 @@ async function main() {
     },
   });
 
-  // First Pen (1.5 ml): W1-4 = 0.25 mg, W5-6 = 0.50 mg
-  // Second Pen (1.5 ml): W1-4 = 0.50 mg
+  // Per the Semetra patient guide (1.34 mg/ml in every pen):
+  // First Pen (1.5 ml):  W1-4 = 0.25 mg, W5-6 = 0.50 mg   (course weeks 1-6)
+  // Second Pen (1.5 ml): 4 x 0.50 mg                       (course weeks 7-10; weeks 7-8 are the
+  //                       fixed part, after week 8 the doctor decides 0.5 mg or 1 mg)
+  // Third Pen (3 ml):    4 x 1.0 mg                        (only if the doctor steps up to 1 mg
+  //                       after week 8 — starts at course week 9)
   const pens = [
     {
       label: 'First Pen (1.5 ml)',
@@ -111,6 +115,12 @@ async function main() {
       sequence: 2,
       volumeMl: 1.5,
       weeks: [0.5, 0.5, 0.5, 0.5],
+    },
+    {
+      label: 'Third Pen (3 ml · 1 mg)',
+      sequence: 3,
+      volumeMl: 3,
+      weeks: [1, 1, 1, 1],
     },
   ];
 

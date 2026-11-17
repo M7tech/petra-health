@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../api';
 import { useI18n } from '../i18n';
 import { PrimaryButton, colors } from '../ui';
 import RemindersCard from '../components/RemindersCard';
 import OtherMedsCard from '../components/OtherMedsCard';
 import TimePicker from '../components/TimePicker';
+import SemetraGuide from '../components/SemetraGuide';
 import KeyboardScreen from '../components/KeyboardScreen';
 import { scheduleWeeklyReminder } from '../notifications';
 import type { DoseLog, Medication, UserMedication } from '../types';
@@ -21,6 +23,13 @@ import type { DoseLog, Medication, UserMedication } from '../types';
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const dayKey = (iso: string) => iso.slice(0, 10);
+
+// Course week at which each pen starts, per the Semetra patient guide:
+// pen 1 = weeks 1–6, pen 2 = weeks 7–10 (7–8 if stepping up), 3 ml pen = from week 9.
+const COURSE_OFFSET: Record<number, number> = { 1: 0, 2: 6, 3: 8 };
+// What the doctor decided after week 8 — kept on the device.
+const AFTER8_KEY = 'petra_semetra_after8';
+type After8 = '0.5' | '1';
 const addDays = (date: Date, days: number) => {
   const d = new Date(date);
   d.setUTCDate(d.getUTCDate() + days);
@@ -37,6 +46,8 @@ export default function MedicationScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [after8Stored, setAfter8Stored] = useState<After8 | null>(null);
 
   // Pre-enrollment choices: which pen, which day, which reminder time.
   const [startPen, setStartPen] = useState<1 | 2>(1);
@@ -71,6 +82,19 @@ export default function MedicationScreen() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    AsyncStorage.getItem(AFTER8_KEY)
+      .then((v) => {
+        if (v === '0.5' || v === '1') setAfter8Stored(v);
+      })
+      .catch(() => {});
+  }, []);
+
+  function chooseAfter8(v: After8) {
+    setAfter8Stored(v);
+    AsyncStorage.setItem(AFTER8_KEY, v).catch(() => {});
+  }
+
   async function enroll() {
     if (!catalog) return;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(startDayStr)) {
@@ -101,6 +125,11 @@ export default function MedicationScreen() {
     }
   }
 
+  // Which way the course goes after week 8: the doctor's choice if set,
+  // otherwise inferred from any 1 mg dose the patient has already logged.
+  const after8: After8 = after8Stored ?? (doses.some((d) => (d.doseMg ?? 0) >= 1) ? '1' : '0.5');
+  const hasStepUpPen = !!catalog?.pens.some((p) => p.sequence === 3);
+
   // Flatten pens (from the chosen starting pen onward) -> weeks, with a
   // global index → scheduled date computed from the chosen start day.
   const schedule = useMemo(() => {
@@ -108,17 +137,24 @@ export default function MedicationScreen() {
     const start = new Date(mine.startDate);
     const pens = catalog.pens
       .filter((p) => p.sequence >= mine.startPenSequence)
+      // The 3 ml / 1 mg pen is only part of the course on the 1 mg path.
+      .filter((p) => p.sequence !== 3 || after8 === '1')
       .sort((a, b) => a.sequence - b.sequence);
     let g = 0;
-    return pens.map((pen) => ({
-      pen,
-      weeks: pen.weeks.map((w) => {
-        const date = addDays(start, g * 7);
-        g += 1;
-        return { week: w, date };
-      }),
-    }));
-  }, [catalog, mine]);
+    return pens.map((pen) => {
+      // On the 1 mg path the second 1.5 ml pen is only used for weeks 7–8.
+      const weeks = pen.sequence === 2 && after8 === '1' ? pen.weeks.slice(0, 2) : pen.weeks;
+      const offset = COURSE_OFFSET[pen.sequence] ?? 0;
+      return {
+        pen,
+        weeks: weeks.map((w) => {
+          const date = addDays(start, g * 7);
+          g += 1;
+          return { week: w, date, courseWeek: offset + w.weekNumber };
+        }),
+      };
+    });
+  }, [catalog, mine, after8]);
 
   const takenKeys = useMemo(() => new Set(doses.map((d) => dayKey(d.scheduledFor))), [doses]);
 
@@ -164,6 +200,14 @@ export default function MedicationScreen() {
       <Text style={[styles.subtitle, align]}>
         {catalog?.genericName} · {catalog?.manufacturer}
       </Text>
+
+      <TouchableOpacity
+        style={[styles.guideLink, isRTL && { alignSelf: 'flex-end' }]}
+        onPress={() => setGuideOpen(true)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.guideLinkText}>📘 {t('guide.guideLink')}</Text>
+      </TouchableOpacity>
 
       {error && <Text style={[styles.error, align]}>{error}</Text>}
 
@@ -212,7 +256,7 @@ export default function MedicationScreen() {
           {schedule.map(({ pen, weeks }) => (
             <View key={pen.id} style={styles.penBlock}>
               <Text style={[styles.penTitle, align]}>{pen.label}</Text>
-              {weeks.map(({ week, date }) => {
+              {weeks.map(({ week, date, courseWeek }) => {
                 const key = dayKey(date.toISOString());
                 const taken = takenKeys.has(key);
                 return (
@@ -227,7 +271,7 @@ export default function MedicationScreen() {
                       {taken && <Text style={styles.check}>✓</Text>}
                     </View>
                     <Text style={styles.weekLabel}>
-                      {t('semetra.week')} {week.weekNumber}
+                      {t('semetra.week')} {courseWeek}
                     </Text>
                     <Text style={styles.dose}>{week.doseMg.toFixed(2)} mg</Text>
                     <Text style={styles.date}>
@@ -236,12 +280,32 @@ export default function MedicationScreen() {
                   </TouchableOpacity>
                 );
               })}
+              {pen.sequence === 2 && hasStepUpPen && (
+                <View style={styles.forkCard}>
+                  <Text style={[styles.forkTitle, align]}>{t('guide.forkTitle')}</Text>
+                  <Text style={[styles.forkSub, align]}>{t('guide.forkSub')}</Text>
+                  {(['0.5', '1'] as const).map((opt) => (
+                    <TouchableOpacity
+                      key={opt}
+                      style={[styles.forkOpt, after8 === opt && styles.forkOptActive]}
+                      onPress={() => chooseAfter8(opt)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.forkOptText, after8 === opt && styles.forkOptTextActive]}>
+                        {opt === '0.5' ? t('guide.forkContinue') : t('guide.forkStepUp')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           ))}
         </>
       )}
 
       <OtherMedsCard />
+
+      <SemetraGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
     </KeyboardScreen>
   );
 }
@@ -278,6 +342,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
+  guideLink: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#f3eef8',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 14,
+  },
+  guideLinkText: { color: '#63338a', fontWeight: '700', fontSize: 13 },
+  forkCard: { backgroundColor: '#f3eef8', borderRadius: 14, padding: 14, marginTop: 4 },
+  forkTitle: { color: '#63338a', fontWeight: '700', fontSize: 14 },
+  forkSub: { color: colors.muted, fontSize: 12, marginTop: 4, marginBottom: 10, lineHeight: 18 },
+  forkOpt: { backgroundColor: '#fff', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 12, marginBottom: 8, borderWidth: 1, borderColor: colors.border },
+  forkOptActive: { backgroundColor: '#63338a', borderColor: '#63338a' },
+  forkOptText: { color: colors.text, fontWeight: '600', fontSize: 13, textAlign: 'center' },
+  forkOptTextActive: { color: '#fff' },
   penBlock: { marginBottom: 18 },
   penTitle: { fontWeight: '700', color: colors.petra, marginBottom: 8, fontSize: 15 },
   weekRow: {

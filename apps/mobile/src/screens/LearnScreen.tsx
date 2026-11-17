@@ -14,6 +14,7 @@ import { api } from '../api';
 import { useI18n } from '../i18n';
 import { colors } from '../ui';
 import { youtubeThumbnail } from '../youtube';
+import SemetraGuide from '../components/SemetraGuide';
 import type { ContentPost, ContentType } from '../types';
 
 type Filter = 'ALL' | ContentType;
@@ -32,6 +33,7 @@ export default function LearnScreen() {
   const [filter, setFilter] = useState<Filter>('ALL');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -65,6 +67,17 @@ export default function LearnScreen() {
     >
       <Text style={[styles.title, align]}>{t('learn.title')}</Text>
       <Text style={[styles.subtitle, align]}>{t('learn.subtitle')}</Text>
+
+      <TouchableOpacity style={styles.guideCard} onPress={() => setGuideOpen(true)} activeOpacity={0.85}>
+        <View style={[styles.guideRow, isRTL && { flexDirection: 'row-reverse' }]}>
+          <Text style={styles.guideEmoji}>📘</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.guideTitle, align]}>{t('guide.cardTitle')}</Text>
+            <Text style={[styles.guideDesc, align]}>{t('guide.cardDesc')}</Text>
+          </View>
+          <Text style={styles.guideChevron}>{isRTL ? '‹' : '›'}</Text>
+        </View>
+      </TouchableOpacity>
 
       {error && <Text style={[styles.error, align]}>{error}</Text>}
 
@@ -129,11 +142,18 @@ export default function LearnScreen() {
           );
         })
       )}
+      <SemetraGuide visible={guideOpen} onClose={() => setGuideOpen(false)} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  guideCard: { backgroundColor: '#63338a', borderRadius: 18, padding: 16, marginBottom: 14 },
+  guideRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  guideEmoji: { fontSize: 30 },
+  guideTitle: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  guideDesc: { color: '#e9ddf5', fontSize: 12, marginTop: 3, lineHeight: 17 },
+  guideChevron: { color: '#fff', fontSize: 28, fontWeight: '300' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
   container: { padding: 20, paddingTop: 60, paddingBottom: 140, backgroundColor: colors.bg, flexGrow: 1 },
   title: { fontSize: 24, fontWeight: '700', color: colors.text },
