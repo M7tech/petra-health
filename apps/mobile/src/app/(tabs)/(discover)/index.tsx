@@ -14,7 +14,7 @@ export default function DiscoverScreen() {
       <Card tone="violet" style={{ gap: spacing.lg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.violet, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="book" size={24} color="#FFFFFF" />
+            <Icon name="book" size={24} color={colors.onTint} />
           </View>
           <View style={{ flex: 1, gap: 2 }}>
             <AppText variant="headline">{t('guide.cardTitle')}</AppText>

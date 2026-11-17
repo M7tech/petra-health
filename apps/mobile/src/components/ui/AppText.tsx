@@ -45,8 +45,12 @@ export function AppText({
 }) {
   const { colors } = useTheme();
   const { lang } = useI18n();
+  const isHeading = variant === 'largeTitle' || variant === 'title1' || variant === 'title2' || variant === 'title3';
   return (
     <Text
+      // Dynamic Type: scale with the system setting, but cap runaway sizes that break fixed-height chrome.
+      maxFontSizeMultiplier={1.8}
+      accessibilityRole={isHeading ? 'header' : undefined}
       {...props}
       style={[
         type[variant],

@@ -127,7 +127,7 @@ export default function GuideSheet() {
           <>
             <Heading sub={g('sitesSub')}>{g('sitesTitle')}</Heading>
             <Card padded={false} style={{ overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
-              <Image source={IMG_SITES} style={{ width: '100%', aspectRatio: 775 / 949 }} resizeMode="contain" />
+              <Image accessible accessibilityRole="image" accessibilityLabel={g('sitesTitle')} source={IMG_SITES} style={{ width: '100%', aspectRatio: 775 / 949 }} resizeMode="contain" />
             </Card>
             <Section>
               <Row leading={<AppText variant="headline" tone="tint">1</AppText>} title={g('site1')} />
@@ -156,7 +156,7 @@ export default function GuideSheet() {
               [IMG_STEPS_2, 761 / 750],
             ].map(([src, ratio], i) => (
               <Card key={i} padded={false} style={{ overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
-                <Image source={src as number} style={{ width: '100%', aspectRatio: ratio as number }} resizeMode="contain" />
+                <Image accessible accessibilityRole="image" accessibilityLabel={`${g('official')} ${i + 1}`} source={src as number} style={{ width: '100%', aspectRatio: ratio as number }} resizeMode="contain" />
               </Card>
             ))}
           </>

@@ -54,7 +54,13 @@ export default function MetricTrend({ data, color, decimals = 1, height = 200 }:
   const fmt = (iso: string) => new Date(iso).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' });
 
   return (
-    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ height }}>
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ height }}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={pts.length ? `${fmt(pts[0].recordedAt)}: ${pts[0].value}  →  ${fmt(pts[pts.length - 1].recordedAt)}: ${pts[pts.length - 1].value}` : undefined}
+    >
       {width > 0 ? (
         <Svg width={width} height={height}>
           <Defs>

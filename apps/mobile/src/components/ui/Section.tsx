@@ -118,7 +118,7 @@ export function Row({
             justifyContent: 'center',
           }}
         >
-          <Icon name={icon} size={17} color="#FFFFFF" weight="semibold" />
+          <Icon name={icon} size={17} color={colors.onTint} weight="semibold" />
         </View>
       ) : null}
       <View style={{ flex: 1, gap: 2 }}>
