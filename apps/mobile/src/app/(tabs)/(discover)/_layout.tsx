@@ -3,6 +3,8 @@ import { Stack } from 'expo-router/stack';
 import { useStackOptions } from '@/lib/stack-options';
 import { useI18n } from '@/i18n';
 
+export const unstable_settings = { initialRouteName: 'discover' };
+
 export default function StackLayout() {
   const options = useStackOptions();
   const { t } = useI18n();

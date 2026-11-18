@@ -10,5 +10,5 @@ export default function NotFound() {
   const { loading } = useAuth();
   const gate = useGate();
   if (loading) return <LoadingState />;
-  return <Redirect href={gate === 'auth' ? '/login' : gate === 'setup' ? '/onboarding' : '/(tabs)/(today)'} />;
+  return <Redirect href={gate === 'auth' ? '/login' : gate === 'setup' ? '/onboarding' : '/today'} />;
 }

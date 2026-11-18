@@ -8,7 +8,7 @@ export default function StackLayout() {
   const { t } = useI18n();
   return (
     <Stack screenOptions={options}>
-      <Stack.Screen name="index" options={{ title: t('ui.tabToday') }} />
+      <Stack.Screen name="today" options={{ title: t('ui.tabToday') }} />
     </Stack>
   );
 }
