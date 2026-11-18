@@ -75,11 +75,14 @@ function Routes() {
         <Stack.Protected guard={needsSetup}>
           <Stack.Screen name="onboarding" />
         </Stack.Protected>
+        {/* The option picker must exist during first-run setup too (country/city/doctor pickers live on onboarding). */}
+        <Stack.Protected guard={!!user}>
+          <Stack.Screen name="select" options={sheet({ title: '', sheetAllowedDetents: [0.7, 1], ...sheetBg })} />
+        </Stack.Protected>
         <Stack.Protected guard={!!user && !needsSetup}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="profile" options={sheet({ title: t('ui.profile'), sheetAllowedDetents: [1], ...sheetBg })} />
           <Stack.Screen name="guide" options={sheet({ title: t('guide.title'), sheetAllowedDetents: [1], ...sheetBg })} />
-          <Stack.Screen name="select" options={sheet({ title: '', sheetAllowedDetents: [0.7, 1], ...sheetBg })} />
           <Stack.Screen name="log-weight" options={sheet({ title: t('quickAdd.logWeight'), sheetAllowedDetents: [0.5], ...sheetBg })} />
           <Stack.Screen name="log-a1c" options={sheet({ title: t('quickAdd.logA1c'), sheetAllowedDetents: [0.5], ...sheetBg })} />
           <Stack.Screen name="add-reminder" options={sheet({ title: t('meds.add'), sheetAllowedDetents: [0.85, 1], ...sheetBg })} />
