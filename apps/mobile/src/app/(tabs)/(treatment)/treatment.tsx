@@ -7,7 +7,7 @@ import { useSemetra } from '@/lib/hooks';
 import { dayKey } from '@/lib/semetra';
 import { notifyError } from '@/lib/errors';
 import { confirmDose } from '@/lib/confirm-dose';
-import { scheduleWeeklyReminder } from '@/notifications';
+import { scheduleStorageTip, scheduleWeeklyReminder } from '@/notifications';
 import { useTheme } from '@/theme';
 import {
   Badge, Banner, Button, Card, DateRow, EmptyState, Icon, IconButton, LoadingState, Row, Screen, SegmentedControl, Section, haptics, AppText,
@@ -52,6 +52,7 @@ export default function TreatmentScreen() {
       });
       // expo weekday convention: 1=Sunday..7=Saturday.
       await scheduleWeeklyReminder(start.getUTCDay() + 1, reminderTime.getHours(), reminderTime.getMinutes());
+      await scheduleStorageTip();
       haptics.success();
       await s.reload();
     } catch (e) {

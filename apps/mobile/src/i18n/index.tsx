@@ -108,3 +108,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useI18n = () => useContext(LanguageContext);
+
+/** Translate outside React (e.g. when scheduling a notification) in the language the user chose. */
+export const tr = (key: string): string => i18n.t(key);

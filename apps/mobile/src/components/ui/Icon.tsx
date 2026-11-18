@@ -60,6 +60,7 @@ const ICONS = {
   alarm: { sf: 'alarm.fill', md: 'alarm' },
   bars: { sf: 'chart.bar.fill', md: 'bar-chart' },
   play: { sf: 'play.fill', md: 'play-arrow' },
+  pause: { sf: 'pause.fill', md: 'pause' },
 } as const satisfies Record<string, { sf: SFSymbol; md: MaterialName }>;
 
 export type IconName = keyof typeof ICONS;

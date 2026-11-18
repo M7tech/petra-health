@@ -3,6 +3,7 @@ import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { tr } from '@/i18n';
 
 // Local scheduled notifications fire on-device and work fully offline.
 
@@ -216,4 +217,90 @@ export async function removeMedReminder(reminder: MedReminder): Promise<MedRemin
   );
   await AsyncStorage.setItem(MEDS_KEY, JSON.stringify(list));
   return list;
+}
+
+// ---- Care guidance notifications (text comes from the patient guide, in the user's language) ----
+
+async function ensureAndroidChannel() {
+  if (Platform.OS !== 'android') return;
+  await Notifications.setNotificationChannelAsync('reminders', {
+    name: 'Dose reminders',
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: 'default',
+  });
+}
+
+/** Shortly after the course starts: how to store the pen. */
+export async function scheduleStorageTip(): Promise<void> {
+  try {
+    if (!(await requestPermission())) return;
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: tr('ui.notifStorageTitle'),
+        body: `${tr('guide.beforeBody')} ${tr('guide.duringBody')}`,
+        sound: 'default',
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 30, channelId: 'reminders' },
+    });
+  } catch {
+    /* notifications unavailable (e.g. Expo Go / web): the guide screen still has it */
+  }
+}
+
+const MISSED_KEY = 'petra_missed_guidance'; // stored: { sig, ids }
+
+/**
+ * Schedules the "you missed a dose — here is what to do" notifications for the next unlogged
+ * dose: one the day after it is due (within five days: take it now) and one on day six (skip it,
+ * keep the usual day). Logging the dose moves them to the following week, so they only ever
+ * appear when a dose really was missed. Pass null when there is no active course.
+ */
+export async function scheduleMissedDoseGuidance(nextDue: Date | null): Promise<void> {
+  try {
+    const perm = await Notifications.getPermissionsAsync();
+    if (!perm.granted) return;
+
+    const raw = await AsyncStorage.getItem(MISSED_KEY);
+    const prev = raw ? (JSON.parse(raw) as { sig: string; ids: string[] }) : null;
+
+    const reminder = await getReminder();
+    const hour = reminder?.hour ?? 9;
+    const minute = reminder?.minute ?? 0;
+    const sig = nextDue ? `${nextDue.toISOString().slice(0, 10)}|${hour}:${minute}|${tr('ui.notifMissedTitle')}` : 'none';
+    if (prev && prev.sig === sig) return;
+
+    for (const id of prev?.ids ?? []) {
+      try {
+        await Notifications.cancelScheduledNotificationAsync(id);
+      } catch {
+        /* already gone */
+      }
+    }
+    if (!nextDue) {
+      await AsyncStorage.removeItem(MISSED_KEY);
+      return;
+    }
+
+    await ensureAndroidChannel();
+    // Doses are stored as noon UTC on the due day; read the calendar day, then use the reminder time locally.
+    const at = (plusDays: number) =>
+      new Date(nextDue.getUTCFullYear(), nextDue.getUTCMonth(), nextDue.getUTCDate() + plusDays, hour, minute, 0);
+    const plan = [
+      { when: at(1), body: `${tr('guide.within5Body')} ${tr('guide.noDouble')}` },
+      { when: at(6), body: `${tr('guide.over5Body')} ${tr('guide.noDouble')}` },
+    ];
+    const ids: string[] = [];
+    for (const p of plan) {
+      if (p.when.getTime() <= Date.now() + 60_000) continue;
+      ids.push(
+        await Notifications.scheduleNotificationAsync({
+          content: { title: tr('ui.notifMissedTitle'), body: p.body, sound: 'default' },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: p.when, channelId: 'reminders' },
+        }),
+      );
+    }
+    await AsyncStorage.setItem(MISSED_KEY, JSON.stringify({ sig, ids }));
+  } catch {
+    /* best effort */
+  }
 }

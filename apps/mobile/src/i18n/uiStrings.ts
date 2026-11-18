@@ -2,6 +2,19 @@
 // NOTE: Kurdish (Sorani) strings should be reviewed by a native speaker.
 
 export const uiEn = {
+  themeTitle: 'Appearance',
+  themeAuto: 'Automatic',
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  themeHint: "Automatic follows your phone's setting.",
+  stepLabel: 'Step',
+  play: 'Play',
+  pause: 'Pause',
+  prevStep: 'Previous step',
+  nextStep: 'Next step',
+  sitesTapHint: 'Tap a site to highlight it on the body.',
+  notifMissedTitle: 'Missed your Semetra dose?',
+  notifStorageTitle: 'How to store your Semetra pen',
   confirmDoseTitle: 'Log this dose?',
   confirmDoseBody: 'This records your Semetra injection. It can\'t be undone from the app.',
   logIt: 'Log dose',
@@ -47,6 +60,19 @@ export const uiEn = {
 };
 
 export const uiAr: typeof uiEn = {
+  themeTitle: 'المظهر',
+  themeAuto: 'تلقائي',
+  themeLight: 'فاتح',
+  themeDark: 'داكن',
+  themeHint: 'الوضع التلقائي يتبع إعدادات هاتفك.',
+  stepLabel: 'الخطوة',
+  play: 'تشغيل',
+  pause: 'إيقاف مؤقت',
+  prevStep: 'الخطوة السابقة',
+  nextStep: 'الخطوة التالية',
+  sitesTapHint: 'اضغط على موضع لإبرازه على الجسم.',
+  notifMissedTitle: 'هل فاتتك جرعة سيميترا؟',
+  notifStorageTitle: 'كيف تحفظ قلم سيميترا',
   confirmDoseTitle: 'تسجيل هذه الجرعة؟',
   confirmDoseBody: 'سيتم تسجيل حقنة سيميترا الخاصة بك. لا يمكن التراجع عن ذلك من التطبيق.',
   logIt: 'سجّل الجرعة',
@@ -92,6 +118,19 @@ export const uiAr: typeof uiEn = {
 };
 
 export const uiKu: typeof uiEn = {
+  themeTitle: 'ڕووکار',
+  themeAuto: 'خۆکار',
+  themeLight: 'ڕووناک',
+  themeDark: 'تاریک',
+  themeHint: 'خۆکار هەمان ڕێکخستنی مۆبایلەکەت دەگرێتەبەر.',
+  stepLabel: 'هەنگاو',
+  play: 'لێدان',
+  pause: 'ڕاگرتنی کاتی',
+  prevStep: 'هەنگاوی پێشوو',
+  nextStep: 'هەنگاوی داهاتوو',
+  sitesTapHint: 'لەسەر شوێنێک کلیک بکە بۆ دیاریکردنی لەسەر جەستە.',
+  notifMissedTitle: 'دۆزی سیمێتراکەت لەبیر چووە؟',
+  notifStorageTitle: 'چۆن قەڵەمی سیمێترا هەڵبگریت',
   confirmDoseTitle: 'ئەم دۆزە تۆمار بکرێت؟',
   confirmDoseBody: 'دەرزییەکەی سیمێترات تۆمار دەکرێت. لە ئەپەکەوە ناتوانرێت پاشگەز ببیتەوە.',
   logIt: 'دۆزەکە تۆمار بکە',

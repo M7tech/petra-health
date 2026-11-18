@@ -7,7 +7,7 @@ import { useI18n } from '@/i18n';
 import { isBiometricAvailable, isBiometricEnabled, setBiometricEnabled, authenticate, loadCredentials, clearCredentials } from '@/biometrics';
 import { notifyError } from '@/lib/errors';
 import { parseLocaleNumber } from '@/lib/numbers';
-import { spacing, useTheme } from '@/theme';
+import { spacing, ThemeMode, useThemeMode, useTheme } from '@/theme';
 import {
   AppText, Badge, BadgeTone, Banner, Button, DateRow, FieldRow, LoadingState, Row, Screen, SegmentedControl, SelectRow, Section, haptics,
 } from '@/components/ui';
@@ -56,6 +56,7 @@ export default function ProfileSheet() {
   const [bioAvailable, setBioAvailable] = useState(false);
   const [bioOn, setBioOn] = useState(false);
   const [fpSaved, setFpSaved] = useState(false);
+  const { mode: themeMode, setMode: setThemeMode } = useThemeMode();
 
   useEffect(() => {
     api<PatientProfile>('/profile/me')
@@ -203,6 +204,20 @@ export default function ProfileSheet() {
         {fpSaved ? (
           <Row icon="lock" iconColor={colors.violet} title={t('ui.fpSaved')} subtitle={t('ui.fpSavedHint')} right={<Switch accessibilityLabel={t('ui.fpSaved')} value={fpSaved} onValueChange={async (v) => { if (!v) { await clearCredentials(); setFpSaved(false); } }} trackColor={{ true: colors.tint }} />} />
         ) : null}
+      </Section>
+
+      <Section title={t('ui.themeTitle')} footer={t('ui.themeHint')}>
+        <View style={{ padding: spacing.md }}>
+          <SegmentedControl<ThemeMode>
+            options={[
+              { key: 'auto', label: t('ui.themeAuto') },
+              { key: 'light', label: t('ui.themeLight') },
+              { key: 'dark', label: t('ui.themeDark') },
+            ]}
+            value={themeMode}
+            onChange={setThemeMode}
+          />
+        </View>
       </Section>
 
       <Section title={t('lang.language')}>

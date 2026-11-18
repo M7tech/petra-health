@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router/react-navigation';
 import { StatusBar } from 'expo-status-bar';
@@ -14,10 +14,14 @@ import { registerForPushNotificationsAsync } from '@/notifications';
 import { api } from '@/api';
 import { ConfigProvider, useConfig } from '@/config';
 import { useGate } from '@/lib/gate';
-import { darkPalette, lightPalette, useTheme } from '@/theme';
+import { ThemeModeProvider, darkPalette, lightPalette, useScheme, useTheme } from '@/theme';
+
+function ThemedStatusBar() {
+  return <StatusBar style={useScheme() === 'dark' ? 'light' : 'dark'} />;
+}
 
 function NavTheme({ children }: { children: React.ReactNode }) {
-  const dark = useColorScheme() === 'dark';
+  const dark = useScheme() === 'dark';
   const p = dark ? darkPalette : lightPalette;
   const base = dark ? DarkTheme : DefaultTheme;
   return (
@@ -97,16 +101,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
+        <ThemeModeProvider>
         <LanguageProvider>
           <ConfigProvider>
           <AuthProvider>
             <NavTheme>
-              <StatusBar style="auto" />
+              <ThemedStatusBar />
               <Routes />
             </NavTheme>
           </AuthProvider>
           </ConfigProvider>
         </LanguageProvider>
+        </ThemeModeProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

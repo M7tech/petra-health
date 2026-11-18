@@ -3,6 +3,9 @@ import SheetDone from '@/components/SheetDone';
 import { Image, ScrollView, View } from 'react-native';
 import { useI18n } from '@/i18n';
 import { radius, spacing, useTheme } from '@/theme';
+import SitesAnimation from '@/components/guide/SitesAnimation';
+import StepPlayer from '@/components/guide/StepPlayer';
+import { STEP_GROUPS } from '@/components/guide/data';
 import { AppText, Card, Icon, IconName, PressableScale, Row, Screen, Section, haptics } from '@/components/ui';
 
 type GuideSection = 'schedule' | 'sites' | 'inject' | 'weekly' | 'missed' | 'storage' | 'effects';
@@ -16,17 +19,6 @@ const SECTIONS: { key: GuideSection; icon: IconName }[] = [
   { key: 'effects', icon: 'heart' },
 ];
 
-// Injection steps grouped the way the illustrated guide flows (1–18).
-const STEP_GROUPS: { title: string; steps: number[] }[] = [
-  { title: 'grp1', steps: [1, 2] },
-  { title: 'grp2', steps: [3, 4, 5, 6] },
-  { title: 'grp3', steps: [7, 8, 9] },
-  { title: 'grp4', steps: [10, 11] },
-  { title: 'grp5', steps: [12, 13, 14, 15] },
-  { title: 'grp6', steps: [16, 17, 18] },
-];
-
-const IMG_SITES = require('../../assets/guide/guide-sites.png');
 const IMG_STEPS_1 = require('../../assets/guide/guide-steps-1.png');
 const IMG_STEPS_2 = require('../../assets/guide/guide-steps-2.png');
 
@@ -126,14 +118,7 @@ export default function GuideSheet() {
         return (
           <>
             <Heading sub={g('sitesSub')}>{g('sitesTitle')}</Heading>
-            <Card padded={false} style={{ overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
-              <Image accessible accessibilityRole="image" accessibilityLabel={g('sitesTitle')} source={IMG_SITES} style={{ width: '100%', aspectRatio: 775 / 949 }} resizeMode="contain" />
-            </Card>
-            <Section>
-              <Row leading={<AppText variant="headline" tone="tint">1</AppText>} title={g('site1')} />
-              <Row leading={<AppText variant="headline" tone="tint">2</AppText>} title={g('site2')} />
-              <Row leading={<AppText variant="headline" tone="tint">3</AppText>} title={g('site3')} />
-            </Section>
+            <SitesAnimation />
             <Callout icon="info" body={g('rotate')} tint={colors.success} />
           </>
         );
@@ -141,6 +126,7 @@ export default function GuideSheet() {
         return (
           <>
             <Heading>{g('injectTitle')}</Heading>
+            <StepPlayer />
             {STEP_GROUPS.map((grp) => (
               <Section key={grp.title} title={g(grp.title)}>
                 {grp.steps.map((n) => (

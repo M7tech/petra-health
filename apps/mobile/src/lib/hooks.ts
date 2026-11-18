@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '@/api';
+import { scheduleMissedDoseGuidance } from '@/notifications';
 import { AFTER8_KEY, After8, buildSchedule, dayKey } from './semetra';
 import type { DoseLog, Hba1cEntry, Medication, UserMedication, WeightEntry } from '@/types';
 
@@ -78,6 +79,13 @@ export function useSemetra() {
   const blocks = useMemo(() => buildSchedule(catalog, mine, after8), [catalog, mine, after8]);
   const flat = useMemo(() => blocks.flatMap((b) => b.weeks), [blocks]);
   const takenKeys = useMemo(() => new Set(doses.map((d) => dayKey(d.scheduledFor))), [doses]);
+  // Keep the "missed dose" guidance notifications pointed at the next unlogged dose.
+  useEffect(() => {
+    if (state.loading) return;
+    const next = mine ? flat.find((r) => !takenKeys.has(dayKey(r.date.toISOString()))) : undefined;
+    scheduleMissedDoseGuidance(next?.date ?? null);
+  }, [state.loading, mine, flat, takenKeys]);
+
   const hasStepUpPen = !!catalog?.pens.some((p) => p.sequence === 3);
 
   const logDose = useCallback(

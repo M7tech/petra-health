@@ -2,8 +2,7 @@ import React from 'react';
 import { Platform, StyleProp, View, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useColorScheme } from 'react-native';
-import { radius, useTheme } from '@/theme';
+import { radius, useScheme, useTheme } from '@/theme';
 
 // Material strategy, best available first:
 //   iOS 26+  -> Liquid Glass          (real, system-rendered)
@@ -24,7 +23,7 @@ export function GlassSurface({
   borderRadius?: number;
 }) {
   const { colors } = useTheme();
-  const scheme = useColorScheme();
+  const scheme = useScheme();
   if (canGlass) {
     return (
       <GlassView isInteractive={interactive} style={[{ borderRadius, borderCurve: 'continuous' }, style]}>

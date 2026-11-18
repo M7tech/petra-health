@@ -1,4 +1,4 @@
-import { useColorScheme } from 'react-native';
+import { useScheme } from './mode';
 
 // Semantic palette. Values mirror Apple's system colors (light / dark) so the
 // app reads as native on iOS, and double as a Material-neutral palette on
@@ -85,5 +85,5 @@ export const darkPalette: Palette = {
 };
 
 export function usePalette(): Palette {
-  return useColorScheme() === 'dark' ? darkPalette : lightPalette;
+  return useScheme() === 'dark' ? darkPalette : lightPalette;
 }
