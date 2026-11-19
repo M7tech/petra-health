@@ -4,7 +4,7 @@
 
 | Asset | Path | Source | License / permission |
 |---|---|---|---|
-| Semetra 1.5 ml box photo | `apps/mobile/assets/training/box-1-5.jpg` | Cropped from p.2 of the Petra Pharma patient guide PDF | Owned by Petra Pharma — **written permission to publish required** |
+| Semetra 1.5 ml box photo | `apps/mobile/assets/training/box-1-5.jpg` | Cropped from p.2 of the Petra Pharma patient guide PDF | Owned by Petra Pharma — permission granted per project owner (keep written record) |
 | Semetra 3 ml box photo | `apps/mobile/assets/training/box-3.jpg` | Cropped from p.2 of the same PDF | same |
 | 18 injection step photos | `apps/mobile/assets/guide/steps/step-1…18.png` | Cropped (3× upscaled) from p.8–9 of the guide | same |
 | Injection-site diagram | `apps/mobile/assets/guide/guide-sites.png` | p.6 of the guide | same |
@@ -34,7 +34,7 @@ eas submit -p ios --profile production
 ## Store checklist (nothing below is done yet)
 
 - [ ] Medical review signed off (`MEDICAL_REVIEW.md`), Arabic / Kurdish verified
-- [ ] Petra Pharma written permission for branding and photos
+- [x] Petra Pharma permission for branding and photos (per project owner) — keep the written record for store review
 - [ ] Privacy policy URL (training area collects nothing; the signed-in app uses the API — disclose accordingly)
 - [ ] Apple: App Privacy answers, TestFlight round, screenshots, metadata, medical-app review notes
 - [ ] Google: Data Safety form, Health apps declaration, closed testing track, adaptive icon check, target API level

@@ -30,11 +30,11 @@ Primary source: official Semetra patient guide, Petra Pharma, `Final portrait se
 ## Translation review
 
 - Arabic and Kurdish strings in `src/i18n/trainingStrings.ts` were written for this feature (step text, doses, missed-dose and storage wording are reused from the guide's own Arabic / Kurdish pages where they exist).
-- Arabic product name used in the app UI: **سمترا** (requested). The printed guide uses **سيميترا**. Confirm which spelling Petra Pharma wants for the app.
+- Arabic product name used in the app UI: **سيميترا** (matches the printed guide; confirmed by the project owner).
 - Kurdish (Sorani) product name: **سیمێترا**.
 
 ## Compliance notes
 
 - The app states it is educational and does not replace the prescriber (`train.hub.notice`, `train.common.disclaimer`).
 - No dose calculator, no personal data collected by the training area (progress is on-device).
-- Confirm in writing that Petra Pharma permits the product photographs, the Semetra name and the logos in a public store listing, and that the app is not presented as officially endorsed unless authorised.
+- Project owner states Petra Pharma has granted permission to use the Semetra name, product photographs and branding. **Keep the written permission on file** for the store submissions, and do not present the app as officially endorsed unless that permission says so.
