@@ -15,15 +15,15 @@ export const groupOfStep = (n: number) => STEP_GROUPS.find((g) => g.steps.includ
 
 // The real photo for each step, cropped from the official illustrated guide.
 export const STEP_IMAGES: Record<number, ImageSourcePropType> = {
-  1: require('../../../assets/guide/steps/step-1.png'),
-  2: require('../../../assets/guide/steps/step-2.png'),
-  3: require('../../../assets/guide/steps/step-3.png'),
-  4: require('../../../assets/guide/steps/step-4.png'),
-  5: require('../../../assets/guide/steps/step-5.png'),
-  6: require('../../../assets/guide/steps/step-6.png'),
+  1: require('../../../assets/guide/steps/step-1.jpg'),
+  2: require('../../../assets/guide/steps/step-2.jpg'),
+  3: require('../../../assets/guide/steps/step-3.jpg'),
+  4: require('../../../assets/guide/steps/step-4.jpg'),
+  5: require('../../../assets/guide/steps/step-5.jpg'),
+  6: require('../../../assets/guide/steps/step-6.jpg'),
   7: require('../../../assets/guide/steps/step-7.png'),
   8: require('../../../assets/guide/steps/step-8.png'),
-  9: require('../../../assets/guide/steps/step-9.png'),
+  9: require('../../../assets/guide/steps/step-9.jpg'),
   10: require('../../../assets/guide/steps/step-10.png'),
   11: require('../../../assets/guide/steps/step-11.png'),
   12: require('../../../assets/guide/steps/step-12.png'),

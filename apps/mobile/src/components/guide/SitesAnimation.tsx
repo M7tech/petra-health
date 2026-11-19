@@ -5,7 +5,7 @@ import { useI18n } from '@/i18n';
 import { spacing, useTheme } from '@/theme';
 import { AppText, Card, Icon, Row, Section, haptics } from '@/components/ui';
 
-const IMG_SITES = require('../../../assets/guide/guide-sites.png');
+const IMG_SITES = require('../../../assets/guide/guide-sites.jpg');
 const CYCLE_MS = 2800;
 
 // Where each recommended site sits on the body illustration (% of the image) and how big its ring is.
