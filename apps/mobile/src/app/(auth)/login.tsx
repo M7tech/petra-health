@@ -88,7 +88,7 @@ export default function LoginScreen() {
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
         <LanguageSwitcher />
         <AppText variant="footnote" tone="tertiary" style={{ textAlign: 'center', marginTop: spacing.lg }}>
-          Sematra {Constants.expoConfig?.version ?? ''}
+          Semetra {Constants.expoConfig?.version ?? ''}
         </AppText>
       </View>
     </Screen>

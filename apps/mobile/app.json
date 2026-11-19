@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Sematra",
+    "name": "Semetra",
     "slug": "petra-health",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "scheme": "petrahealth",
@@ -11,7 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.petrapharma.health",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Sematra uses Face ID to unlock the app.",
+        "NSFaceIDUsageDescription": "Semetra uses Face ID to unlock the app.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -26,14 +26,14 @@
         "backgroundColor": "#FFFFFF"
       },
       "softwareKeyboardLayoutMode": "resize",
-      "versionCode": 5
+      "versionCode": 6
     },
     "plugins": [
       "expo-notifications",
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Sematra uses Face ID to unlock the app."
+          "faceIDPermission": "Semetra uses Face ID to unlock the app."
         }
       ],
       [
@@ -64,7 +64,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Sematra uses your location once, during setup, so your care team knows your area."
+          "locationAlwaysAndWhenInUsePermission": "Semetra uses your location once, during setup, so your care team knows your area."
         }
       ],
       "expo-router",

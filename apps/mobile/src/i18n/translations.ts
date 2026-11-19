@@ -21,7 +21,7 @@ export const en = {
     logOther: 'Other Medication',
   },
   auth: {
-    welcome: 'Welcome to Sematra',
+    welcome: 'Welcome to Semetra',
     subtitle: 'Your Semetra companion',
     login: 'Log in',
     signup: 'Sign up',
@@ -243,7 +243,7 @@ export const ar: Dict = {
     logOther: 'دواء آخر',
   },
   auth: {
-    welcome: 'مرحبًا بك في سيماترا',
+    welcome: 'مرحبًا بك في سيميترا',
     subtitle: 'رفيقك مع سيميترا',
     login: 'تسجيل الدخول',
     signup: 'إنشاء حساب',
@@ -462,7 +462,7 @@ export const ku: Dict = {
     logOther: 'دەرمانی تر',
   },
   auth: {
-    welcome: 'بەخێربێیت بۆ سیماترا',
+    welcome: 'بەخێربێیت بۆ سیمێترا',
     subtitle: 'هاوڕێی سیمێتراکەت',
     login: 'چوونەژوورەوە',
     signup: 'خۆتۆمارکردن',
