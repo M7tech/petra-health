@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authenticate, isBiometricEnabled } from './biometrics';
 import { useI18n } from './i18n';
 import { AppText, Button } from '@/components/ui';
@@ -11,6 +12,7 @@ import { spacing, useTheme } from '@/theme';
 export default function BiometricGate({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const [locked, setLocked] = useState(false);
 
   const attempt = useCallback(async () => {
@@ -30,7 +32,7 @@ export default function BiometricGate({ children }: { children: React.ReactNode 
     <View style={{ flex: 1 }}>
       {children}
       {locked ? (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, paddingTop: spacing.xl + insets.top, paddingBottom: spacing.xl + insets.bottom, gap: spacing.md }]}>
           <Image source={require('../assets/logo-mark.png')} style={{ width: 64, height: 64, marginBottom: spacing.sm }} />
           <AppText variant="title2">{t('ui.lockedTitle')}</AppText>
           <AppText variant="subhead" tone="secondary" style={{ textAlign: 'center', marginBottom: spacing.lg }}>

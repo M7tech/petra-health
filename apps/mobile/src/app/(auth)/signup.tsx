@@ -30,7 +30,7 @@ export default function SignupScreen() {
   }
 
   return (
-    <Screen keyboard contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl }}>
+    <Screen keyboard headerless contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl }}>
       <View style={{ gap: spacing.sm }}>
         <AppText variant="largeTitle">{t('auth.signupCta')}</AppText>
         <AppText variant="body" tone="secondary">

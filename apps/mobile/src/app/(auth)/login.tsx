@@ -63,7 +63,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen keyboard contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl, flexGrow: 1 }}>
+    <Screen keyboard headerless contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl, flexGrow: 1 }}>
       <View style={{ alignItems: 'center', gap: spacing.sm }}>
         <Image source={require('../../../assets/logo-mark.png')} style={{ width: 72, height: 72, marginBottom: spacing.sm }} />
         <AppText variant="title1" style={{ textAlign: 'center' }}>

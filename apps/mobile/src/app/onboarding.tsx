@@ -87,7 +87,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <Screen contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl }}>
+    <Screen headerless contentContainerStyle={{ paddingTop: spacing.xxxl + spacing.xl }}>
       <View style={{ gap: spacing.sm }}>
         <AppText variant="largeTitle">{t('onboarding.title')}</AppText>
         <AppText variant="body" tone="secondary">

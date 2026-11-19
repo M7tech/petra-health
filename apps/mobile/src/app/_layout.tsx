@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router/react-navigation';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider, useAuth } from '@/auth';
@@ -17,8 +18,15 @@ import { TrainingProgressProvider } from '@/training/progress';
 import { useGate } from '@/lib/gate';
 import { ThemeModeProvider, darkPalette, lightPalette, useScheme, useTheme } from '@/theme';
 
+// Edge-to-edge: the status bar is transparent, so its icons sit on the app's own background. Icons follow the app's
+// light/dark choice (not just the phone's), and the window background follows it too so nothing white flashes behind.
 function ThemedStatusBar() {
-  return <StatusBar style={useScheme() === 'dark' ? 'light' : 'dark'} />;
+  const scheme = useScheme();
+  const { colors } = useTheme();
+  React.useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background).catch(() => {});
+  }, [colors.background]);
+  return <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
 }
 
 function NavTheme({ children }: { children: React.ReactNode }) {
