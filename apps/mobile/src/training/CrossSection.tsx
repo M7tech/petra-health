@@ -3,7 +3,8 @@ import { View } from 'react-native';
 import Animated, { Easing, cancelAnimation, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useI18n } from '@/i18n';
 import { radius, spacing, useTheme } from '@/theme';
-import { AppText, Card, IconButton, haptics } from '@/components/ui';
+import { AppText, Card, Icon, IconButton, haptics } from '@/components/ui';
+import { AddedGuidance } from './ui';
 
 const SKIN = 26;
 const FAT = 96;
@@ -70,6 +71,10 @@ export default function CrossSection({ replayKey, siteLabel }: { replayKey: numb
             </AppText>
           </View>
         ))}
+        {/* Blood vessels run through the deeper tissue — drawn so the learner can see the needle stays away from them. */}
+        {[28, 70].map((p) => (
+          <View key={p} pointerEvents="none" style={{ position: 'absolute', top: SKIN + FAT + 26, start: `${p}%`, width: 20, height: 20, borderRadius: 10, backgroundColor: '#8E1B2B', borderWidth: 3, borderColor: '#D94A5C' }} />
+        ))}
         {/* Medicine spreading in the fat layer once the needle is in. */}
         <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: SKIN + 36, start: '50%', marginStart: -26, flexDirection: 'row', gap: 6 }, drops]}>
           {[0, 1, 2].map((i) => (
@@ -83,9 +88,31 @@ export default function CrossSection({ replayKey, siteLabel }: { replayKey: numb
         </Animated.View>
       </View>
 
+      <View style={{ gap: spacing.sm }}>
+        {[
+          { ok: true, text: t('train.sites.intoFat') },
+          { ok: false, text: t('train.sites.notMuscle') },
+          { ok: false, text: t('train.sites.notVessel') },
+        ].map((m) => (
+          <View key={m.text} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: m.ok ? colors.successSoft : colors.dangerSoft, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm }}>
+            <Icon name={m.ok ? 'checkCircle' : 'close'} size={18} color={m.ok ? colors.success : colors.danger} />
+            <AppText variant="subhead" weight="600" style={{ flex: 1, color: m.ok ? colors.success : colors.danger }}>
+              {m.text}
+            </AppText>
+          </View>
+        ))}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: '#8E1B2B', borderWidth: 2, borderColor: '#D94A5C' }} />
+          <AppText variant="caption" tone="secondary">
+            {t('train.sites.vessel')}
+          </AppText>
+        </View>
+      </View>
+
       <AppText variant="subhead" tone="secondary">
         {t('train.sites.crossBody')}
       </AppText>
+      <AddedGuidance icon="info" body={t('train.sites.illustrative')} />
     </Card>
   );
 }

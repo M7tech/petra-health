@@ -11,6 +11,8 @@ interface Stored {
   done: Partial<Record<ModuleKey, number>>;
   /** Optional first-use date of the current pen (ISO yyyy-mm-dd), for the informational 8-week tracker. */
   firstUse: string | null;
+  /** Optional expiry printed on the box: month (1-12) and year. The pen cannot be used after the last day of that month. */
+  expiry: { year: number; month: number } | null;
 }
 
 interface Ctx extends Stored {
@@ -18,10 +20,11 @@ interface Ctx extends Stored {
   isDone: (k: ModuleKey) => boolean;
   markDone: (k: ModuleKey, score: number) => void;
   setFirstUse: (iso: string | null) => void;
+  setExpiry: (e: { year: number; month: number } | null) => void;
 }
 
-const EMPTY: Stored = { done: {}, firstUse: null };
-const ProgressContext = createContext<Ctx>({ ...EMPTY, completedCount: 0, isDone: () => false, markDone: () => {}, setFirstUse: () => {} });
+const EMPTY: Stored = { done: {}, firstUse: null, expiry: null };
+const ProgressContext = createContext<Ctx>({ ...EMPTY, completedCount: 0, isDone: () => false, markDone: () => {}, setFirstUse: () => {}, setExpiry: () => {} });
 
 export function TrainingProgressProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<Stored>(EMPTY);
@@ -51,6 +54,7 @@ export function TrainingProgressProvider({ children }: { children: React.ReactNo
   );
 
   const setFirstUse = useCallback((iso: string | null) => save({ ...state, firstUse: iso }), [save, state]);
+  const setExpiry = useCallback((expiry: { year: number; month: number } | null) => save({ ...state, expiry }), [save, state]);
 
   const value = useMemo<Ctx>(
     () => ({
@@ -59,8 +63,9 @@ export function TrainingProgressProvider({ children }: { children: React.ReactNo
       isDone: (k) => state.done[k] != null,
       markDone,
       setFirstUse,
+      setExpiry,
     }),
-    [state, markDone, setFirstUse],
+    [state, markDone, setFirstUse, setExpiry],
   );
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }

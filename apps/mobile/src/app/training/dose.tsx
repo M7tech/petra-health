@@ -4,7 +4,7 @@ import Animated, { Easing, SharedValue, cancelAnimation, useAnimatedStyle, useRe
 import { useI18n } from '@/i18n';
 import { radius, spacing, useTheme } from '@/theme';
 import { AppText, Card, Icon, PressableScale, Row, Section, haptics } from '@/components/ui';
-import { Callout, Heading, ModuleScreen } from '@/training/ui';
+import { AddedGuidance, Callout, Heading, ModuleScreen } from '@/training/ui';
 
 const BOX_15 = require('../../../assets/training/box-1-5.jpg');
 const BOX_3 = require('../../../assets/training/box-3.jpg');
@@ -99,6 +99,7 @@ export default function DoseModule() {
   return (
     <ModuleScreen module="dose">
       <Heading sub={t('train.dose.intro')}>{t('guide.pensTitle')}</Heading>
+      <AddedGuidance icon="shield" body={t('train.common.semetraOnly')} />
 
       <Card padded={false} style={{ overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
         <Animated.View style={swap}>

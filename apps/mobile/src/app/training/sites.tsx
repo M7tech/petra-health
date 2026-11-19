@@ -6,6 +6,7 @@ import { radius, spacing, useTheme } from '@/theme';
 import { AppText, Card, Icon, PressableScale, haptics } from '@/components/ui';
 import SitesAnimation from '@/components/guide/SitesAnimation';
 import CrossSection from '@/training/CrossSection';
+import AbdomenDiagram from '@/training/AbdomenDiagram';
 import { Callout, Heading, ModuleScreen } from '@/training/ui';
 
 const SITE_KEYS = ['abdomen', 'arm', 'thigh'] as const;
@@ -73,6 +74,8 @@ export default function SitesModule() {
           );
         })}
       </View>
+
+      {site === 0 ? <AbdomenDiagram /> : null}
 
       <CrossSection replayKey={replay} siteLabel={t(`train.sites.${SITE_KEYS[site]}`)} />
       <RotateSpots />
