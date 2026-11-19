@@ -32,13 +32,12 @@ The guide's content was already partly in the app (`guide.*` strings). The train
 | 4 | Missed or late dose | Built: weekday + day-offset calendar, take / skip / double-dose rules, scenario shortcuts |
 | 5 | Storage | Built: fridge illustration, draggable thermometer with zones for new vs in-use pen, cap-on/off light check, optional 8-week tracker. **Not built:** 3D fridge |
 | — | Quizzes | 2 questions per module (EN/AR/KU), stored completion + best score |
-| — | Localisation | EN / AR / KU strings (all pending human review) |
+| — | Localisation | EN / AR / KU strings (all pending human review). **Arabic is the default for new installs**; installs that already hold data keep their previous language |
 
 ## Not done yet (honest list)
 
 - Audio narration (needs `expo-audio` + recorded Arabic/Kurdish audio — a native module and an asset decision).
 - True 3D / Skia scenes and pinch-zoom/rotate gestures on the body model.
-- Arabic as the *default* language for new installs (currently follows the phone; changing it would flip existing English testers to RTL — decide before release).
-- Real-device benchmarking of the new screens on iPhone and a mid-range Android (only web-previewed so far).
+- Real-device results: the adb test script and checklist are ready (`DEVICE_TESTING.md`); **results pending** until a build is installed on a phone.
 - Store assets: privacy policy URL, screenshots, store metadata, iOS build (needs Apple developer account), Play Data Safety / health declaration.
 - Clinical sign-off (see `MEDICAL_REVIEW.md`).

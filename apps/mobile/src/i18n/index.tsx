@@ -9,6 +9,8 @@ import { translations } from './translations';
 export type Lang = 'en' | 'ar' | 'ku';
 const RTL_LANGS: Lang[] = ['ar', 'ku'];
 const STORAGE_KEY = 'petra_lang';
+/** Language for a brand-new install (the product is Arabic-first). */
+const DEFAULT_LANG: Lang = 'ar';
 
 // Real RTL: layout direction is owned by the OS-level I18nManager, so native
 // headers, tab bars, sheets and back gestures all mirror — not just our views.
@@ -75,7 +77,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       const stored = (await AsyncStorage.getItem(STORAGE_KEY)) as Lang | null;
-      const l = stored ?? deviceLang();
+      let l = stored;
+      if (!l) {
+        // First run of this version. A truly new install (nothing stored yet) starts in Arabic. An install that
+        // already holds data predates this default, so keep the language it was using (the phone's) rather than
+        // flipping its layout direction unexpectedly. Either way, store the choice so it stays stable.
+        let existing = false;
+        try {
+          existing = (await AsyncStorage.getAllKeys()).length > 0;
+        } catch {
+          existing = false;
+        }
+        l = existing ? deviceLang() : DEFAULT_LANG;
+        AsyncStorage.setItem(STORAGE_KEY, l).catch(() => {});
+      }
       apply(l);
       setReady(true);
       // First launch in an RTL language: flip the layout once.

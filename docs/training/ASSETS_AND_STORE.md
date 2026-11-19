@@ -38,6 +38,6 @@ eas submit -p ios --profile production
 - [ ] Privacy policy URL (training area collects nothing; the signed-in app uses the API — disclose accordingly)
 - [ ] Apple: App Privacy answers, TestFlight round, screenshots, metadata, medical-app review notes
 - [ ] Google: Data Safety form, Health apps declaration, closed testing track, adaptive icon check, target API level
-- [ ] Real-device test on an iPhone and a mid-range Android (performance, memory, font scaling, RTL, reduced motion)
-- [ ] Decide default language (Arabic) for new installs
+- [ ] Real-device test on an iPhone and a mid-range Android — see `DEVICE_TESTING.md` (script + checklist ready, results pending)
+- [x] Default language: Arabic for new installs (existing installs unchanged)
 - [ ] Add audio narration only after recorded, reviewed audio exists
