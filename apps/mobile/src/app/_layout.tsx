@@ -13,6 +13,7 @@ import { useMessageNotifications } from '@/messageAlerts';
 import { registerForPushNotificationsAsync } from '@/notifications';
 import { api } from '@/api';
 import { ConfigProvider, useConfig } from '@/config';
+import { TrainingProgressProvider } from '@/training/progress';
 import { useGate } from '@/lib/gate';
 import { ThemeModeProvider, darkPalette, lightPalette, useScheme, useTheme } from '@/theme';
 
@@ -92,6 +93,8 @@ function Routes() {
         <Stack.Protected guard={!!user}>
           <Stack.Screen name="select" options={sheet({ title: '', sheetAllowedDetents: [0.7, 1], ...sheetBg })} />
         </Stack.Protected>
+        {/* Training needs no account: always available, and kept last so it never becomes the start screen. */}
+        <Stack.Screen name="training" />
       </Stack>
     </BiometricGate>
   );
@@ -105,10 +108,12 @@ export default function RootLayout() {
         <LanguageProvider>
           <ConfigProvider>
           <AuthProvider>
+            <TrainingProgressProvider>
             <NavTheme>
               <ThemedStatusBar />
               <Routes />
             </NavTheme>
+            </TrainingProgressProvider>
           </AuthProvider>
           </ConfigProvider>
         </LanguageProvider>

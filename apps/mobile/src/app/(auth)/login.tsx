@@ -84,6 +84,7 @@ export default function LoginScreen() {
       <Button title={t('auth.loginCta')} onPress={submit} loading={busy} disabled={!email || !password} />
       {hasSaved ? <Button title={t('ui.fpSignIn')} icon="lock" variant="tinted" onPress={fingerprintSignIn} disabled={busy} /> : null}
       <Button title={t('auth.noAccount')} variant="plain" size="md" onPress={() => router.push('/signup')} />
+      <Button title={t('train.hub.open')} icon="school" variant="tinted" onPress={() => router.push('/training')} />
 
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
         <LanguageSwitcher />

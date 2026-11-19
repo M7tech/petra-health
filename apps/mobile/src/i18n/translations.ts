@@ -2,6 +2,7 @@
 // NOTE: Kurdish (Sorani) strings should be reviewed by a native speaker.
 import { guideAr, guideEn, guideKu } from './guideStrings';
 import { uiAr, uiEn, uiKu } from './uiStrings';
+import { trainAr, trainEn, trainKu } from './trainingStrings';
 
 export const en = {
   common: {
@@ -664,7 +665,7 @@ export const ku: Dict = {
 };
 
 export const translations = {
-  en: { ...en, guide: guideEn, ui: uiEn },
-  ar: { ...ar, guide: guideAr, ui: uiAr },
-  ku: { ...ku, guide: guideKu, ui: uiKu },
+  en: { ...en, guide: guideEn, ui: uiEn, train: trainEn },
+  ar: { ...ar, guide: guideAr, ui: uiAr, train: trainAr },
+  ku: { ...ku, guide: guideKu, ui: uiKu, train: trainKu },
 };

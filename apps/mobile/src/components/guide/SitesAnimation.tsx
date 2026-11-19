@@ -47,18 +47,24 @@ function Marker({ x, y, size, active }: { x: number; y: number; size: number; ac
 }
 
 /** The body diagram with the recommended sites pulsing in turn; tap a site to hold it. */
-export default function SitesAnimation() {
+export default function SitesAnimation({ active: controlled, onSelect, autoCycle = true, showList = true }: { active?: number; onSelect?: (i: number) => void; autoCycle?: boolean; showList?: boolean } = {}) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const reduce = useReducedMotion();
-  const [active, setActive] = useState(0);
+  const [inner, setInner] = useState(0);
+  const active = controlled ?? inner;
+  const setActive = (i: number | ((a: number) => number)) => {
+    const v = typeof i === "function" ? i(active) : i;
+    setInner(v);
+    onSelect?.(v);
+  };
   const g = (k: string) => t(`guide.${k}`);
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || !autoCycle) return;
     const id = setTimeout(() => setActive((a) => (a + 1) % SITES.length), CYCLE_MS);
     return () => clearTimeout(id);
-  }, [active, reduce]);
+  }, [active, reduce, autoCycle]);
 
   return (
     <>
@@ -74,6 +80,7 @@ export default function SitesAnimation() {
       <AppText variant="footnote" tone="secondary" style={{ paddingHorizontal: spacing.xs }}>
         {t('ui.sitesTapHint')}
       </AppText>
+      {showList ? (
       <Section>
         {SITES.map((s, i) => (
           <Row
@@ -92,6 +99,7 @@ export default function SitesAnimation() {
           />
         ))}
       </Section>
+      ) : null}
     </>
   );
 }
