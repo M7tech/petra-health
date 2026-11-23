@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { radius, spacing, useTheme } from '@/theme';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { easings, radius, spacing, useTheme } from '@/theme';
 import { AppText } from './AppText';
 import { Button } from './Button';
 import { Icon, IconName } from './Icon';
@@ -74,7 +74,7 @@ export function Banner({
   const reduce = useReducedMotion();
   const enter = useSharedValue(0);
   useEffect(() => {
-    enter.set(withTiming(1, { duration: reduce ? 120 : 180, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+    enter.set(withTiming(1, { duration: reduce ? 120 : 180, easing: easings.out }));
   }, [reduce, enter]);
   const entrance = useAnimatedStyle(() => ({
     opacity: enter.get(),

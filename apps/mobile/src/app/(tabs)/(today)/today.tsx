@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { router, Stack } from 'expo-router';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useAuth } from '@/auth';
 import { useI18n, currentLocale } from '@/i18n';
 import { useMetrics, useSemetra } from '@/lib/hooks';
 import { dayKey } from '@/lib/semetra';
 import { confirmDose } from '@/lib/confirm-dose';
-import { spacing, useTheme } from '@/theme';
+import { easings, spacing, useTheme } from '@/theme';
 import {
   AppText, Badge, Banner, Button, Card, Icon, IconButton, LoadingState, PressableScale, Row, Screen, Section, haptics,
 } from '@/components/ui';
@@ -26,18 +26,24 @@ interface ActivityItem {
   date: string;
 }
 
-/** Shown in the dose card's badge right after a dose is logged: the check fades in and settles from 0.85 to 1 (160 ms, strong ease-out). Reduce Motion: a 120 ms fade only. */
+/** Shown in the dose card's badge right after a dose is logged. The target icon cross-fades out as the check fades in and settles from 0.85 to 1 (160 ms, strong ease-out), so the badge is never empty. Reduce Motion: a 120 ms cross-fade only. */
 function LoggedCheck({ color }: { color: string }) {
   const reduce = useReducedMotion();
   const p = useSharedValue(0);
   useEffect(() => {
-    p.set(withTiming(1, { duration: reduce ? 120 : 160, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+    p.set(withTiming(1, { duration: reduce ? 120 : 160, easing: easings.out }));
   }, [reduce, p]);
-  const style = useAnimatedStyle(() => ({ opacity: p.get(), transform: [{ scale: reduce ? 1 : 0.85 + 0.15 * p.get() }] }));
+  const check = useAnimatedStyle(() => ({ opacity: p.get(), transform: [{ scale: reduce ? 1 : 0.85 + 0.15 * p.get() }] }));
+  const old = useAnimatedStyle(() => ({ opacity: 1 - p.get() }));
   return (
-    <Animated.View style={style}>
-      <Icon name="check" size={24} color={color} weight="bold" />
-    </Animated.View>
+    <View style={{ width: 24, height: 24 }}>
+      <Animated.View style={[{ position: 'absolute' }, old]}>
+        <Icon name="target" size={24} color={color} />
+      </Animated.View>
+      <Animated.View style={[{ position: 'absolute' }, check]}>
+        <Icon name="check" size={24} color={color} weight="bold" />
+      </Animated.View>
+    </View>
   );
 }
 

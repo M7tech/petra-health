@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { Easing } from 'react-native-reanimated';
 
 // 4-point grid. Named by size, never by use.
 export const spacing = {
@@ -39,6 +40,11 @@ export const motion = {
   slow: 380,
   /** Press feedback scale. */
   pressScale: 0.97,
+} as const;
+
+// Easing for timed (non-gesture) motion. Strong ease-out: entrances and state changes start fast and settle.
+export const easings = {
+  out: Easing.bezier(0.23, 1, 0.32, 1),
 } as const;
 
 // Reanimated spring presets (mirror SwiftUI .smooth / .snappy / .bouncy).
