@@ -6,8 +6,8 @@ import { springs, useTheme } from '@/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-// Circular progress dial that springs to its value. `progress` is 0-1;
-// children render centred on top.
+// Circular progress dial. It draws at its current value on mount (so the dial never disagrees with the
+// number inside it) and springs only when `progress` changes afterwards. `progress` is 0-1; children render centred on top.
 export default function ProgressRing({
   size = 108,
   strokeWidth = 10,
@@ -28,13 +28,14 @@ export default function ProgressRing({
   const r = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(1, progress));
-  const p = useSharedValue(0);
+  const p = useSharedValue(clamped);
 
+  // On mount this targets the value the ring already shows, so nothing moves; later changes spring.
   useEffect(() => {
-    p.value = reduce ? clamped : withSpring(clamped, springs.smooth);
+    p.set(reduce ? clamped : withSpring(clamped, springs.smooth));
   }, [clamped, reduce, p]);
 
-  const animatedProps = useAnimatedProps(() => ({ strokeDashoffset: circumference * (1 - p.value) }));
+  const animatedProps = useAnimatedProps(() => ({ strokeDashoffset: circumference * (1 - p.get()) }));
 
   return (
     <View style={{ width: size, height: size }}>
