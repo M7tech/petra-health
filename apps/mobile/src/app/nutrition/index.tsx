@@ -5,8 +5,10 @@ import { useI18n } from '@/i18n';
 import { spacing, useTheme } from '@/theme';
 import { AppText, Card, IconName, Row, Screen, Section } from '@/components/ui';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { Plate3D } from '@/nutrition/Illustrations';
+import { Image } from 'expo-image';
 import { Disclaimer, Photo } from '@/nutrition/ui';
+
+const PLATE = require('../../../assets/nutrition/plate.webp');
 
 const PAGES: { key: 'plate' | 'foods' | 'daily' | 'comfort' | 'week' | 'sources'; icon: IconName; href: string }[] = [
   { key: 'plate', icon: 'fork', href: '/nutrition/plate' },
@@ -25,7 +27,7 @@ export default function NutritionHub() {
       <LanguageSwitcher />
       <Card style={{ alignItems: 'center', gap: spacing.md, overflow: 'hidden' }}>
         <Photo id="plate" height={160} label={t('nutri.pages.plate.t')} />
-        <Plate3D width={280} />
+        <Image source={PLATE} accessibilityLabel={t('nutri.pages.plate.t')} contentFit="contain" style={{ width: '100%', aspectRatio: 1.9 }} />
         <View style={{ gap: spacing.xs, alignItems: 'center' }}>
           <AppText variant="title2" weight="700" style={{ textAlign: 'center' }}>
             {t('nutri.hub.title')}
