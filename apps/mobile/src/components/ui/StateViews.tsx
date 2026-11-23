@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { radius, spacing, useTheme } from '@/theme';
 import { AppText } from './AppText';
 import { Button } from './Button';
@@ -67,10 +68,23 @@ export function Banner({
   const { colors } = useTheme();
   const map = { danger: [colors.dangerSoft, colors.danger, 'alert'], success: [colors.successSoft, colors.success, 'checkCircle'], info: [colors.infoSoft, colors.info, 'info'] } as const;
   const [bg, fg, icon] = map[tone];
+
+  // Entrance: fade in while rising 6 px into place (180 ms, strong ease-out). Reduce Motion keeps
+  // only a 120 ms fade. No exit animation: a cleared error just goes. Shared value, not a layout animation.
+  const reduce = useReducedMotion();
+  const enter = useSharedValue(0);
+  useEffect(() => {
+    enter.set(withTiming(1, { duration: reduce ? 120 : 180, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+  }, [reduce, enter]);
+  const entrance = useAnimatedStyle(() => ({
+    opacity: enter.get(),
+    transform: [{ translateY: reduce ? 0 : (1 - enter.get()) * 6 }],
+  }));
+
   return (
-    <View
+    <Animated.View
       accessibilityRole="alert"
-      style={{ backgroundColor: bg, borderRadius: radius.lg, borderCurve: 'continuous', padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}
+      style={[{ backgroundColor: bg, borderRadius: radius.lg, borderCurve: 'continuous', padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, entrance]}
     >
       <Icon name={icon} size={20} color={fg} />
       <AppText variant="subhead" style={{ flex: 1, color: fg }} selectable>
@@ -79,6 +93,6 @@ export function Banner({
       {onRetry ? (
         <Button title={retryLabel ?? 'Retry'} onPress={onRetry} variant="plain" size="sm" fullWidth={false} />
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
