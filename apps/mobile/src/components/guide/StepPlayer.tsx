@@ -42,7 +42,7 @@ export default function StepPlayer({ steps = ALL_STEPS }: { steps?: number[] }) 
     zoom.value = 1;
     if (!playing || reduce) return;
     progress.value = withTiming(1, { duration: STEP_MS, easing: Easing.linear });
-    zoom.value = withTiming(1.07, { duration: STEP_MS, easing: Easing.out(Easing.quad) });
+    zoom.value = withTiming(1.04, { duration: STEP_MS, easing: Easing.out(Easing.quad) });
     const id = setTimeout(() => setIdx((i) => (i + 1) % total), STEP_MS);
     return () => clearTimeout(id);
   }, [idx, chapterKey, playing, reduce, progress, zoom, total]);
@@ -67,8 +67,9 @@ export default function StepPlayer({ steps = ALL_STEPS }: { steps?: number[] }) 
 
   return (
     <Card padded={false} style={{ overflow: 'hidden' }}>
-      <View style={{ height: 240, backgroundColor: '#FFFFFF', overflow: 'hidden' }}>
-        <Animated.View style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, padding: spacing.lg }, drift]}>
+      {/* The illustrations carry their own numbered badge, so no overlay on the picture (it would also collide with the badge in RTL). The step counter sits in the caption below. */}
+      <View style={{ height: 320, backgroundColor: '#FFFFFF', overflow: 'hidden' }}>
+        <Animated.View style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, padding: spacing.md }, drift]}>
           <Animated.Image
             accessible
             accessibilityRole="image"
@@ -78,11 +79,6 @@ export default function StepPlayer({ steps = ALL_STEPS }: { steps?: number[] }) 
             resizeMode="contain"
           />
         </Animated.View>
-        <View style={{ position: 'absolute', top: spacing.md, start: spacing.md, backgroundColor: colors.tint, borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: 4 }}>
-          <AppText variant="footnote" weight="700" tone="onTint" numeric>
-            {t('ui.stepLabel')} {step} / {STEP_COUNT}
-          </AppText>
-        </View>
       </View>
 
       <View style={{ height: 4, backgroundColor: colors.fill }}>
@@ -91,9 +87,14 @@ export default function StepPlayer({ steps = ALL_STEPS }: { steps?: number[] }) 
 
       <View style={{ padding: spacing.lg, gap: spacing.md }}>
         <View style={{ gap: spacing.xs, minHeight: 84 }} accessibilityLiveRegion="polite">
-          <AppText variant="footnote" weight="600" tone="tint">
-            {g(groupOfStep(step))}
-          </AppText>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm }}>
+            <AppText variant="footnote" weight="600" tone="tint" style={{ flex: 1 }}>
+              {g(groupOfStep(step))}
+            </AppText>
+            <AppText variant="footnote" weight="700" tone="secondary" numeric>
+              {t('ui.stepLabel')} {step} / {STEP_COUNT}
+            </AppText>
+          </View>
           <AppText variant="body">{g(`step${step}`)}</AppText>
         </View>
 
