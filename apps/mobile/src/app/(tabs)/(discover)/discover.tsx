@@ -27,6 +27,7 @@ export default function DiscoverScreen() {
       </Card>
 
       <Section>
+        <Row icon="fork" iconColor={colors.success} title={t('nutri.hub.open')} subtitle={t('nutri.hub.openSub')} chevron onPress={() => router.push('/nutrition')} />
         <Row icon="school" iconColor={colors.violet} title={t('train.hub.title')} subtitle={t('train.hub.subtitle')} chevron onPress={() => router.push('/training')} />
         <Row icon="map" iconColor={colors.success} title={t('pharmacy.title')} subtitle={t('pharmacy.subtitle')} chevron onPress={() => router.push('/(tabs)/(discover)/pharmacies')} />
         <Row icon="news" iconColor={colors.info} title={t('learn.title')} subtitle={t('learn.subtitle')} chevron onPress={() => router.push('/(tabs)/(discover)/learn')} />

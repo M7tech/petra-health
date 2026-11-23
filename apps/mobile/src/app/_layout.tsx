@@ -103,6 +103,7 @@ function Routes() {
         </Stack.Protected>
         {/* Training needs no account: always available, and kept last so it never becomes the start screen. */}
         <Stack.Screen name="training" />
+        <Stack.Screen name="nutrition" />
       </Stack>
     </BiometricGate>
   );

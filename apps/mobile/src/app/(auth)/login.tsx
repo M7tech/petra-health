@@ -85,6 +85,7 @@ export default function LoginScreen() {
       {hasSaved ? <Button title={t('ui.fpSignIn')} icon="lock" variant="tinted" onPress={fingerprintSignIn} disabled={busy} /> : null}
       <Button title={t('auth.noAccount')} variant="plain" size="md" onPress={() => router.push('/signup')} />
       <Button title={t('train.hub.open')} icon="school" variant="tinted" onPress={() => router.push('/training')} />
+      <Button title={t('nutri.hub.open')} icon="fork" variant="tinted" onPress={() => router.push('/nutrition')} />
 
       <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
         <LanguageSwitcher />

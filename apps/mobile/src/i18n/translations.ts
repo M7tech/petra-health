@@ -3,6 +3,7 @@
 import { guideAr, guideEn, guideKu } from './guideStrings';
 import { uiAr, uiEn, uiKu } from './uiStrings';
 import { trainAr, trainEn, trainKu } from './trainingStrings';
+import { nutriAr, nutriEn, nutriKu } from './nutritionStrings';
 
 export const en = {
   common: {
@@ -665,7 +666,7 @@ export const ku: Dict = {
 };
 
 export const translations = {
-  en: { ...en, guide: guideEn, ui: uiEn, train: trainEn },
-  ar: { ...ar, guide: guideAr, ui: uiAr, train: trainAr },
-  ku: { ...ku, guide: guideKu, ui: uiKu, train: trainKu },
+  en: { ...en, guide: guideEn, ui: uiEn, train: trainEn, nutri: nutriEn },
+  ar: { ...ar, guide: guideAr, ui: uiAr, train: trainAr, nutri: nutriAr },
+  ku: { ...ku, guide: guideKu, ui: uiKu, train: trainKu, nutri: nutriKu },
 };
