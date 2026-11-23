@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Platform, View } from 'react-native';
 import { router, Stack } from 'expo-router';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useAuth } from '@/auth';
 import { useI18n, currentLocale } from '@/i18n';
 import { useMetrics, useSemetra } from '@/lib/hooks';
@@ -8,7 +9,7 @@ import { dayKey } from '@/lib/semetra';
 import { confirmDose } from '@/lib/confirm-dose';
 import { spacing, useTheme } from '@/theme';
 import {
-  AppText, Badge, Banner, Button, Card, Icon, IconButton, LoadingState, Row, Screen, Section, haptics,
+  AppText, Badge, Banner, Button, Card, Icon, IconButton, LoadingState, PressableScale, Row, Screen, Section, haptics,
 } from '@/components/ui';
 import ProgressRing from '@/components/ProgressRing';
 import WeekStrip from '@/components/WeekStrip';
@@ -25,6 +26,21 @@ interface ActivityItem {
   date: string;
 }
 
+/** Shown in the dose card's badge right after a dose is logged: the check fades in and settles from 0.85 to 1 (160 ms, strong ease-out). Reduce Motion: a 120 ms fade only. */
+function LoggedCheck({ color }: { color: string }) {
+  const reduce = useReducedMotion();
+  const p = useSharedValue(0);
+  useEffect(() => {
+    p.set(withTiming(1, { duration: reduce ? 120 : 160, easing: Easing.bezier(0.23, 1, 0.32, 1) }));
+  }, [reduce, p]);
+  const style = useAnimatedStyle(() => ({ opacity: p.get(), transform: [{ scale: reduce ? 1 : 0.85 + 0.15 * p.get() }] }));
+  return (
+    <Animated.View style={style}>
+      <Icon name="check" size={24} color={color} weight="bold" />
+    </Animated.View>
+  );
+}
+
 export default function TodayScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -33,6 +49,7 @@ export default function TodayScreen() {
   const metrics = useMetrics();
   const actions = useQuickActions();
   const [logging, setLogging] = useState(false);
+  const [justLogged, setJustLogged] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
 
   const sortedWeights = useMemo(
@@ -103,6 +120,10 @@ export default function TodayScreen() {
             : `${daysUntilNextDose} ${t('home.reminderDaysUntil')}`;
   const reminderSubtitle = daysUntilNextDose != null && daysUntilNextDose < 0 ? t('home.reminderGentle') : t('home.reminderEncourage');
   const dueNow = daysUntilNextDose != null && daysUntilNextDose <= 0;
+  // The check is a confirmation for the dose just logged; it clears once the next dose is due again.
+  useEffect(() => {
+    if (dueNow) setJustLogged(false);
+  }, [dueNow]);
 
   async function logNextDose() {
     if (!nextDose) return;
@@ -111,6 +132,7 @@ export default function TodayScreen() {
     try {
       await semetra.logDose(nextDose.date, nextDose.week.doseMg);
       haptics.success();
+      setJustLogged(true);
     } catch (e) {
       haptics.error();
       setLogError(e instanceof Error ? e.message : t('ui.couldNotSave'));
@@ -175,7 +197,7 @@ export default function TodayScreen() {
         <Card tone="tinted" style={{ gap: spacing.lg }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.tint, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={dueNow ? 'syringe' : 'target'} size={24} color={colors.onTint} />
+              {justLogged && !dueNow ? <LoggedCheck color={colors.onTint} /> : <Icon name={dueNow ? 'syringe' : 'target'} size={24} color={colors.onTint} />}
             </View>
             <View style={{ flex: 1, gap: 2 }}>
               <AppText variant="headline">{reminderTitle}</AppText>
@@ -205,7 +227,7 @@ export default function TodayScreen() {
       </Card>
 
       {startWeight != null && latestWeight != null ? (
-        <Pressable accessibilityRole="button" onPress={() => router.navigate('/progress')}>
+        <PressableScale accessibilityRole="button" scaleTo={0.98} pressedOpacity={0.7} haptic={false} onPress={() => router.navigate('/progress')}>
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
             <ProgressRing progress={ringProgress} size={96} strokeWidth={9}>
               <AppText variant="title3" numeric>
@@ -226,7 +248,7 @@ export default function TodayScreen() {
               </AppText>
             </View>
           </Card>
-        </Pressable>
+        </PressableScale>
       ) : (
         <Card tone="tinted" style={{ gap: spacing.md }}>
           <AppText variant="headline">{t('home.logFirstWeight')}</AppText>
